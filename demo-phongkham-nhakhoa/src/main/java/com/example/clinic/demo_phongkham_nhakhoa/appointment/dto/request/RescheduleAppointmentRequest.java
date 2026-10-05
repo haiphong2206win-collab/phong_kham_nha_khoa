@@ -7,8 +7,15 @@ import java.time.LocalTime;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.FutureOrPresent;
+import java.time.LocalDate;
 
 public class RescheduleAppointmentRequest {
+
+    @NotNull(message = "Ngày khám không được để trống")
+    @FutureOrPresent(message = "Ngày khám không được nằm trong quá khứ")
+    private LocalDate ngayKham;
+
     @NotBlank(message = "Mã bác sĩ không được để trống")
     private String bacSiId;
     @NotBlank(message = "Mã phòng không được để trống")
@@ -35,6 +42,7 @@ public class RescheduleAppointmentRequest {
         this.gioBatDau = gioBatDau;
         this.thoiLuongPhut = thoiLuongPhut;
         this.lyDo = lyDo;
+        this.ngayKham = ngayKham;
     }
 
     public String getBacSiId() {
@@ -76,10 +84,19 @@ public class RescheduleAppointmentRequest {
     public void setLyDo(String lyDo) {
         this.lyDo = lyDo;
     }
+
+    public LocalDate getNgayKham() {
+        return ngayKham;
+    }
+
+    public void setNgayKham(LocalDate ngayKham) {
+        this.ngayKham = ngayKham;
+    }
 }
 
 // test :
 /*
+ * "ngayKham": "2026-10-10",
  * "bacSiId": "BS002",
  * "phongId": "P002",
  * "gioBatDau": "14:30",

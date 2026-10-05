@@ -27,28 +27,36 @@ import java.util.Optional;
 // JpaRepository cung cấp sẵn save(), findById(), findAll(), deleteById()...
 public interface LichKhamRepository extends JpaRepository<LichKham, String> {
 
-    boolean existsByYeuCauDatLichId(String yeuCauDatLichId);
+        boolean existsByYeuCauDatLichId(String yeuCauDatLichId);
 
-    Optional<LichKham> findByYeuCauDatLichId(String yeuCauDatLichId);
+        Optional<LichKham> findByYeuCauDatLichId(String yeuCauDatLichId);
 
-    Optional<LichKham> findByMaLichAndBenhNhanId(
-            String maLich,
-            String benhNhanId);
+        Optional<LichKham> findByMaLichAndBenhNhanId(
+                        String maLich,
+                        String benhNhanId);
 
-    Optional<LichKham> findByMaLichAndBacSiId(
-            String maLich,
-            String bacSiId);
+        Optional<LichKham> findByMaLichAndBacSiId(
+                        String maLich,
+                        String bacSiId);
 
-    // Lấy toàn bộ lịch khám của bệnh nhân.=> Lịch mới nhất được đưa lên trước.
-    List<LichKham> findByBenhNhanIdOrderByNgayKhamDescGioBatDauDesc(
-            String benhNhanId);
+        // Lấy toàn bộ lịch khám của bệnh nhân.=> Lịch mới nhất được đưa lên trước.
+        List<LichKham> findByBenhNhanIdOrderByNgayKhamDescGioBatDauDesc(
+                        String benhNhanId);
 
-    List<LichKham> findByBacSiIdAndNgayKhamGreaterThanEqualOrderByNgayKhamAscGioBatDauAsc(
-            String bacSiId,
-            LocalDate tuNgay);
+        List<LichKham> findByBacSiIdAndNgayKhamOrderByGioBatDauAsc(
+                        String bacSiId,
+                        LocalDate ngayKham);
 
-    // Lấy toàn bộ lịch khám trong một ngày.
-    // Người quản lý có thể dùng để xem lịch làm việc chung của phòng khám.
-    List<LichKham> findByNgayKhamOrderByGioBatDauAsc(
-            LocalDate ngayKham);
+        List<LichKham> findByPhongIdAndNgayKhamOrderByGioBatDauAsc(
+                        String phongId,
+                        LocalDate ngayKham);
+
+        List<LichKham> findByBacSiIdAndNgayKhamGreaterThanEqualOrderByNgayKhamAscGioBatDauAsc(
+                        String bacSiId,
+                        LocalDate tuNgay);
+
+        // Lấy toàn bộ lịch khám trong một ngày.
+        // Người quản lý có thể dùng để xem lịch làm việc chung của phòng khám.
+        List<LichKham> findByNgayKhamOrderByGioBatDauAsc(
+                        LocalDate ngayKham);
 }
