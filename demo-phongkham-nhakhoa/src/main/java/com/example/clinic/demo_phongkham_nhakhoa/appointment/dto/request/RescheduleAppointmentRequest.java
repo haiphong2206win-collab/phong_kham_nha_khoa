@@ -35,7 +35,7 @@ public class RescheduleAppointmentRequest {
             String phongId,
             LocalTime gioBatDau,
             int thoiLuongPhut,
-            String lyDo) {
+            String lyDo, LocalDate ngayKham) {
 
         this.bacSiId = bacSiId;
         this.phongId = phongId;
