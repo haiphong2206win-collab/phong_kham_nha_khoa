@@ -1,14 +1,18 @@
 package com.example.clinic.demo_phongkham_nhakhoa.controller;
 
+import com.example.clinic.demo_phongkham_nhakhoa.dto.request.TaoYeuCauDatLichRequest;
+import com.example.clinic.demo_phongkham_nhakhoa.dto.response.YeuCauDatLichResponse;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.YeuCauDatLich;
 import com.example.clinic.demo_phongkham_nhakhoa.service.YeuCauDatLichService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/yeu-cau-dat-lich")
+@RequestMapping("/api/v1/appointment-requests")
 public class YeuCauDatLichController {
 
     private final YeuCauDatLichService yeuCauDatLichService;
@@ -17,67 +21,33 @@ public class YeuCauDatLichController {
         this.yeuCauDatLichService = yeuCauDatLichService;
     }
 
-    // POST - Them yeu cau dat lich
+    // POST /api/v1/appointment-requests - Bệnh nhân gửi yêu cầu đặt lịch
     @PostMapping
-    public YeuCauDatLich them(@RequestBody YeuCauDatLich yeuCauDatLich) {
-        return yeuCauDatLichService.them(yeuCauDatLich);
+    public YeuCauDatLichResponse guiYeuCau(Principal principal,
+                                           @Valid @RequestBody TaoYeuCauDatLichRequest request) {
+        String tenDangNhap = principal != null ? principal.getName() : "vinh123";
+        return yeuCauDatLichService.guiYeuCau(tenDangNhap, request);
     }
 
-    // GET - Lay danh sach yeu cau dat lich
-    @GetMapping
-    public List<YeuCauDatLich> layDanhSach() {
-        return yeuCauDatLichService.layDanhSach();
+    // GET /api/v1/appointment-requests/me - Bệnh nhân xem danh sách các yêu cầu của mình
+    @GetMapping("/me")
+    public List<YeuCauDatLichResponse> layDanhSachCuaToi(Principal principal) {
+        String tenDangNhap = principal != null ? principal.getName() : "vinh123";
+        return yeuCauDatLichService.layDanhSachCuaToi(tenDangNhap);
     }
 
     // GET - Tim yeu cau dat lich theo Id
     @GetMapping("/{maYeuCau}")
-    public YeuCauDatLich timTheoId(@PathVariable String maYeuCau) {
-        return yeuCauDatLichService.timTheoId(maYeuCau);
+    public YeuCauDatLichResponse timTheoId(@PathVariable String maYeuCau) {
+        return yeuCauDatLichService.layChiTiet(maYeuCau);
     }
 
-    // PUT - Sửa yêu cầu đặt lịch
-    @PutMapping("/{maYeuCau}")
-    public YeuCauDatLich sua(
-            @PathVariable String maYeuCau,
-            @RequestBody YeuCauDatLich yeuCauDatLich) {
-
-        yeuCauDatLich.setMaYeuCau(maYeuCau);
-
-        return yeuCauDatLichService.sua(yeuCauDatLich);
-    }
-
-    // PUT - Hủy yêu cầu
-    @PutMapping("/{maYeuCau}/huy")
-    public YeuCauDatLich huy(@PathVariable String maYeuCau, @RequestBody HashMap<String, String> body) {
-        String lyDo = body.get("lyDo");
-        return yeuCauDatLichService.huy(maYeuCau, lyDo);
-    }
-
-    // PUT - Từ chối yêu cầu
-    @PutMapping("/{maYeuCau}/tu-choi")
-    public YeuCauDatLich tuChoi(
-            @PathVariable String maYeuCau,
-            @RequestBody HashMap<String, String> body) {
-
-        String lyDo = body.get("lyDo");
-
-        return yeuCauDatLichService.tuChoi(
-                maYeuCau,
-                lyDo
-        );
-    }
-
-    // PUT - Phân công
-    @PutMapping("/{maYeuCau}/phan-cong")
-    public YeuCauDatLich phanCong(
-            @PathVariable String maYeuCau) {
-
-        return yeuCauDatLichService.phanCong(maYeuCau);
-    }
-
-    // DELETE - Xóa yêu cầu đặt lịch
-    @DeleteMapping("/{maYeuCau}")
-    public void xoa(@PathVariable String maYeuCau) {
-        yeuCauDatLichService.xoa(maYeuCau);
+    @PatchMapping("/{id}/cancel")
+    public YeuCauDatLichResponse huyYeuCau(@PathVariable("id") String id,
+                                           Principal principal,
+                                           @RequestBody HashMap<String, String> body) {
+        String tenDangNhap = principal != null ? principal.getName() : "vinh123";
+        String lyDo = body.getOrDefault("lyDo", "Người dùng tự hủy");
+        return yeuCauDatLichService.huyYeuCau(id, tenDangNhap, lyDo);
     }
 }

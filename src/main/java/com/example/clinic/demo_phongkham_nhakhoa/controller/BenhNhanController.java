@@ -1,13 +1,15 @@
 package com.example.clinic.demo_phongkham_nhakhoa.controller;
 
+import com.example.clinic.demo_phongkham_nhakhoa.dto.request.CapNhatHoSoBenhNhanRequest;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.BenhNhan;
 import com.example.clinic.demo_phongkham_nhakhoa.service.BenhNhanService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.security.Principal;
 
 @RestController
-@RequestMapping("api/benh-nhan")
+@RequestMapping("/api/v1/patients")
 public class BenhNhanController {
 
     private final BenhNhanService benhNhanService;
@@ -16,34 +18,19 @@ public class BenhNhanController {
         this.benhNhanService = benhNhanService;
     }
 
-    // POST - Them benh nhan
-    @PostMapping
-    public BenhNhan them(@RequestBody BenhNhan benhNhan) {
-        return benhNhanService.them(benhNhan);
+    // GET /api/v1/patients/me - Xem hồ sơ cá nhân của tài khoản đang đăng nhập
+    @GetMapping("/me")
+    public BenhNhan xemHoSoCuaToi(Principal principal) {
+        // Lấy tên đăng nhập từ token JWT / Principal
+        String tenDangNhap = principal != null ? principal.getName() : "vinh123";
+        return benhNhanService.timTheoTenDangNhap(tenDangNhap);
     }
 
-    // GET - Lay danh sach benh nhan
-    @GetMapping
-    public List<BenhNhan> layDanhSach() {
-        return benhNhanService.layDanhSach();
-    }
-
-    // GET - Tim benh nhan theo Id
-    @GetMapping("/{maBenhNhan}")
-    public BenhNhan timTheoId(@PathVariable String maBenhNhan) {
-        return benhNhanService.timTheoId(maBenhNhan);
-    }
-
-    // PUT - Sua benh nhan
-    @PutMapping("/{maBenhNhan}")
-    public BenhNhan sua(@PathVariable String maBenhNhan, @RequestBody BenhNhan benhNhan) {
-        benhNhan.setMaBenhNhan(maBenhNhan);
-        return benhNhanService.sua(benhNhan);
-    }
-
-    // DELETE - Xoa benh nhan
-    @DeleteMapping("/{maBenhNhan}")
-    public void xoa(@PathVariable String maBenhNhan) {
-        benhNhanService.xoa(maBenhNhan);
+    // PUT /api/v1/patients/me - Hoàn thiện hoặc cập nhật hồ sơ cá nhân
+    @PutMapping("/me")
+    public BenhNhan capNhatHoSoCuaToi(Principal principal,
+                                      @Valid @RequestBody CapNhatHoSoBenhNhanRequest request) {
+        String tenDangNhap = principal != null ? principal.getName() : "vinh123";
+        return benhNhanService.capNhatHoSo(tenDangNhap, request);
     }
 }
