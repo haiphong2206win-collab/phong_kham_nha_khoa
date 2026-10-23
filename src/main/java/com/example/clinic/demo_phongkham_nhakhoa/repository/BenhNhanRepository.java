@@ -7,6 +7,9 @@ import java.util.Optional;
 
 public interface BenhNhanRepository extends JpaRepository<BenhNhan, String> {
 
-    // Tìm bệnh nhân dựa theo tên đăng nhập của tài khoản
-    Optional<BenhNhan> findByTaiKhoan_TenDangNhap(String tenDangNhap);
+    Optional<BenhNhan> findByTaiKhoan_TenDangNhap(
+            String tenDangNhap);
+
+    Optional<BenhNhan> findByTaiKhoan_MaTaiKhoan(
+            String maTaiKhoan);
 }

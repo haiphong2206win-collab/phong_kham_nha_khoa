@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/v1/xac-thuc")
 public class XacThucController {
 
     private final TaiKhoanService taiKhoanService;
@@ -21,13 +21,13 @@ public class XacThucController {
     }
 
     // POST /api/v1/auth/register
-    @PostMapping("/register")
+    @PostMapping("/dang-ky")
     public KetQuaXacThucResponse dangKy(@Valid @RequestBody ThongTinDangKiRequest request) {
         return taiKhoanService.dangKy(request);
     }
 
     // POST /api/v1/auth/login
-    @PostMapping("/login")
+    @PostMapping("/dang-nhap")
     public KetQuaXacThucResponse dangNhap(@Valid @RequestBody ThongTinDangNhapRequest request) {
         return taiKhoanService.dangNhap(request);
     }

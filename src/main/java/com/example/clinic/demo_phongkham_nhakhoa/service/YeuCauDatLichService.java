@@ -79,9 +79,23 @@ public class YeuCauDatLichService {
     }
 
     // 3. Lấy chi tiết yêu cầu đặt lịch
-    public YeuCauDatLichResponse layChiTiet(String maYeuCau) {
-        YeuCauDatLich yeuCauDatLich = timTheoId(maYeuCau);
-        return chuyenSangResponseDto(yeuCauDatLich);
+    public YeuCauDatLichResponse layChiTiet(
+            String maYeuCau,
+            String tenDangNhap
+    ) {
+        YeuCauDatLich yeuCau = timTheoId(maYeuCau);
+
+        if (!yeuCau.getBenhNhan()
+                .getTaiKhoan()
+                .getTenDangNhap()
+                .equals(tenDangNhap)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_FOUND,
+                    "Không tìm thấy yêu cầu đặt lịch."
+            );
+        }
+
+        return chuyenSangResponseDto(yeuCau);
     }
 
     // 4. Bệnh nhân tự hủy yêu cầu đang chờ xử lý
@@ -117,8 +131,12 @@ public class YeuCauDatLichService {
     }
 
     // 7. Lấy danh sách toàn bộ yêu cầu (Cho Bác sĩ chủ quản lý)
+    // 7. Lấy danh sách toàn bộ yêu cầu cho bác sĩ chủ phòng khám
     public List<YeuCauDatLichResponse> layDanhSach() {
-        return repository.findAll().stream().map(this::chuyenSangResponseDto).toList();
+        return repository.findAllByOrderByThoiGianGuiDesc()
+                .stream()
+                .map(this::chuyenSangResponseDto)
+                .toList();
     }
 
     // 8. Trả về Entity trực tiếp cho Người 2 dùng khi ghép nối tạo Lịch Khám

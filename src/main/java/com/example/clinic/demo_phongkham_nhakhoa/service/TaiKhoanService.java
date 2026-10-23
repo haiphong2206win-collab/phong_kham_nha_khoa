@@ -1,12 +1,18 @@
 package com.example.clinic.demo_phongkham_nhakhoa.service;
 
+import com.example.clinic.demo_phongkham_nhakhoa.dto.request.CapNhatTaiKhoanRequest;
+import com.example.clinic.demo_phongkham_nhakhoa.dto.request.TaoTaiKhoanBacSiRequest;
+import com.example.clinic.demo_phongkham_nhakhoa.dto.request.TaoTaiKhoanBenhNhanRequest;
 import com.example.clinic.demo_phongkham_nhakhoa.dto.request.ThongTinDangKiRequest;
 import com.example.clinic.demo_phongkham_nhakhoa.dto.request.ThongTinDangNhapRequest;
 import com.example.clinic.demo_phongkham_nhakhoa.dto.response.KetQuaXacThucResponse;
+import com.example.clinic.demo_phongkham_nhakhoa.dto.response.TaiKhoanQuanLyResponse;
+import com.example.clinic.demo_phongkham_nhakhoa.entity.BacSi;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.BenhNhan;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.TaiKhoan;
 import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiTaiKhoan;
 import com.example.clinic.demo_phongkham_nhakhoa.enums.VaiTro;
+import com.example.clinic.demo_phongkham_nhakhoa.repository.BacSiRepository;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.BenhNhanRepository;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.TaiKhoanRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,135 +28,376 @@ import java.util.UUID;
 public class TaiKhoanService {
 
     private final TaiKhoanRepository repository;
-
     private final BenhNhanRepository benhNhanRepository;
-
+    private final BacSiRepository bacSiRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public TaiKhoanService(TaiKhoanRepository taiKhoanRepository, BenhNhanRepository benhNhanRepository, PasswordEncoder passwordEncoder) {
+    public TaiKhoanService(
+            TaiKhoanRepository taiKhoanRepository,
+            BenhNhanRepository benhNhanRepository,
+            BacSiRepository bacSiRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService) {
+
         this.repository = taiKhoanRepository;
         this.benhNhanRepository = benhNhanRepository;
+        this.bacSiRepository = bacSiRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
-    // Đăng ký tài khoản Bệnh nhân mới
+    // ==================== ĐĂNG KÝ ====================
+
     @Transactional
-    public KetQuaXacThucResponse dangKy(ThongTinDangKiRequest request) {
-        if (repository.existsByTenDangNhap(request.getTenDangNhap())) {
-            throw new IllegalArgumentException("Tên đăng nhập đã tồn tại trong hệ thống");
-        }
+    public KetQuaXacThucResponse dangKy(
+            ThongTinDangKiRequest request) {
 
-        // Tạo mã ngẫu nhiên cho tài khoản
-        String maTaiKhoan = "TK-" + UUID.randomUUID().toString().substring(0, 8);
+        kiemTraTenDangNhapChuaTonTai(request.getTenDangNhap());
 
-        // Băm mật khẩu bằng BCrypt
-        String matKhauMaHoa = passwordEncoder.encode(request.getMatKhau());
+        TaiKhoan taiKhoan = taoTaiKhoanMoi(
+                request.getTenDangNhap(),
+                request.getMatKhau(),
+                VaiTro.BENH_NHAN
+        );
 
-        TaiKhoan taiKhoan = new TaiKhoan(maTaiKhoan, request.getTenDangNhap(), matKhauMaHoa, VaiTro.BENH_NHAN);
-        taiKhoan.setTrangThai(TrangThaiTaiKhoan.DANG_HOAT_DONG);
-        taiKhoan.setNgayTao(LocalDateTime.now());
-        repository.save(taiKhoan);
+        taiKhoan = repository.save(taiKhoan);
 
-        // Tạo sẵn bản ghi Bệnh nhân rỗng gắn với tài khoản này
-        String maBenhNhan = "BN-" + UUID.randomUUID().toString().substring(0, 8);
+        // Giữ nguyên nghiệp vụ đăng ký hiện tại:
+        // tạo hồ sơ bệnh nhân để người dùng cập nhật sau.
         BenhNhan benhNhan = new BenhNhan();
-        benhNhan.setMaBenhNhan(maBenhNhan);
+        benhNhan.setMaBenhNhan(
+                "BN-" + UUID.randomUUID().toString().substring(0, 8));
         benhNhan.setTaiKhoan(taiKhoan);
         benhNhan.setHoTen("");
         benhNhan.setNgaySinh(LocalDate.of(2000, 1, 1));
         benhNhan.setSoDienThoai("");
+
         benhNhanRepository.save(benhNhan);
 
-        // Giả lập chuỗi token giả định (ở Bước Security ta sẽ gắn JWT thật vào đây)
-        String token = "JWT-TOKEN- gia-lap-cho-" + taiKhoan.getTenDangNhap();
+        String token = jwtService.taoToken(
+                taiKhoan.getTenDangNhap(),
+                taiKhoan.getVaiTro().name()
+        );
 
-        return new KetQuaXacThucResponse(token, maTaiKhoan, taiKhoan.getTenDangNhap(), taiKhoan.getVaiTro().name());
+        return new KetQuaXacThucResponse(
+                token,
+                taiKhoan.getMaTaiKhoan(),
+                taiKhoan.getTenDangNhap(),
+                taiKhoan.getVaiTro().name()
+        );
     }
 
-    // Đăng nhập
-    public KetQuaXacThucResponse dangNhap(ThongTinDangNhapRequest request) {
-        TaiKhoan taiKhoan = repository.findByTenDangNhap(request.getTenDangNhap())
-                .orElseThrow(() -> new IllegalArgumentException("Tên đăng nhập hoặc mật khẩu không chính xác"));
+    // ==================== ĐĂNG NHẬP ====================
 
-        if (!passwordEncoder.matches(request.getMatKhau(), taiKhoan.getMatKhau())) {
-            throw new IllegalArgumentException("Tên đăng nhập hoặc mật khẩu không chính xác");
+    public KetQuaXacThucResponse dangNhap(
+            ThongTinDangNhapRequest request) {
+
+        TaiKhoan taiKhoan = repository
+                .findByTenDangNhap(request.getTenDangNhap())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Tên đăng nhập hoặc mật khẩu không chính xác"));
+
+        if (!passwordEncoder.matches(
+                request.getMatKhau(), taiKhoan.getMatKhau())) {
+
+            throw new IllegalArgumentException(
+                    "Tên đăng nhập hoặc mật khẩu không chính xác");
         }
 
         if (!taiKhoan.dangHoatDong()) {
             throw new IllegalStateException("Tài khoản đã bị khóa");
         }
 
-        String token = "JWT-TOKEN-gia-lap-cho-" + taiKhoan.getTenDangNhap();
+        String token = jwtService.taoToken(
+                taiKhoan.getTenDangNhap(),
+                taiKhoan.getVaiTro().name()
+        );
 
-        return new KetQuaXacThucResponse(token, taiKhoan.getMaTaiKhoan(), taiKhoan.getTenDangNhap(), taiKhoan.getVaiTro().name());
+        return new KetQuaXacThucResponse(
+                token,
+                taiKhoan.getMaTaiKhoan(),
+                taiKhoan.getTenDangNhap(),
+                taiKhoan.getVaiTro().name()
+        );
     }
 
-    // 3. Thêm tài khoản quản trị (Bác sĩ / Bác sĩ chủ) - Băm mật khẩu đầy đủ
+    // ==================== TẠO TÀI KHOẢN ====================
+
     @Transactional
-    public TaiKhoan them(TaiKhoan taiKhoan) {
-        if (repository.existsByTenDangNhap(taiKhoan.getTenDangNhap())) {
-            throw new IllegalArgumentException("Tên đăng nhập đã tồn tại trong hệ thống");
-        }
+    public TaiKhoanQuanLyResponse taoTaiKhoanBenhNhan(
+            TaoTaiKhoanBenhNhanRequest request) {
 
-        if (taiKhoan.getMaTaiKhoan() == null || taiKhoan.getMaTaiKhoan().isBlank()) {
-            taiKhoan.setMaTaiKhoan("TK-" + UUID.randomUUID().toString().substring(0, 8));
-        }
+        kiemTraTenDangNhapChuaTonTai(request.getTenDangNhap());
 
-        // Băm mật khẩu trước khi lưu DB
-        taiKhoan.doiMatKhau(passwordEncoder.encode(taiKhoan.getMatKhau()));
-        taiKhoan.setNgayTao(LocalDateTime.now());
-        if (taiKhoan.getTrangThai() == null) {
-            taiKhoan.setTrangThai(TrangThaiTaiKhoan.DANG_HOAT_DONG);
-        }
+        TaiKhoan taiKhoan = taoTaiKhoanMoi(
+                request.getTenDangNhap(),
+                request.getMatKhau(),
+                VaiTro.BENH_NHAN
+        );
 
-        return repository.save(taiKhoan);
+        taiKhoan = repository.save(taiKhoan);
+
+        BenhNhan benhNhan = new BenhNhan();
+        benhNhan.setMaBenhNhan(
+                "BN-" + UUID.randomUUID().toString().substring(0, 8));
+        benhNhan.setTaiKhoan(taiKhoan);
+        benhNhan.setHoTen(request.getHoTen().trim());
+        benhNhan.setNgaySinh(request.getNgaySinh());
+        benhNhan.setGioiTinh(request.getGioiTinh());
+        benhNhan.setSoDienThoai(request.getSoDienThoai().trim());
+        benhNhan.setEmail(request.getEmail());
+        benhNhan.setDiaChi(request.getDiaChi());
+
+        benhNhanRepository.save(benhNhan);
+
+        return chuyenSangTaiKhoanQuanLyResponse(taiKhoan);
     }
 
-    // 4. Sửa thông tin tài khoản (Có kiểm tra băm mật khẩu mới nếu thay đổi)
     @Transactional
-    public TaiKhoan sua(TaiKhoan taiKhoan) {
-        TaiKhoan taiKhoanCu = timTheoId(taiKhoan.getMaTaiKhoan());
+    public TaiKhoanQuanLyResponse taoTaiKhoanBacSi(
+            TaoTaiKhoanBacSiRequest request) {
 
-        if (taiKhoan.getMatKhau() != null && !taiKhoan.getMatKhau().isBlank()) {
-            taiKhoanCu.doiMatKhau(passwordEncoder.encode(taiKhoan.getMatKhau()));
-        }
-        if (taiKhoan.getVaiTro() != null) {
-            taiKhoanCu.setVaiTro(taiKhoan.getVaiTro());
-        }
-        if (taiKhoan.getTrangThai() != null) {
-            taiKhoanCu.setTrangThai(taiKhoan.getTrangThai());
-        }
+        kiemTraTenDangNhapChuaTonTai(request.getTenDangNhap());
 
-        return repository.save(taiKhoanCu);
+        TaiKhoan taiKhoan = taoTaiKhoanMoi(
+                request.getTenDangNhap(),
+                request.getMatKhau(),
+                VaiTro.BAC_SI
+        );
+
+        taiKhoan = repository.save(taiKhoan);
+
+        BacSi bacSi = new BacSi();
+        bacSi.setMaBacSi(
+                "BS-" + UUID.randomUUID().toString().substring(0, 8));
+        bacSi.setTaiKhoan(taiKhoan);
+        bacSi.setHoTen(request.getHoTen().trim());
+        bacSi.setSoDienThoai(request.getSoDienThoai());
+        bacSi.setSoChungChi(request.getSoChungChi());
+        bacSi.setDangLamViec(true);
+
+        bacSiRepository.save(bacSi);
+
+        return chuyenSangTaiKhoanQuanLyResponse(taiKhoan);
     }
 
-    // 5. Khóa / Bật tài khoản
+    // ==================== XEM TÀI KHOẢN ====================
+
+    public List<TaiKhoanQuanLyResponse> layDanhSach(
+            VaiTro vaiTro,
+            TrangThaiTaiKhoan trangThai) {
+
+        return repository.findAll()
+                .stream()
+                .filter(tk ->
+                        vaiTro == null || tk.getVaiTro() == vaiTro)
+                .filter(tk ->
+                        trangThai == null
+                                || tk.getTrangThai() == trangThai)
+                .map(this::chuyenSangTaiKhoanQuanLyResponse)
+                .toList();
+    }
+
+    public TaiKhoanQuanLyResponse timTaiKhoanQuanLyTheoId(
+            String maTaiKhoan) {
+
+        return chuyenSangTaiKhoanQuanLyResponse(
+                timTheoId(maTaiKhoan));
+    }
+
+    // ==================== CẬP NHẬT TÀI KHOẢN ====================
+
     @Transactional
-    public void doitrangThai(String maTaiKhoan, boolean khoa) {
+    public TaiKhoanQuanLyResponse capNhatTaiKhoan(
+            String maTaiKhoan,
+            CapNhatTaiKhoanRequest request,
+            String tenDangNhapNguoiGoi) {
+
         TaiKhoan taiKhoan = timTheoId(maTaiKhoan);
-        if (khoa) {
-            taiKhoan.khoa();
-        } else {
-            taiKhoan.kichHoat();
+
+        if (taiKhoan.getTenDangNhap().equals(tenDangNhapNguoiGoi)) {
+            throw new IllegalArgumentException(
+                    "Không thể sửa tài khoản đang đăng nhập bằng API quản lý");
         }
+
+        if (taiKhoan.coVaiTro(VaiTro.CHU_PHONG_KHAM)) {
+            throw new IllegalArgumentException(
+                    "Không thể sửa tài khoản chủ phòng khám bằng API này");
+        }
+
+        String tenDangNhapMoi = request.getTenDangNhap();
+
+        String matKhauMoi = request.getMatKhauMoi();
+
+        boolean coTenDangNhap =
+                tenDangNhapMoi != null && !tenDangNhapMoi.isBlank();
+
+        boolean coMatKhau =
+                matKhauMoi != null && !matKhauMoi.isBlank();
+
+        if (!coTenDangNhap && !coMatKhau) {
+            throw new IllegalArgumentException(
+                    "Cần cung cấp tên đăng nhập mới hoặc mật khẩu mới");
+        }
+
+        if (coTenDangNhap) {
+            String tenDaChuanHoa = tenDangNhapMoi.trim();
+
+            repository.findByTenDangNhap(tenDaChuanHoa)
+                    .filter(tk ->
+                            !tk.getMaTaiKhoan().equals(maTaiKhoan))
+                    .ifPresent(tk -> {
+                        throw new IllegalArgumentException(
+                                "Tên đăng nhập đã tồn tại trong hệ thống");
+                    });
+
+            taiKhoan.setTenDangNhap(tenDaChuanHoa);
+        }
+
+        if (coMatKhau) {
+            taiKhoan.doiMatKhau(
+                    passwordEncoder.encode(matKhauMoi));
+        }
+
+        repository.save(taiKhoan);
+
+        return chuyenSangTaiKhoanQuanLyResponse(taiKhoan);
+    }
+
+    // ==================== KHÓA / KÍCH HOẠT ====================
+
+    @Transactional
+    public TaiKhoanQuanLyResponse capNhatTrangThai(
+            String maTaiKhoan,
+            boolean dangHoatDong,
+            String tenDangNhapNguoiGoi) {
+
+        TaiKhoan taiKhoan = timTheoId(maTaiKhoan);
+
+        if (taiKhoan.getTenDangNhap().equals(tenDangNhapNguoiGoi)) {
+            throw new IllegalArgumentException(
+                    "Không thể khóa tài khoản đang đăng nhập");
+        }
+
+        if (taiKhoan.coVaiTro(VaiTro.CHU_PHONG_KHAM)) {
+            throw new IllegalArgumentException(
+                    "Không thể khóa tài khoản chủ phòng khám bằng API này");
+        }
+
+        if (dangHoatDong) {
+            taiKhoan.kichHoat();
+        } else {
+            taiKhoan.khoa();
+        }
+
+        repository.save(taiKhoan);
+
+        return chuyenSangTaiKhoanQuanLyResponse(taiKhoan);
+    }
+
+    // ==================== XÓA MỀM ====================
+
+    @Transactional
+    public void xoaMem(
+            String maTaiKhoan,
+            String tenDangNhapNguoiGoi) {
+
+        TaiKhoan taiKhoan = timTheoId(maTaiKhoan);
+
+        if (taiKhoan.getTenDangNhap().equals(tenDangNhapNguoiGoi)) {
+            throw new IllegalArgumentException(
+                    "Không thể xóa tài khoản đang đăng nhập");
+        }
+
+        if (taiKhoan.coVaiTro(VaiTro.CHU_PHONG_KHAM)) {
+            throw new IllegalArgumentException(
+                    "Không thể xóa tài khoản chủ phòng khám bằng API này");
+        }
+
+        taiKhoan.khoa();
+
         repository.save(taiKhoan);
     }
 
-    // 6. Tìm tài khoản theo ID
+    // ==================== HÀM DÙNG CHUNG ====================
+
+    private TaiKhoan taoTaiKhoanMoi(
+            String tenDangNhap,
+            String matKhau,
+            VaiTro vaiTro) {
+
+        TaiKhoan taiKhoan = new TaiKhoan(
+                "TK-" + UUID.randomUUID().toString().substring(0, 8),
+                tenDangNhap.trim(),
+                passwordEncoder.encode(matKhau),
+                vaiTro
+        );
+
+        taiKhoan.setTrangThai(TrangThaiTaiKhoan.DANG_HOAT_DONG);
+        taiKhoan.setNgayTao(LocalDateTime.now());
+
+        return taiKhoan;
+    }
+
+    private void kiemTraTenDangNhapChuaTonTai(
+            String tenDangNhap) {
+
+        if (repository.existsByTenDangNhap(tenDangNhap.trim())) {
+            throw new IllegalArgumentException(
+                    "Tên đăng nhập đã tồn tại trong hệ thống");
+        }
+    }
+
+    private TaiKhoanQuanLyResponse chuyenSangTaiKhoanQuanLyResponse(
+            TaiKhoan taiKhoan) {
+
+        String maHoSo = null;
+        String hoTen = null;
+        String soDienThoai = null;
+
+        if (taiKhoan.coVaiTro(VaiTro.BENH_NHAN)) {
+            var ketQua = benhNhanRepository
+                    .findByTaiKhoan_MaTaiKhoan(
+                            taiKhoan.getMaTaiKhoan());
+
+            if (ketQua.isPresent()) {
+                BenhNhan benhNhan = ketQua.get();
+
+                maHoSo = benhNhan.getMaBenhNhan();
+                hoTen = benhNhan.getHoTen();
+                soDienThoai = benhNhan.getSoDienThoai();
+            }
+
+        } else if (taiKhoan.coVaiTro(VaiTro.BAC_SI)) {
+            var ketQua = bacSiRepository
+                    .findByTaiKhoan_MaTaiKhoan(
+                            taiKhoan.getMaTaiKhoan());
+
+            if (ketQua.isPresent()) {
+                BacSi bacSi = ketQua.get();
+
+                maHoSo = bacSi.getMaBacSi();
+                hoTen = bacSi.getHoTen();
+                soDienThoai = bacSi.getSoDienThoai();
+            }
+        }
+
+        return new TaiKhoanQuanLyResponse(
+                taiKhoan.getMaTaiKhoan(),
+                taiKhoan.getTenDangNhap(),
+                taiKhoan.getVaiTro(),
+                taiKhoan.getTrangThai(),
+                taiKhoan.getNgayTao(),
+                maHoSo,
+                hoTen,
+                soDienThoai
+        );
+    }
+
     public TaiKhoan timTheoId(String maTaiKhoan) {
         return repository.findById(maTaiKhoan)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản với mã: " + maTaiKhoan));
-    }
-
-    // 7. Lấy danh sách toàn bộ tài khoản
-    public List<TaiKhoan> layDanhSach() {
-        return repository.findAll();
-    }
-
-    // 8. Xóa tài khoản
-    @Transactional
-    public void xoa(String maTaiKhoan) {
-        TaiKhoan taiKhoan = timTheoId(maTaiKhoan);
-        repository.delete(taiKhoan);
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Không tìm thấy tài khoản với mã: " + maTaiKhoan));
     }
 }

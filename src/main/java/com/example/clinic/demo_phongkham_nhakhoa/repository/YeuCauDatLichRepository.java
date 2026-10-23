@@ -10,19 +10,28 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.util.List;
 
-public interface YeuCauDatLichRepository extends JpaRepository<YeuCauDatLich, String> {
+public interface YeuCauDatLichRepository
+        extends JpaRepository<YeuCauDatLich, String> {
 
-    // Lấy danh sách yêu cầu của 1 bệnh nhân, sắp xếp mới nhất lên đầu
-    List<YeuCauDatLich> findByBenhNhan_MaBenhNhanOrderByThoiGianGuiDesc(String maBenhNhan);
+    // Lấy danh sách yêu cầu của một bệnh nhân, mới nhất trước.
+    List<YeuCauDatLich>
+    findByBenhNhan_MaBenhNhanOrderByThoiGianGuiDesc(
+            String maBenhNhan
+    );
 
-    // Kiểm tra bệnh nhân đã có yêu cầu active (chờ phân công / đã phân công) trùng ngày + ca khám chưa
+    // Lấy toàn bộ yêu cầu, mới nhất trước.
+    List<YeuCauDatLich> findAllByOrderByThoiGianGuiDesc();
+
+    // Kiểm tra yêu cầu đang hoạt động trùng ngày và ca khám.
     @Query("SELECT COUNT(y) > 0 FROM YeuCauDatLich y " +
             "WHERE y.benhNhan.maBenhNhan = :maBenhNhan " +
             "AND y.ngayMongMuon = :ngay " +
             "AND y.caKham = :ca " +
             "AND y.trangThai IN (:trangThais)")
-    boolean tonTaiYeuCauHoatDong(@Param("maBenhNhan") String maBenhNhan,
-                                 @Param("ngay") LocalDate ngay,
-                                 @Param("ca") CaKham ca,
-                                 @Param("trangThais") List<TrangThaiYeuCau> trangThais);
+    boolean tonTaiYeuCauHoatDong(
+            @Param("maBenhNhan") String maBenhNhan,
+            @Param("ngay") LocalDate ngay,
+            @Param("ca") CaKham ca,
+            @Param("trangThais") List<TrangThaiYeuCau> trangThais
+    );
 }

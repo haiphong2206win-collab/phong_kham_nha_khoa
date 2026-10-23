@@ -1,9 +1,13 @@
 package com.example.clinic.demo_phongkham_nhakhoa.service;
 
 import com.example.clinic.demo_phongkham_nhakhoa.dto.request.CapNhatHoSoBenhNhanRequest;
+import com.example.clinic.demo_phongkham_nhakhoa.dto.response.BenhNhanResponse;
+import com.example.clinic.demo_phongkham_nhakhoa.dto.response.LichKhamBenhNhanResponse;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.BenhNhan;
+import com.example.clinic.demo_phongkham_nhakhoa.entity.LichKham;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.TaiKhoan;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.BenhNhanRepository;
+import com.example.clinic.demo_phongkham_nhakhoa.repository.LichKhamRepository;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.TaiKhoanRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +21,12 @@ public class BenhNhanService {
 
     private final TaiKhoanRepository taiKhoanRepository;
 
-    public BenhNhanService(BenhNhanRepository benhNhanRepository, TaiKhoanRepository taiKhoanRepository) {
+    private final LichKhamRepository lichKhamRepository;
+
+    public BenhNhanService(BenhNhanRepository benhNhanRepository, TaiKhoanRepository taiKhoanRepository, LichKhamRepository lichKhamRepository) {
         this.repository = benhNhanRepository;
         this.taiKhoanRepository = taiKhoanRepository;
+        this.lichKhamRepository = lichKhamRepository;
     }
 
     // Lấy hồ sơ bệnh nhân theo tên đăng nhập
@@ -98,4 +105,89 @@ public class BenhNhanService {
         BenhNhan benhNhan = timTheoId(maBenhNhan);
         repository.delete(benhNhan);
     }
+
+
+    // Bệnh nhân xác nhận lịch khám đã được phân công
+    @Transactional
+    public LichKhamBenhNhanResponse xacNhanLichKham(
+            String tenDangNhap,
+            String maLich
+    ) {
+        LichKham lichKham = timLichCuaBenhNhan(
+                tenDangNhap,
+                maLich
+        );
+
+        lichKham.xacNhan();
+
+        LichKham daLuu = lichKhamRepository.save(lichKham);
+
+        return chuyenSangLichKhamResponse(daLuu);
+    }
+
+    // Bệnh nhân từ chối lịch khám đã được phân công
+    @Transactional
+    public LichKhamBenhNhanResponse tuChoiLichKham(
+            String tenDangNhap,
+            String maLich,
+            String lyDo
+    ) {
+        LichKham lichKham = timLichCuaBenhNhan(
+                tenDangNhap,
+                maLich
+        );
+
+        lichKham.tuChoi(lyDo);
+
+        LichKham daLuu = lichKhamRepository.save(lichKham);
+
+        return chuyenSangLichKhamResponse(daLuu);
+    }
+
+    // Chỉ cho phép bệnh nhân thao tác trên lịch của chính mình
+    private LichKham timLichCuaBenhNhan(
+            String tenDangNhap,
+            String maLich
+    ) {
+        LichKham lichKham = lichKhamRepository.findById(maLich)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Không tìm thấy lịch khám: " + maLich
+                ));
+
+        String tenChuSoHuu = lichKham.getBenhNhan()
+                .getTaiKhoan()
+                .getTenDangNhap();
+
+        if (!tenChuSoHuu.equals(tenDangNhap)) {
+            throw new IllegalArgumentException(
+                    "Bạn không có quyền thao tác trên lịch khám này"
+            );
+        }
+
+        return lichKham;
+    }
+
+    // Chuyển Entity thành DTO trả về cho bệnh nhân
+    private LichKhamBenhNhanResponse chuyenSangLichKhamResponse(
+            LichKham lichKham
+    ) {
+        return new LichKhamBenhNhanResponse(
+                lichKham.getMaLich(),
+                lichKham.getYeuCauGoc() != null
+                        ? lichKham.getYeuCauGoc().getMaYeuCau()
+                        : null,
+                lichKham.getBacSi().getMaBacSi(),
+                lichKham.getBacSi().getHoTen(),
+                lichKham.getPhongKham().getMaPhong(),
+                lichKham.getPhongKham().getTenPhong(),
+                lichKham.getNgayKham(),
+                lichKham.getGioBatDau(),
+                lichKham.getGioKetThuc(),
+                lichKham.getLyDoKham(),
+                lichKham.getTrangThai(),
+                lichKham.getLyDoHuyThayDoi(),
+                lichKham.getThoiGianTao()
+        );
+    }
+
 }
