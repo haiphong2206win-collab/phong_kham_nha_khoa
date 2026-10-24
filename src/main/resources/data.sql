@@ -1,4 +1,3 @@
-
 -- =========================================
 -- 1. TAI KHOAN CHU PHONG KHAM
 -- Username: chu_demo
@@ -15,7 +14,7 @@ INSERT INTO tai_khoan (
 ) VALUES (
              'TK_CHU_DEMO',
              'chu_demo',
-             '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+             'password',
              'CHU_PHONG_KHAM',
              'DANG_HOAT_DONG',
              CURRENT_TIMESTAMP
@@ -37,7 +36,7 @@ INSERT INTO tai_khoan (
 ) VALUES (
              'TK_BS_DEMO',
              'bacsi_demo',
-             '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+             'password',
              'BAC_SI',
              'DANG_HOAT_DONG',
              CURRENT_TIMESTAMP
@@ -165,7 +164,7 @@ INSERT INTO tai_khoan (
 ) VALUES (
              'TK_BS_DEMO2',
              'bacsi_demo2',
-             '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+             'password',
              'BAC_SI',
              'DANG_HOAT_DONG',
              CURRENT_TIMESTAMP
@@ -187,7 +186,7 @@ INSERT INTO tai_khoan (
 ) VALUES (
              'TK_BS_DEMO3',
              'bacsi_demo3',
-             '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+             'password',
              'BAC_SI',
              'DANG_HOAT_DONG',
              CURRENT_TIMESTAMP
@@ -381,7 +380,7 @@ INSERT INTO tai_khoan (
 ) VALUES (
              'TK_BN_DEMO',
              'benhnhan_demo',
-             '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+             'password',
              'BENH_NHAN',
              'DANG_HOAT_DONG',
              CURRENT_TIMESTAMP
