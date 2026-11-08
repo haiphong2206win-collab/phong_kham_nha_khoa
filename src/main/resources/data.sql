@@ -115,10 +115,10 @@ INSERT INTO ca_lam_viec (
 ) VALUES (
              'CA_SANG_DEMO',
              'BS_DEMO',
-             DATEADD('DAY', 1, CURRENT_DATE),
+             DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY),
              'CA_SANG',
-             TIME '08:00:00',
-             TIME '12:00:00',
+             '08:00:00',
+             '12:00:00',
              10,
              TRUE
          );
@@ -140,10 +140,10 @@ INSERT INTO ca_lam_viec (
 ) VALUES (
              'CA_CHIEU_DEMO',
              'BS_DEMO',
-             DATEADD('DAY', 1, CURRENT_DATE),
+             DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY),
              'CA_CHIEU',
-             TIME '13:00:00',
-             TIME '17:00:00',
+             '13:00:00',
+             '17:00:00',
              10,
              TRUE
          );
@@ -281,10 +281,10 @@ INSERT INTO ca_lam_viec (
 ) VALUES (
              'CA_SANG_BS2',
              'BS_DEMO2',
-             DATEADD('DAY', 1, CURRENT_DATE),
+             DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY),
              'CA_SANG',
-             TIME '08:00:00',
-             TIME '12:00:00',
+             '08:00:00',
+             '12:00:00',
              10,
              TRUE
          );
@@ -306,10 +306,10 @@ INSERT INTO ca_lam_viec (
 ) VALUES (
              'CA_CHIEU_BS2',
              'BS_DEMO2',
-             DATEADD('DAY', 1, CURRENT_DATE),
+             DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY),
              'CA_CHIEU',
-             TIME '13:00:00',
-             TIME '17:00:00',
+             '13:00:00',
+             '17:00:00',
              10,
              TRUE
          );
@@ -331,10 +331,10 @@ INSERT INTO ca_lam_viec (
 ) VALUES (
              'CA_SANG_BS3',
              'BS_DEMO3',
-             DATEADD('DAY', 1, CURRENT_DATE),
+             DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY),
              'CA_SANG',
-             TIME '08:00:00',
-             TIME '12:00:00',
+             '08:00:00',
+             '12:00:00',
              10,
              TRUE
          );
@@ -356,10 +356,10 @@ INSERT INTO ca_lam_viec (
 ) VALUES (
              'CA_CHIEU_BS3',
              'BS_DEMO3',
-             DATEADD('DAY', 1, CURRENT_DATE),
+             DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY),
              'CA_CHIEU',
-             TIME '13:00:00',
-             TIME '17:00:00',
+             '13:00:00',
+             '17:00:00',
              10,
              TRUE
          );
@@ -405,7 +405,7 @@ INSERT INTO benh_nhan (
              'BN_DEMO',
              'TK_BN_DEMO',
              'Le Minh Duc',
-             DATE '2004-05-15',
+             '2004-05-15',
              'NAM',
              '0900000005',
              'benhnhan.demo@example.com',

@@ -1,7 +1,6 @@
 package com.example.clinic.demo_phongkham_nhakhoa.service;
 
 import com.example.clinic.demo_phongkham_nhakhoa.dto.request.CapNhatHoSoBenhNhanRequest;
-import com.example.clinic.demo_phongkham_nhakhoa.dto.response.BenhNhanResponse;
 import com.example.clinic.demo_phongkham_nhakhoa.dto.response.LichKhamBenhNhanResponse;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.BenhNhan;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.LichKham;
