@@ -1,3 +1,4 @@
+
 package com.example.clinic.demo_phongkham_nhakhoa.config;
 
 import com.example.clinic.demo_phongkham_nhakhoa.security.JwtAuthenticationFilter;
@@ -18,76 +19,90 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class CauHinhBaoMat {
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-    @Bean
-    public FilterRegistrationBean<JwtAuthenticationFilter>
-    jwtFilterRegistration(JwtAuthenticationFilter filter) {
+        @Bean
+        public FilterRegistrationBean<JwtAuthenticationFilter> jwtFilterRegistration(JwtAuthenticationFilter filter) {
 
-        FilterRegistrationBean<JwtAuthenticationFilter> registration =
-                new FilterRegistrationBean<>(filter);
+                FilterRegistrationBean<JwtAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
 
-        // Tránh filter được đăng ký hai lần.
-        registration.setEnabled(false);
+                // Tránh filter được đăng ký hai lần.
+                registration.setEnabled(false);
 
-        return registration;
-    }
+                return registration;
+        }
 
-    @Bean
-    public SecurityFilterChain filterChain(
-            HttpSecurity http,
-            JwtAuthenticationFilter jwtAuthenticationFilter)
-            throws Exception {
+        @Bean
+        public SecurityFilterChain filterChain(
+                        HttpSecurity http,
+                        JwtAuthenticationFilter jwtAuthenticationFilter)
+                        throws Exception {
 
-        http
-                .csrf(csrf -> csrf.disable())
-                .headers(headers ->
-                        headers.frameOptions(frame -> frame.disable()))
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS))
-                .exceptionHandling(exceptions ->
-                        exceptions.authenticationEntryPoint(
-                                new HttpStatusEntryPoint(
-                                        HttpStatus.UNAUTHORIZED)))
-                .authorizeHttpRequests(auth -> auth
-                        // Dang ky, dang nhap cong khai
-                        .requestMatchers(
-                                "/api/v1/xac-thuc/dang-ky",
-                                "/api/v1/xac-thuc/dang-nhap",
-                                "/h2-console/**"
-                        ).permitAll()
+                http
+                                .csrf(csrf -> csrf.disable())
+                                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+                                .sessionManagement(session -> session.sessionCreationPolicy(
+                                                SessionCreationPolicy.STATELESS))
+                                .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(
+                                                new HttpStatusEntryPoint(
+                                                                HttpStatus.UNAUTHORIZED)))
+                                .authorizeHttpRequests(auth -> auth
 
-                        // Chu phong kham
-                        .requestMatchers(
-                                "/api/v1/quan-ly/**",
-                                "/api/v1/phan-cong/**",
-                                "/api/v1/tai-khoan/**"
-                        ).hasRole("CHU_PHONG_KHAM")
+                                                // Dang ky, dang nhap cong khai
+                                                .requestMatchers(
+                                                                "/api/v1/xac-thuc/dang-ky",
+                                                                "/api/v1/xac-thuc/dang-nhap",
+                                                                "/h2-console/**")
+                                                .permitAll()
 
-                        // Bac si
-                        .requestMatchers(
-                                "/api/v1/bac-si/**"
-                        ).hasRole("BAC_SI")
+                                                // ======================================
+                                                // LO TRINH DIEU TRI MAU
+                                                // ======================================
 
-                        // Benh nhan
-                        .requestMatchers(
-                                "/api/v1/benh-nhan/**",
-                                "/api/v1/yeu-cau-dat-lich/**",
-                                "/api/v1/thong-bao/**"
-                        ).hasRole("BENH_NHAN")
+                                                // Bac si va chu phong kham duoc xem
+                                                // lo trinh mau co dinh.
+                                                //
+                                                // Khong cung cap API them, sua,
+                                                // hoac xoa lo trinh mau.
+                                                .requestMatchers(
+                                                                "/api/v1/lo-trinh-mau",
+                                                                "/api/v1/lo-trinh-mau/**")
+                                                .hasAnyRole(
+                                                                "BAC_SI",
+                                                                "CHU_PHONG_KHAM")
 
-                        // Cac API con lai phai dang nhap
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(
-                        jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class
-                );
+                                                // ======================================
+                                                // QUYEN CU CUA NHOM - GIU NGUYEN
+                                                // ======================================
 
-        return http.build();
-    }
+                                                // Chu phong kham
+                                                .requestMatchers(
+                                                                "/api/v1/quan-ly/**",
+                                                                "/api/v1/phan-cong/**",
+                                                                "/api/v1/tai-khoan/**")
+                                                .hasRole("CHU_PHONG_KHAM")
+
+                                                // Bac si
+                                                .requestMatchers(
+                                                                "/api/v1/bac-si/**")
+                                                .hasRole("BAC_SI")
+
+                                                // Benh nhan
+                                                .requestMatchers(
+                                                                "/api/v1/benh-nhan/**",
+                                                                "/api/v1/yeu-cau-dat-lich/**",
+                                                                "/api/v1/thong-bao/**")
+                                                .hasRole("BENH_NHAN")
+
+                                                // Cac API con lai phai dang nhap
+                                                .anyRequest().authenticated())
+                                .addFilterBefore(
+                                                jwtAuthenticationFilter,
+                                                UsernamePasswordAuthenticationFilter.class);
+
+                return http.build();
+        }
 }
