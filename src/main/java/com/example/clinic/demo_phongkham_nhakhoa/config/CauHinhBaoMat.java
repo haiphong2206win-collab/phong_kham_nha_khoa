@@ -2,21 +2,27 @@
 package com.example.clinic.demo_phongkham_nhakhoa.config;
 
 import com.example.clinic.demo_phongkham_nhakhoa.security.JwtAuthenticationFilter;
+
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class CauHinhBaoMat {
 
         @Bean
@@ -25,11 +31,12 @@ public class CauHinhBaoMat {
         }
 
         @Bean
-        public FilterRegistrationBean<JwtAuthenticationFilter> jwtFilterRegistration(JwtAuthenticationFilter filter) {
+        public FilterRegistrationBean<JwtAuthenticationFilter> jwtFilterRegistration(
+                        JwtAuthenticationFilter filter) {
 
                 FilterRegistrationBean<JwtAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
 
-                // Tránh filter được đăng ký hai lần.
+                // Tranh filter duoc dang ky hai lan.
                 registration.setEnabled(false);
 
                 return registration;
@@ -43,15 +50,23 @@ public class CauHinhBaoMat {
 
                 http
                                 .csrf(csrf -> csrf.disable())
-                                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+
+                                .headers(headers -> headers.frameOptions(
+                                                frame -> frame.disable()))
+
                                 .sessionManagement(session -> session.sessionCreationPolicy(
                                                 SessionCreationPolicy.STATELESS))
+
                                 .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(
                                                 new HttpStatusEntryPoint(
                                                                 HttpStatus.UNAUTHORIZED)))
+
                                 .authorizeHttpRequests(auth -> auth
 
-                                                // Dang ky, dang nhap cong khai
+                                                // ======================================
+                                                // DANG KY, DANG NHAP CONG KHAI
+                                                // ======================================
+
                                                 .requestMatchers(
                                                                 "/api/v1/xac-thuc/dang-ky",
                                                                 "/api/v1/xac-thuc/dang-nhap",
@@ -63,13 +78,33 @@ public class CauHinhBaoMat {
                                                 // ======================================
 
                                                 // Bac si va chu phong kham duoc xem
-                                                // lo trinh mau co dinh.
+                                                // 3 lo trinh mau co dinh.
                                                 //
-                                                // Khong cung cap API them, sua,
+                                                // Khong cung cap API them, sua
                                                 // hoac xoa lo trinh mau.
+
                                                 .requestMatchers(
                                                                 "/api/v1/lo-trinh-mau",
                                                                 "/api/v1/lo-trinh-mau/**")
+                                                .hasAnyRole(
+                                                                "BAC_SI",
+                                                                "CHU_PHONG_KHAM")
+
+                                                // ======================================
+                                                // LO TRINH DIEU TRI RIENG
+                                                // MOI THEM - GIAI DOAN 2
+                                                // ======================================
+
+                                                // Chi bac si va chu phong kham
+                                                // duoc tao, xem, them, sua, bo buoi
+                                                // trong lo trinh dieu tri rieng.
+                                                //
+                                                // Benh nhan khong duoc truy cap
+                                                // cac API quan ly nay.
+
+                                                .requestMatchers(
+                                                                "/api/v1/lo-trinh-dieu-tri",
+                                                                "/api/v1/lo-trinh-dieu-tri/**")
                                                 .hasAnyRole(
                                                                 "BAC_SI",
                                                                 "CHU_PHONG_KHAM")
@@ -99,6 +134,7 @@ public class CauHinhBaoMat {
 
                                                 // Cac API con lai phai dang nhap
                                                 .anyRequest().authenticated())
+
                                 .addFilterBefore(
                                                 jwtAuthenticationFilter,
                                                 UsernamePasswordAuthenticationFilter.class);
