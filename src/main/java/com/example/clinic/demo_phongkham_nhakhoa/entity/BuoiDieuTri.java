@@ -30,10 +30,13 @@ public class BuoiDieuTri {
     // ==================================================
 
     // Lich kham hien tai cua buoi dieu tri.
-    // Co the NULL neu buoi chua duoc len lich.
+    // NULL neu chua co lich hoac lich cu da duoc go.
     // Khong thay doi Entity LichKham cua nhom.
+    //
+    // unique = true:
+    // Mot lich kham chi duoc lien ket toi da mot buoi dieu tri.
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_lich_kham", nullable = true)
+    @JoinColumn(name = "ma_lich_kham", nullable = true, unique = true)
     private LichKham lichKham;
 
     // ==================================================
@@ -69,8 +72,6 @@ public class BuoiDieuTri {
     private TrangThaiBuoiDieuTri trangThai;
 
     // 9. Danh dau buoi duoc them rieng
-    // true: bac si bo sung
-    // false: sao chep tu lo trinh mau
     @Column(name = "buoi_bo_sung", nullable = false)
     private boolean buoiBoSung;
 
@@ -211,7 +212,8 @@ public class BuoiDieuTri {
     }
 
     // ==================================================
-    // GIAI DOAN 3 - GAN LICH KHAM
+    // GAN LICH KHAM
+    // CAP NHAT: CHO PHEP DAT LAI LICH SAU KHI HUY
     // ==================================================
 
     public void ganLichKham(LichKham lichKhamMoi) {
@@ -226,7 +228,12 @@ public class BuoiDieuTri {
                     "Buoi nay da co lich kham");
         }
 
+        // Cho phep gan lich trong 3 truong hop:
+        // 1. Chua tung len lich.
+        // 2. Lich cu da bi huy.
+        // 3. Buoi tam hoan do benh nhan vang mat.
         if (this.trangThai != TrangThaiBuoiDieuTri.CHUA_LEN_LICH
+                && this.trangThai != TrangThaiBuoiDieuTri.LICH_DA_HUY
                 && this.trangThai != TrangThaiBuoiDieuTri.TAM_HOAN) {
 
             throw new IllegalStateException(
@@ -269,16 +276,16 @@ public class BuoiDieuTri {
                             + "vang mat hoac da hoan thanh");
         }
 
+        // Gan lich moi va chuyen sang DA_LEN_LICH.
         this.lichKham = lichKhamMoi;
         this.trangThai = TrangThaiBuoiDieuTri.DA_LEN_LICH;
     }
 
     // ==================================================
-    // GIAI DOAN 3 - GO LIEN KET LICH KHAM
+    // GO LIEN KET LICH KHAM
+    // CAP NHAT: PHAN BIET HUY LICH VA VANG MAT
     // ==================================================
 
-    // Chi duoc go sau khi lich da huy hoac vang mat.
-    // Service phai kiem tra quyen va lich su truoc khi go.
     public void goLichKham() {
 
         if (this.lichKham == null) {
@@ -306,12 +313,19 @@ public class BuoiDieuTri {
                             + "da huy hoac benh nhan vang mat");
         }
 
+        // Lich cu khong con la lich dang su dung.
+        // Buoi van duoc giu lai de co the dat lich moi.
         this.lichKham = null;
 
-        if (trangThaiLich == TrangThaiDatLich.VANG_MAT) {
-            this.trangThai = TrangThaiBuoiDieuTri.TAM_HOAN;
+        if (trangThaiLich == TrangThaiDatLich.DA_HUY) {
+
+            // KHAC CODE CU:
+            // Khong dua ve CHUA_LEN_LICH.
+            this.trangThai = TrangThaiBuoiDieuTri.LICH_DA_HUY;
+
         } else {
-            this.trangThai = TrangThaiBuoiDieuTri.CHUA_LEN_LICH;
+
+            this.trangThai = TrangThaiBuoiDieuTri.TAM_HOAN;
         }
     }
 
@@ -404,7 +418,6 @@ public class BuoiDieuTri {
     // DOI TRANG THAI BUOI - GIU NGUYEN
     // ==================================================
 
-    // Service se kiem tra quyen va lich kham
     public void doiTrangThai(
             TrangThaiBuoiDieuTri trangThaiMoi) {
 

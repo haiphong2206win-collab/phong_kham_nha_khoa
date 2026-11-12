@@ -3,248 +3,446 @@ package com.example.clinic.demo_phongkham_nhakhoa.service;
 
 import com.example.clinic.demo_phongkham_nhakhoa.entity.BuoiDieuTri;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.LichKham;
+import com.example.clinic.demo_phongkham_nhakhoa.entity.LoTrinhDieuTri;
 import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiBuoiDieuTri;
 import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiDatLich;
+import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiLoTrinh;
+import com.example.clinic.demo_phongkham_nhakhoa.event.LichKhamTrangThaiThayDoiEvent;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.BuoiDieuTriRepository;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.LichKhamRepository;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class LienKetDieuTriService {
 
-    private final BuoiDieuTriRepository buoiDieuTriRepository;
-    private final LichKhamRepository lichKhamRepository;
+        private final BuoiDieuTriRepository buoiDieuTriRepository;
+        private final LichKhamRepository lichKhamRepository;
 
-    public LienKetDieuTriService(
-            BuoiDieuTriRepository buoiDieuTriRepository,
-            LichKhamRepository lichKhamRepository) {
+        public LienKetDieuTriService(
+                        BuoiDieuTriRepository buoiDieuTriRepository,
+                        LichKhamRepository lichKhamRepository) {
 
-        this.buoiDieuTriRepository = buoiDieuTriRepository;
-        this.lichKhamRepository = lichKhamRepository;
-    }
-
-    // ==================================================
-    // 1. KIEM TRA QUYEN NGUOI DUNG
-    // ==================================================
-
-    private void kiemTraQuyen(LichKham lichKham) {
-
-        Authentication authentication = SecurityContextHolder.getContext()
-                .getAuthentication();
-
-        if (authentication == null
-                || !authentication.isAuthenticated()) {
-
-            throw new SecurityException(
-                    "Nguoi dung chua dang nhap");
+                this.buoiDieuTriRepository = buoiDieuTriRepository;
+                this.lichKhamRepository = lichKhamRepository;
         }
 
-        boolean laChuPhongKham = authentication
-                .getAuthorities()
-                .stream()
-                .anyMatch(quyen -> "ROLE_CHU_PHONG_KHAM"
-                        .equals(quyen.getAuthority()));
+        // ==================================================
+        // 1. KIEM TRA QUYEN NGUOI DUNG
+        // ==================================================
 
-        if (laChuPhongKham) {
-            return;
+        private void kiemTraQuyen(LichKham lichKham) {
+
+                Authentication authentication = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication();
+
+                if (authentication == null
+                                || !authentication.isAuthenticated()) {
+
+                        throw new SecurityException(
+                                        "Nguoi dung chua dang nhap");
+                }
+
+                boolean laChuPhongKham = authentication
+                                .getAuthorities()
+                                .stream()
+                                .anyMatch(quyen -> "ROLE_CHU_PHONG_KHAM"
+                                                .equals(quyen.getAuthority()));
+
+                if (laChuPhongKham) {
+                        return;
+                }
+
+                boolean laBacSi = authentication
+                                .getAuthorities()
+                                .stream()
+                                .anyMatch(quyen -> "ROLE_BAC_SI"
+                                                .equals(quyen.getAuthority()));
+
+                if (!laBacSi) {
+                        throw new SecurityException(
+                                        "Khong co quyen quan ly lich dieu tri");
+                }
+
+                if (lichKham.getBacSi() == null
+                                || lichKham.getBacSi().getTaiKhoan() == null) {
+
+                        throw new IllegalStateException(
+                                        "Lich kham chua co thong tin bac si");
+                }
+
+                String tenDangNhapBacSi = lichKham
+                                .getBacSi()
+                                .getTaiKhoan()
+                                .getTenDangNhap();
+
+                if (!tenDangNhapBacSi.equals(
+                                authentication.getName())) {
+
+                        throw new SecurityException(
+                                        "Bac si khong duoc phan cong lich nay");
+                }
         }
 
-        boolean laBacSi = authentication
-                .getAuthorities()
-                .stream()
-                .anyMatch(quyen -> "ROLE_BAC_SI"
-                        .equals(quyen.getAuthority()));
+        // ==================================================
+        // 2. TIM BUOI THUOC DUNG LO TRINH
+        // ==================================================
 
-        if (!laBacSi) {
-            throw new SecurityException(
-                    "Khong co quyen quan ly lich dieu tri");
+        private BuoiDieuTri timBuoi(
+                        String maLoTrinhDieuTri,
+                        String maBuoiDieuTri) {
+
+                BuoiDieuTri buoi = buoiDieuTriRepository
+                                .findById(maBuoiDieuTri)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Khong tim thay buoi dieu tri"));
+
+                String maLoTrinhThucTe = buoi
+                                .getLoTrinhDieuTri()
+                                .getMaLoTrinhDieuTri();
+
+                if (!maLoTrinhThucTe.equals(
+                                maLoTrinhDieuTri)) {
+
+                        throw new IllegalArgumentException(
+                                        "Buoi dieu tri khong thuoc lo trinh nay");
+                }
+
+                return buoi;
         }
 
-        if (lichKham.getBacSi() == null
-                || lichKham.getBacSi().getTaiKhoan() == null) {
+        // ==================================================
+        // 3. KIEM TRA LO TRINH CO THE TIEP TUC
+        // ==================================================
 
-            throw new IllegalStateException(
-                    "Lich kham chua co thong tin bac si");
+        private void kiemTraLoTrinhDangHoatDong(
+                        LoTrinhDieuTri loTrinh) {
+
+                TrangThaiLoTrinh trangThai = loTrinh.getTrangThai();
+
+                if (trangThai != TrangThaiLoTrinh.CHUA_BAT_DAU
+                                && trangThai != TrangThaiLoTrinh.DANG_DIEU_TRI) {
+
+                        throw new IllegalStateException(
+                                        "Lo trinh dang tam dung, "
+                                                        + "da hoan thanh hoac da huy");
+                }
         }
 
-        String tenDangNhapBacSi = lichKham
-                .getBacSi()
-                .getTaiKhoan()
-                .getTenDangNhap();
+        // ==================================================
+        // 4. LIEN KET BUOI VOI LICH KHAM CO SAN
+        // ==================================================
 
-        if (!authentication.getName()
-                .equals(tenDangNhapBacSi)) {
+        @Transactional
+        public BuoiDieuTri lienKetBuoiVoiLich(
+                        String maLoTrinhDieuTri,
+                        String maBuoiDieuTri,
+                        String maLichKham) {
 
-            throw new SecurityException(
-                    "Bac si khong duoc phan cong lich nay");
-        }
-    }
+                if (maLichKham == null
+                                || maLichKham.isBlank()) {
 
-    // ==================================================
-    // 2. TIM BUOI THUOC DUNG LO TRINH
-    // ==================================================
+                        throw new IllegalArgumentException(
+                                        "Ma lich kham khong duoc de trong");
+                }
 
-    private BuoiDieuTri timBuoi(
-            String maLoTrinhDieuTri,
-            String maBuoiDieuTri) {
+                BuoiDieuTri buoi = timBuoi(
+                                maLoTrinhDieuTri,
+                                maBuoiDieuTri);
 
-        BuoiDieuTri buoi = buoiDieuTriRepository
-                .findById(maBuoiDieuTri)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Khong tim thay buoi dieu tri"));
+                LichKham lichKham = lichKhamRepository
+                                .findById(maLichKham)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Khong tim thay lich kham"));
 
-        String maLoTrinhThucTe = buoi
-                .getLoTrinhDieuTri()
-                .getMaLoTrinhDieuTri();
+                kiemTraQuyen(lichKham);
 
-        if (!maLoTrinhThucTe.equals(maLoTrinhDieuTri)) {
-            throw new IllegalArgumentException(
-                    "Buoi dieu tri khong thuoc lo trinh nay");
-        }
+                kiemTraLoTrinhDangHoatDong(
+                                buoi.getLoTrinhDieuTri());
 
-        return buoi;
-    }
+                if (buoiDieuTriRepository
+                                .existsByLichKham_MaLich(maLichKham)) {
 
-    // ==================================================
-    // 3. LIEN KET BUOI VOI LICH KHAM CO SAN
-    // ==================================================
+                        throw new IllegalStateException(
+                                        "Lich kham da duoc lien ket voi buoi khac");
+                }
 
-    @Transactional
-    public BuoiDieuTri lienKetBuoiVoiLich(
-            String maLoTrinhDieuTri,
-            String maBuoiDieuTri,
-            String maLichKham) {
+                TrangThaiDatLich trangThaiLich = lichKham.getTrangThai();
 
-        if (maLichKham == null || maLichKham.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Ma lich kham khong duoc de trong");
-        }
+                if (trangThaiLich != TrangThaiDatLich.CHO_BENH_NHAN_XAC_NHAN
+                                && trangThaiLich != TrangThaiDatLich.DA_XAC_NHAN) {
 
-        BuoiDieuTri buoi = timBuoi(
-                maLoTrinhDieuTri,
-                maBuoiDieuTri);
+                        throw new IllegalStateException(
+                                        "Trang thai lich kham khong phu hop "
+                                                        + "de lien ket buoi dieu tri");
+                }
 
-        LichKham lichKham = lichKhamRepository
-                .findById(maLichKham)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Khong tim thay lich kham"));
+                buoi.ganLichKham(lichKham);
 
-        kiemTraQuyen(lichKham);
-
-        if (buoiDieuTriRepository
-                .existsByLichKham_MaLich(maLichKham)) {
-
-            throw new IllegalStateException(
-                    "Lich kham da duoc lien ket voi buoi khac");
+                return buoiDieuTriRepository.save(buoi);
         }
 
-        // Chi lien ket lich dang cho xac nhan
-        // hoac da duoc benh nhan xac nhan.
-        TrangThaiDatLich trangThaiLich = lichKham.getTrangThai();
+        // ==================================================
+        // 5. GO LICH KHAM KHOI BUOI
+        // ==================================================
 
-        if (trangThaiLich != TrangThaiDatLich.CHO_BENH_NHAN_XAC_NHAN
-                && trangThaiLich != TrangThaiDatLich.DA_XAC_NHAN) {
+        @Transactional
+        public BuoiDieuTri goLichKhoiBuoi(
+                        String maLoTrinhDieuTri,
+                        String maBuoiDieuTri) {
 
-            throw new IllegalStateException(
-                    "Trang thai lich kham khong phu hop "
-                            + "de lien ket buoi dieu tri");
+                BuoiDieuTri buoi = timBuoi(
+                                maLoTrinhDieuTri,
+                                maBuoiDieuTri);
+
+                LichKham lichKham = buoi.getLichKham();
+
+                if (lichKham == null) {
+                        throw new IllegalStateException(
+                                        "Buoi dieu tri chua co lich kham");
+                }
+
+                kiemTraQuyen(lichKham);
+
+                buoi.goLichKham();
+
+                return buoiDieuTriRepository.save(buoi);
         }
 
-        // Entity BuoiDieuTri tu kiem tra
-        // benh nhan va trang thai buoi.
-        buoi.ganLichKham(lichKham);
+        // ==================================================
+        // 6. DONG BO THU CONG - GIU NGUYEN API CU
+        // ==================================================
 
-        return buoiDieuTriRepository.save(buoi);
-    }
+        @Transactional
+        public BuoiDieuTri dongBoTrangThai(
+                        String maLoTrinhDieuTri,
+                        String maBuoiDieuTri) {
 
-    // ==================================================
-    // 4. GO LICH KHAM KHOI BUOI
-    // ==================================================
+                BuoiDieuTri buoi = timBuoi(
+                                maLoTrinhDieuTri,
+                                maBuoiDieuTri);
 
-    @Transactional
-    public BuoiDieuTri goLichKhoiBuoi(
-            String maLoTrinhDieuTri,
-            String maBuoiDieuTri) {
+                LichKham lichKham = buoi.getLichKham();
 
-        BuoiDieuTri buoi = timBuoi(
-                maLoTrinhDieuTri,
-                maBuoiDieuTri);
+                if (lichKham == null) {
+                        throw new IllegalStateException(
+                                        "Buoi dieu tri chua co lich kham");
+                }
 
-        LichKham lichKham = buoi.getLichKham();
+                kiemTraQuyen(lichKham);
 
-        if (lichKham == null) {
-            throw new IllegalStateException(
-                    "Buoi dieu tri chua co lich kham");
+                return xuLyDongBo(
+                                buoi,
+                                lichKham.getTrangThai());
         }
 
-        kiemTraQuyen(lichKham);
+        // ==================================================
+        // 7. LANG NGHE SU KIEN DOI TRANG THAI LICH
+        // ==================================================
 
-        // Entity chi cho phep go lich
-        // da huy hoac benh nhan vang mat.
-        buoi.goLichKham();
+        @EventListener
+        @Transactional(propagation = Propagation.MANDATORY)
+        public void khiLichKhamThayDoi(
+                        LichKhamTrangThaiThayDoiEvent event) {
 
-        return buoiDieuTriRepository.save(buoi);
-    }
+                if (event.maLich() == null
+                                || event.maLich().isBlank()
+                                || event.trangThaiMoi() == null) {
 
-    // ==================================================
-    // 5. DONG BO TRANG THAI TU LICH KHAM
-    // ==================================================
+                        throw new IllegalArgumentException(
+                                        "Su kien lich kham khong hop le");
+                }
 
-    @Transactional
-    public BuoiDieuTri dongBoTrangThai(
-            String maLoTrinhDieuTri,
-            String maBuoiDieuTri) {
+                Optional<BuoiDieuTri> ketQua = buoiDieuTriRepository
+                                .findByLichKham_MaLich(
+                                                event.maLich());
 
-        BuoiDieuTri buoi = timBuoi(
-                maLoTrinhDieuTri,
-                maBuoiDieuTri);
+                // Lich kham thong thuong, khong thuoc lo trinh.
+                if (ketQua.isEmpty()) {
+                        return;
+                }
 
-        LichKham lichKham = buoi.getLichKham();
+                BuoiDieuTri buoi = ketQua.get();
 
-        if (lichKham == null) {
-            throw new IllegalStateException(
-                    "Buoi dieu tri chua co lich kham");
+                // Dam bao su kien phan anh trang thai hien tai.
+                if (buoi.getLichKham() == null
+                                || buoi.getLichKham().getTrangThai() != event.trangThaiMoi()) {
+
+                        throw new IllegalStateException(
+                                        "Trang thai lich kham khong khop su kien");
+                }
+
+                // Luong noi bo, khong kiem tra lai quyen bac si.
+                // Quyen da duoc kiem tra tai service tao su kien.
+                xuLyDongBo(buoi, event.trangThaiMoi());
         }
 
-        kiemTraQuyen(lichKham);
+        // ==================================================
+        // 8. LOGIC DONG BO DUNG CHUNG
+        // ==================================================
 
-        TrangThaiDatLich trangThaiLich = lichKham.getTrangThai();
+        private BuoiDieuTri xuLyDongBo(
+                        BuoiDieuTri buoi,
+                        TrangThaiDatLich trangThaiLich) {
 
-        TrangThaiBuoiDieuTri trangThaiBuoi = buoi.getTrangThai();
+                if (trangThaiLich == null) {
+                        throw new IllegalStateException(
+                                        "Lich kham chua co trang thai");
+                }
 
-        // Lich bi huy hoac benh nhan vang mat
-        if (trangThaiLich == TrangThaiDatLich.DA_HUY
-                || trangThaiLich == TrangThaiDatLich.VANG_MAT) {
+                TrangThaiBuoiDieuTri trangThaiBuoi = buoi.getTrangThai();
 
-            buoi.goLichKham();
-            return buoiDieuTriRepository.save(buoi);
+                // Lich huy hoac benh nhan vang mat:
+                // Go lien ket de co the dat lich lai.
+                if (trangThaiLich == TrangThaiDatLich.DA_HUY
+                                || trangThaiLich == TrangThaiDatLich.VANG_MAT) {
+
+                        buoi.goLichKham();
+
+                        return buoiDieuTriRepository.save(buoi);
+                }
+
+                boolean coThayDoi = false;
+
+                // Bac si bat dau kham.
+                if (trangThaiLich == TrangThaiDatLich.DANG_KHAM) {
+
+                        if (trangThaiBuoi == TrangThaiBuoiDieuTri.DA_LEN_LICH) {
+
+                                kiemTraLoTrinhDangHoatDong(
+                                                buoi.getLoTrinhDieuTri());
+
+                                buoi.doiTrangThai(
+                                                TrangThaiBuoiDieuTri.DANG_THUC_HIEN);
+
+                                coThayDoi = true;
+
+                        } else if (trangThaiBuoi != TrangThaiBuoiDieuTri.DANG_THUC_HIEN) {
+
+                                throw new IllegalStateException(
+                                                "Trang thai buoi khong phu hop "
+                                                                + "de bat dau kham");
+                        }
+                }
+
+                // Bac si hoan thanh kham.
+                if (trangThaiLich == TrangThaiDatLich.HOAN_THANH) {
+
+                        if (trangThaiBuoi == TrangThaiBuoiDieuTri.DANG_THUC_HIEN
+                                        || trangThaiBuoi == TrangThaiBuoiDieuTri.DA_LEN_LICH) {
+
+                                kiemTraLoTrinhDangHoatDong(
+                                                buoi.getLoTrinhDieuTri());
+
+                                buoi.doiTrangThai(
+                                                TrangThaiBuoiDieuTri.HOAN_THANH);
+
+                                coThayDoi = true;
+
+                        } else if (trangThaiBuoi != TrangThaiBuoiDieuTri.HOAN_THANH) {
+
+                                throw new IllegalStateException(
+                                                "Trang thai buoi khong phu hop "
+                                                                + "de hoan thanh kham");
+                        }
+                }
+
+                // DA_DEN, DA_XAC_NHAN va cac trang thai khac:
+                // Khong can thay doi trang thai buoi.
+                if (!coThayDoi) {
+                        return buoi;
+                }
+
+                BuoiDieuTri daLuu = buoiDieuTriRepository.save(buoi);
+
+                // Sau khi buoi thay doi, tinh lai lo trinh.
+                capNhatTrangThaiLoTrinh(
+                                daLuu.getLoTrinhDieuTri());
+
+                return daLuu;
         }
 
-        // Bac si dang kham
-        if (trangThaiLich == TrangThaiDatLich.DANG_KHAM) {
+        // ==================================================
+        // 9. TU DONG CAP NHAT TRANG THAI LO TRINH
+        // ==================================================
 
-            if (trangThaiBuoi == TrangThaiBuoiDieuTri.DA_LEN_LICH) {
+        @Transactional(propagation = Propagation.MANDATORY)
+        public void capNhatTrangThaiLoTrinh(
+                        LoTrinhDieuTri loTrinh) {
 
-                buoi.doiTrangThai(
-                        TrangThaiBuoiDieuTri.DANG_THUC_HIEN);
-            }
+                if (loTrinh == null) {
+                        throw new IllegalArgumentException(
+                                        "Lo trinh khong duoc de trong");
+                }
+
+                TrangThaiLoTrinh trangThaiHienTai = loTrinh.getTrangThai();
+
+                // Khong tu dong mo lai lo trinh da dong.
+                if (trangThaiHienTai == TrangThaiLoTrinh.TAM_DUNG
+                                || trangThaiHienTai == TrangThaiLoTrinh.DA_HUY
+                                || trangThaiHienTai == TrangThaiLoTrinh.HOAN_THANH) {
+                        return;
+                }
+
+                List<BuoiDieuTri> danhSachBuoi = buoiDieuTriRepository
+                                .findByLoTrinhDieuTri_MaLoTrinhDieuTriOrderBySoThuTuAsc(
+                                                loTrinh.getMaLoTrinhDieuTri());
+
+                int soBuoiDangApDung = 0;
+                int soBuoiHoanThanh = 0;
+                boolean coBuoiDangThucHien = false;
+
+                for (BuoiDieuTri buoi : danhSachBuoi) {
+
+                        if (buoi.getTrangThai() == TrangThaiBuoiDieuTri.DA_BO) {
+                                continue;
+                        }
+
+                        soBuoiDangApDung++;
+
+                        if (buoi.getTrangThai() == TrangThaiBuoiDieuTri.HOAN_THANH) {
+                                soBuoiHoanThanh++;
+                        }
+
+                        if (buoi.getTrangThai() == TrangThaiBuoiDieuTri.DANG_THUC_HIEN) {
+                                coBuoiDangThucHien = true;
+                        }
+                }
+
+                // Chi hoan thanh neu con it nhat 1 buoi ap dung
+                // va tat ca cac buoi do deu da hoan thanh.
+                if (soBuoiDangApDung > 0
+                                && soBuoiHoanThanh == soBuoiDangApDung) {
+
+                        loTrinh.doiTrangThai(
+                                        TrangThaiLoTrinh.HOAN_THANH);
+
+                        return;
+                }
+
+                // Da bat dau hoac da hoan thanh it nhat 1 buoi.
+                if (coBuoiDangThucHien
+                                || soBuoiHoanThanh > 0) {
+
+                        if (trangThaiHienTai != TrangThaiLoTrinh.DANG_DIEU_TRI) {
+
+                                loTrinh.doiTrangThai(
+                                                TrangThaiLoTrinh.DANG_DIEU_TRI);
+                        }
+                }
+
+                // Khong dua lo trinh da bat dau
+                // quay lai CHUA_BAT_DAU.
+                // Entity lo trinh duoc JPA theo doi va luu
+                // trong transaction dang hoat dong.
         }
-
-        // Bac si hoan thanh lich kham
-        if (trangThaiLich == TrangThaiDatLich.HOAN_THANH) {
-
-            if (trangThaiBuoi == TrangThaiBuoiDieuTri.DANG_THUC_HIEN
-                    || trangThaiBuoi == TrangThaiBuoiDieuTri.DA_LEN_LICH) {
-
-                buoi.doiTrangThai(
-                        TrangThaiBuoiDieuTri.HOAN_THANH);
-            }
-        }
-
-        return buoiDieuTriRepository.save(buoi);
-    }
 }
