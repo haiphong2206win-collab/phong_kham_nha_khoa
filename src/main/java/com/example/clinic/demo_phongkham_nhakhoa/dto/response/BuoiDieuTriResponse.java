@@ -7,6 +7,10 @@ import java.time.LocalDateTime;
 
 public class BuoiDieuTriResponse {
 
+    // ==================================================
+    // GIAI DOAN 2 - CAC THUOC TINH CU
+    // ==================================================
+
     private String maBuoiDieuTri;
 
     private String maLoTrinhDieuTri;
@@ -35,7 +39,18 @@ public class BuoiDieuTriResponse {
 
     private Long version;
 
-    // Constructor
+    // ==================================================
+    // GIAI DOAN 3 - THUOC TINH MOI
+    // ==================================================
+
+    // Ma lich kham dang lien ket voi buoi dieu tri
+    // Null neu buoi chua duoc len lich
+    private String maLichKham;
+
+    // ==================================================
+    // CONSTRUCTOR CU - GIU NGUYEN 14 THAM SO
+    // ==================================================
+
     public BuoiDieuTriResponse(
             String maBuoiDieuTri,
             String maLoTrinhDieuTri,
@@ -52,6 +67,46 @@ public class BuoiDieuTriResponse {
             LocalDateTime thoiGianCapNhat,
             Long version) {
 
+        this(
+                maBuoiDieuTri,
+                maLoTrinhDieuTri,
+                soThuTu,
+                tenBuoi,
+                noiDung,
+                khoangCachMin,
+                khoangCachMax,
+                ghiChu,
+                trangThai,
+                buoiBoSung,
+                lyDoBo,
+                thoiGianTao,
+                thoiGianCapNhat,
+                version,
+                null);
+    }
+
+    // ==================================================
+    // CONSTRUCTOR MOI - GIAI DOAN 3
+    // 15 THAM SO - CO THEM MA LICH KHAM
+    // ==================================================
+
+    public BuoiDieuTriResponse(
+            String maBuoiDieuTri,
+            String maLoTrinhDieuTri,
+            int soThuTu,
+            String tenBuoi,
+            String noiDung,
+            Integer khoangCachMin,
+            Integer khoangCachMax,
+            String ghiChu,
+            TrangThaiBuoiDieuTri trangThai,
+            boolean buoiBoSung,
+            String lyDoBo,
+            LocalDateTime thoiGianTao,
+            LocalDateTime thoiGianCapNhat,
+            Long version,
+            String maLichKham) {
+
         this.maBuoiDieuTri = maBuoiDieuTri;
         this.maLoTrinhDieuTri = maLoTrinhDieuTri;
         this.soThuTu = soThuTu;
@@ -66,9 +121,12 @@ public class BuoiDieuTriResponse {
         this.thoiGianTao = thoiGianTao;
         this.thoiGianCapNhat = thoiGianCapNhat;
         this.version = version;
+        this.maLichKham = maLichKham;
     }
 
-    // GETTERS
+    // ==================================================
+    // GETTERS CU - GIU NGUYEN
+    // ==================================================
 
     public String getMaBuoiDieuTri() {
         return maBuoiDieuTri;
@@ -124,5 +182,13 @@ public class BuoiDieuTriResponse {
 
     public Long getVersion() {
         return version;
+    }
+
+    // ==================================================
+    // GETTER MOI - GIAI DOAN 3
+    // ==================================================
+
+    public String getMaLichKham() {
+        return maLichKham;
     }
 }

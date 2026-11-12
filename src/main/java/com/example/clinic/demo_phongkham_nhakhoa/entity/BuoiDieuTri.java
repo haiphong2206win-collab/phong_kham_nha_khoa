@@ -2,6 +2,7 @@
 package com.example.clinic.demo_phongkham_nhakhoa.entity;
 
 import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiBuoiDieuTri;
+import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiDatLich;
 
 import jakarta.persistence.*;
 
@@ -23,6 +24,21 @@ public class BuoiDieuTri {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ma_lo_trinh_dieu_tri", nullable = false)
     private LoTrinhDieuTri loTrinhDieuTri;
+
+    // ==================================================
+    // GIAI DOAN 3 - LIEN KET VOI LICH KHAM
+    // ==================================================
+
+    // Lich kham hien tai cua buoi dieu tri.
+    // Co the NULL neu buoi chua duoc len lich.
+    // Khong thay doi Entity LichKham cua nhom.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ma_lich_kham", nullable = true)
+    private LichKham lichKham;
+
+    // ==================================================
+    // CAC THUOC TINH CU - GIU NGUYEN
+    // ==================================================
 
     // 3. Thu tu buoi trong lo trinh
     @Column(name = "so_thu_tu", nullable = false)
@@ -77,7 +93,7 @@ public class BuoiDieuTri {
     protected BuoiDieuTri() {
     }
 
-    // Constructor tao buoi dieu tri
+    // Constructor tao buoi dieu tri - GIU NGUYEN
     public BuoiDieuTri(
             LoTrinhDieuTri loTrinhDieuTri,
             int soThuTu,
@@ -126,7 +142,9 @@ public class BuoiDieuTri {
         thoiGianCapNhat = LocalDateTime.now();
     }
 
-    // GETTERS
+    // ==================================================
+    // GETTERS CU - GIU NGUYEN
+    // ==================================================
 
     public String getMaBuoiDieuTri() {
         return maBuoiDieuTri;
@@ -184,7 +202,122 @@ public class BuoiDieuTri {
         return version;
     }
 
-    // CAP NHAT NOI DUNG BUOI
+    // ==================================================
+    // GIAI DOAN 3 - GETTER LICH KHAM
+    // ==================================================
+
+    public LichKham getLichKham() {
+        return lichKham;
+    }
+
+    // ==================================================
+    // GIAI DOAN 3 - GAN LICH KHAM
+    // ==================================================
+
+    public void ganLichKham(LichKham lichKhamMoi) {
+
+        if (lichKhamMoi == null) {
+            throw new IllegalArgumentException(
+                    "Lich kham khong duoc de trong");
+        }
+
+        if (this.lichKham != null) {
+            throw new IllegalStateException(
+                    "Buoi nay da co lich kham");
+        }
+
+        if (this.trangThai != TrangThaiBuoiDieuTri.CHUA_LEN_LICH
+                && this.trangThai != TrangThaiBuoiDieuTri.TAM_HOAN) {
+
+            throw new IllegalStateException(
+                    "Trang thai buoi khong cho phep gan lich");
+        }
+
+        if (loTrinhDieuTri == null
+                || loTrinhDieuTri.getBenhNhan() == null
+                || lichKhamMoi.getBenhNhan() == null) {
+
+            throw new IllegalStateException(
+                    "Thieu thong tin benh nhan");
+        }
+
+        String maBnLoTrinh = loTrinhDieuTri
+                .getBenhNhan()
+                .getMaBenhNhan();
+
+        String maBnLich = lichKhamMoi
+                .getBenhNhan()
+                .getMaBenhNhan();
+
+        if (maBnLoTrinh == null
+                || !maBnLoTrinh.equals(maBnLich)) {
+
+            throw new IllegalArgumentException(
+                    "Benh nhan cua lich kham "
+                            + "khong trung voi lo trinh");
+        }
+
+        TrangThaiDatLich trangThaiLich = lichKhamMoi.getTrangThai();
+
+        if (trangThaiLich == null
+                || trangThaiLich == TrangThaiDatLich.DA_HUY
+                || trangThaiLich == TrangThaiDatLich.VANG_MAT
+                || trangThaiLich == TrangThaiDatLich.HOAN_THANH) {
+
+            throw new IllegalStateException(
+                    "Khong the gan lich da huy, "
+                            + "vang mat hoac da hoan thanh");
+        }
+
+        this.lichKham = lichKhamMoi;
+        this.trangThai = TrangThaiBuoiDieuTri.DA_LEN_LICH;
+    }
+
+    // ==================================================
+    // GIAI DOAN 3 - GO LIEN KET LICH KHAM
+    // ==================================================
+
+    // Chi duoc go sau khi lich da huy hoac vang mat.
+    // Service phai kiem tra quyen va lich su truoc khi go.
+    public void goLichKham() {
+
+        if (this.lichKham == null) {
+            throw new IllegalStateException(
+                    "Buoi dieu tri chua co lich kham");
+        }
+
+        if (this.trangThai == TrangThaiBuoiDieuTri.HOAN_THANH
+                || this.trangThai == TrangThaiBuoiDieuTri.DA_BO
+                || this.trangThai == TrangThaiBuoiDieuTri.DANG_THUC_HIEN) {
+
+            throw new IllegalStateException(
+                    "Khong the go lich cua buoi "
+                            + "da hoan thanh, da bo "
+                            + "hoac dang thuc hien");
+        }
+
+        TrangThaiDatLich trangThaiLich = this.lichKham.getTrangThai();
+
+        if (trangThaiLich != TrangThaiDatLich.DA_HUY
+                && trangThaiLich != TrangThaiDatLich.VANG_MAT) {
+
+            throw new IllegalStateException(
+                    "Chi duoc go lien ket khi lich "
+                            + "da huy hoac benh nhan vang mat");
+        }
+
+        this.lichKham = null;
+
+        if (trangThaiLich == TrangThaiDatLich.VANG_MAT) {
+            this.trangThai = TrangThaiBuoiDieuTri.TAM_HOAN;
+        } else {
+            this.trangThai = TrangThaiBuoiDieuTri.CHUA_LEN_LICH;
+        }
+    }
+
+    // ==================================================
+    // CAP NHAT NOI DUNG BUOI - GIU NGUYEN
+    // ==================================================
 
     public void capNhatThongTin(
             String tenBuoiMoi,
@@ -233,8 +366,9 @@ public class BuoiDieuTri {
         this.ghiChu = ghiChuMoi;
     }
 
-    // DANH DAU BO BUOI
-    // Khong xoa ban ghi trong MySQL
+    // ==================================================
+    // DANH DAU BO BUOI - GIU NGUYEN
+    // ==================================================
 
     public void boBuoi(String lyDo) {
 
@@ -266,9 +400,11 @@ public class BuoiDieuTri {
         this.lyDoBo = lyDo.trim();
     }
 
-    // DOI TRANG THAI BUOI
-    // Service se kiem tra quyen va lich kham
+    // ==================================================
+    // DOI TRANG THAI BUOI - GIU NGUYEN
+    // ==================================================
 
+    // Service se kiem tra quyen va lich kham
     public void doiTrangThai(
             TrangThaiBuoiDieuTri trangThaiMoi) {
 
@@ -287,7 +423,10 @@ public class BuoiDieuTri {
         this.trangThai = trangThaiMoi;
     }
 
-    // DUNG KHI SAP XEP LAI THU TU
+    // ==================================================
+    // SAP XEP LAI THU TU - GIU NGUYEN
+    // ==================================================
+
     public void capNhatSoThuTu(int soThuTuMoi) {
 
         if (soThuTuMoi <= 0) {
