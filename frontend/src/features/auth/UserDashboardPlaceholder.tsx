@@ -1,16 +1,18 @@
 import React from 'react';
-import { LogOut, Stethoscope, User, Building2, ShieldCheck, Clock, KeyRound } from 'lucide-react';
+import { LogOut, Stethoscope, User, Building2, ShieldCheck, Clock, KeyRound, Home } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { AuthSession } from '@/types/auth';
 
 interface UserDashboardPlaceholderProps {
   session: AuthSession;
   onLogout: () => void;
+  onGoToLanding?: () => void;
 }
 
 export const UserDashboardPlaceholder: React.FC<UserDashboardPlaceholderProps> = ({
   session,
   onLogout,
+  onGoToLanding,
 }) => {
   const { user } = session;
   if (!user) return null;
@@ -72,15 +74,29 @@ export const UserDashboardPlaceholder: React.FC<UserDashboardPlaceholderProps> =
             </div>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onLogout}
-            className="text-dental-error hover:bg-dental-error-bg hover:border-dental-error/40"
-          >
-            <LogOut className="h-3.5 w-3.5 mr-1.5" />
-            <span>Đăng xuất</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            {onGoToLanding && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onGoToLanding}
+                className="text-dental-text border-dental-border hover:bg-dental-mint/30"
+              >
+                <Home className="h-3.5 w-3.5 mr-1.5 text-dental-accent" />
+                <span>Trang chủ</span>
+              </Button>
+            )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onLogout}
+              className="text-dental-error hover:bg-dental-error-bg hover:border-dental-error/40"
+            >
+              <LogOut className="h-3.5 w-3.5 mr-1.5" />
+              <span>Đăng xuất</span>
+            </Button>
+          </div>
         </div>
 
         {/* User Details Card */}

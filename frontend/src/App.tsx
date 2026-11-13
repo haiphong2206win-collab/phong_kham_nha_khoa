@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { authService } from '@/services/auth.service';
 import type { AuthResponse, AuthSession } from '@/types/auth';
+import { LandingPage } from '@/pages/LandingPage';
 import { AuthLayout } from '@/features/auth/AuthLayout';
 import { LoginForm } from '@/features/auth/LoginForm';
 import { RegisterForm } from '@/features/auth/RegisterForm';
 import { UserDashboardPlaceholder } from '@/features/auth/UserDashboardPlaceholder';
 import { Toast } from '@/components/ui/Toast';
 
+type ViewMode = 'landing' | 'auth' | 'dashboard';
+
 export const App: React.FC = () => {
+  const [viewMode, setViewMode] = useState<ViewMode>('landing');
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [session, setSession] = useState<AuthSession>(() => authService.getStoredSession());
   const [toast, setToast] = useState<{
@@ -22,6 +26,7 @@ export const App: React.FC = () => {
 
     const handleExpired = () => {
       setSession(authService.getStoredSession());
+      setViewMode('auth');
       setActiveTab('login');
       setToast({
         message: 'Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.',
@@ -35,6 +40,22 @@ export const App: React.FC = () => {
     };
   }, []);
 
+  const handleOpenAuth = (tab: 'login' | 'register') => {
+    setActiveTab(tab);
+    setViewMode('auth');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenDashboard = () => {
+    setViewMode('dashboard');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBackToLanding = () => {
+    setViewMode('landing');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleAuthSuccess = (authData: AuthResponse) => {
     authService.saveSession(authData);
     setSession({
@@ -46,6 +67,7 @@ export const App: React.FC = () => {
       token: authData.token,
       isAuthenticated: true,
     });
+    setViewMode('dashboard');
     setToast({
       message: `Chào mừng ${authData.tenDangNhap}! Xác thực thành công.`,
       type: 'success',
@@ -55,6 +77,7 @@ export const App: React.FC = () => {
   const handleLogout = () => {
     authService.logout();
     setSession(authService.getStoredSession());
+    setViewMode('landing');
     setActiveTab('login');
     setToast({
       message: 'Bạn đã đăng xuất thành công khỏi hệ thống.',
@@ -62,11 +85,9 @@ export const App: React.FC = () => {
     });
   };
 
-  const isLoggedIn = session.isAuthenticated && session.user !== null;
-
   return (
     <div className="min-h-screen bg-dental-bg text-dental-text font-sans antialiased selection:bg-dental-mint selection:text-dental-accentDark">
-      {/* Toast thông báo phản hồi hệ thống */}
+      {/* Toast thông báo toàn cục */}
       {toast && (
         <Toast
           message={toast.message}
@@ -75,11 +96,30 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* Điều hướng giao diện theo trạng thái đăng nhập */}
-      {isLoggedIn ? (
-        <UserDashboardPlaceholder session={session} onLogout={handleLogout} />
-      ) : (
-        <AuthLayout activeTab={activeTab} onTabChange={setActiveTab}>
+      {/* Điều hướng giao diện mượt mà không mất session */}
+      {viewMode === 'landing' && (
+        <LandingPage
+          session={session}
+          onOpenAuth={handleOpenAuth}
+          onOpenDashboard={handleOpenDashboard}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {viewMode === 'dashboard' && (
+        <UserDashboardPlaceholder
+          session={session}
+          onLogout={handleLogout}
+          onGoToLanding={handleBackToLanding}
+        />
+      )}
+
+      {viewMode === 'auth' && (
+        <AuthLayout
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onBackToHome={handleBackToLanding}
+        >
           {activeTab === 'login' ? (
             <LoginForm
               onSuccess={handleAuthSuccess}

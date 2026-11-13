@@ -1,16 +1,18 @@
 import React from 'react';
-import { Sparkles, CalendarCheck, ShieldCheck, HeartPulse } from 'lucide-react';
+import { Sparkles, CalendarCheck, ShieldCheck, HeartPulse, ArrowLeft } from 'lucide-react';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
   activeTab: 'login' | 'register';
   onTabChange: (tab: 'login' | 'register') => void;
+  onBackToHome?: () => void;
 }
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({
   children,
   activeTab,
   onTabChange,
+  onBackToHome,
 }) => {
   return (
     <div className="min-h-screen w-full bg-dental-bg flex items-center justify-center p-4 sm:p-6 lg:p-8">
@@ -20,25 +22,39 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
         <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-between">
           <div>
             {/* Mobile / Header Brand Identity */}
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-10 w-10 rounded-2xl bg-dental-mint flex items-center justify-center text-dental-accent shadow-sm">
-                <svg
-                  className="h-6 w-6"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
+            <div className="flex items-center justify-between gap-3 mb-8">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-dental-mint flex items-center justify-center text-dental-accent shadow-sm">
+                  <svg
+                    className="h-6 w-6"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M12 2C7.5 2 4 4.5 4 8c0 3 1.5 5 2.5 7.5C7.5 18 8 22 10 22s2.5-2.5 2.5-4c0-1.5-.5-3-.5-4s1-2 2-2 2 1 2 2-.5 2.5-.5 4c0 1.5.5 4 2.5 4s2.5-4 3.5-6.5C21.5 13 23 11 23 8c0-3.5-3.5-6-8-6-1.5 0-2.5.5-3 1-.5-.5-1.5-1-3-1z" />
+                  </svg>
+                </div>
+                <div>
+                  <h1 className="text-base font-bold text-dental-text tracking-tight">
+                    Nha Khoa Nụ Cười Xanh
+                  </h1>
+                  <p className="text-xs text-dental-muted">
+                    Hệ thống quản lý lộ trình điều trị & lịch khám
+                  </p>
+                </div>
+              </div>
+
+              {onBackToHome && (
+                <button
+                  type="button"
+                  onClick={onBackToHome}
+                  className="px-3 py-1.5 rounded-xl border border-dental-border bg-dental-bg hover:bg-dental-mint/30 text-xs font-semibold text-dental-text transition-colors flex items-center gap-1.5 shrink-0"
+                  title="Quay lại trang chủ"
                 >
-                  <path d="M12 2C7.5 2 4 4.5 4 8c0 3 1.5 5 2.5 7.5C7.5 18 8 22 10 22s2.5-2.5 2.5-4c0-1.5-.5-3-.5-4s1-2 2-2 2 1 2 2-.5 2.5-.5 4c0 1.5.5 4 2.5 4s2.5-4 3.5-6.5C21.5 13 23 11 23 8c0-3.5-3.5-6-8-6-1.5 0-2.5.5-3 1-.5-.5-1.5-1-3-1z" />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-base font-bold text-dental-text tracking-tight">
-                  Nha Khoa Nụ Cười Xanh
-                </h1>
-                <p className="text-xs text-dental-muted">
-                  Hệ thống quản lý lộ trình điều trị & lịch khám
-                </p>
-              </div>
+                  <ArrowLeft className="h-3.5 w-3.5 text-dental-accent" />
+                  <span>Trang chủ</span>
+                </button>
+              )}
             </div>
 
             {/* Auth Navigation Tabs */}
