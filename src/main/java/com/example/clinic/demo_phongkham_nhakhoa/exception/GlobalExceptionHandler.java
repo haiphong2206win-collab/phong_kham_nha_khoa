@@ -1,5 +1,7 @@
+
 package com.example.clinic.demo_phongkham_nhakhoa.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -46,8 +48,8 @@ public class GlobalExceptionHandler {
         return response;
     }
 
-    // 3. Bắt lỗi nghiệp vụ throw từ Service (IllegalArgumentException, IllegalStateException)
-    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    // 3. Bắt lỗi nghiệp vụ throw từ Service
+    @ExceptionHandler({ IllegalArgumentException.class, IllegalStateException.class })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, Object> xuLyLoiNghiepVu(RuntimeException ex) {
         Map<String, Object> response = new HashMap<>();
@@ -58,7 +60,22 @@ public class GlobalExceptionHandler {
         return response;
     }
 
-    // 4. Bắt tất cả các Exception còn lại
+    // 4. BỔ SUNG: Bắt lỗi vi phạm ràng buộc database
+    // Ví dụ: Một lịch khám bị liên kết trùng với hai buổi điều trị.
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, Object> xuLyLoiRangBuocDuLieu(
+            DataIntegrityViolationException ex) {
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("thoiGian", LocalDateTime.now().toString());
+        response.put("trangThai", 409);
+        response.put("loi", "Dữ liệu bị trùng hoặc vi phạm ràng buộc database");
+
+        return response;
+    }
+
+    // 5. Bắt tất cả các Exception còn lại
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, Object> xuLyLoiHeThong(Exception ex) {
