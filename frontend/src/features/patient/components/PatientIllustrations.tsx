@@ -363,4 +363,268 @@ export const HeroDentalBannerArt: React.FC = () => {
     </div>
   );
 };
+/**
+ * Mascot Răng 3D đeo tai nghe chăm sóc khách hàng (Headset) & vẫy tay chào
+ * Sử dụng riêng cho Card "Cần hỗ trợ đặt lịch?" ở màn hình FE-2B.2
+ */
+export const ToothWithHeadset: React.FC<{ className?: string }> = ({ className = "w-28 h-28" }) => {
+  return (
+    <div className={`relative flex items-center justify-center shrink-0 select-none pointer-events-none ${className}`}>
+      {/* Soft mint ambient glow */}
+      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#A7F3D0]/60 via-[#D1FAE5]/40 to-transparent blur-lg" />
+
+      <svg
+        viewBox="0 0 120 120"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-full h-full relative z-10 drop-shadow-md"
+      >
+        <defs>
+          <linearGradient id="headsetToothGrad" x1="25" y1="15" x2="85" y2="105" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="65%" stopColor="#F0FAF8" />
+            <stop offset="100%" stopColor="#D5EFE8" />
+          </linearGradient>
+
+          <linearGradient id="headsetBandGrad" x1="20" y1="20" x2="90" y2="20" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#10B981" />
+            <stop offset="50%" stopColor="#14B8A6" />
+            <stop offset="100%" stopColor="#0D9488" />
+          </linearGradient>
+
+          <linearGradient id="earcupGrad" x1="0" y1="0" x2="10" y2="20" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#059669" />
+            <stop offset="100%" stopColor="#047857" />
+          </linearGradient>
+        </defs>
+
+        {/* Tooth Shadow */}
+        <ellipse cx="56" cy="106" rx="36" ry="8" fill="#1E384C" opacity="0.08" />
+
+        {/* Headset Over-Head Band */}
+        <path
+          d="M 24 50 C 22 24, 88 24, 86 50"
+          stroke="url(#headsetBandGrad)"
+          strokeWidth="4"
+          strokeLinecap="round"
+          fill="none"
+        />
+
+        {/* Tooth Body */}
+        <path
+          d="M 34 32
+             C 44 23, 53 26, 58 32
+             C 63 26, 72 23, 82 32
+             C 92 41, 95 65, 92 86
+             C 89 104, 78 110, 68 110
+             C 63 110, 61 100, 58 100
+             C 55 100, 53 110, 48 110
+             C 38 110, 27 104, 24 86
+             C 21 65, 24 41, 34 32 Z"
+          fill="url(#headsetToothGrad)"
+          stroke="#CEEDE4"
+          strokeWidth="1.8"
+        />
+
+        {/* Glossy Reflection */}
+        <path
+          d="M 36 35
+             C 42 28, 50 30, 56 35
+             C 48 35, 32 48, 30 68
+             C 28 56, 30 42, 36 35 Z"
+          fill="#FFFFFF"
+          opacity="0.8"
+        />
+
+        {/* Left Earcup */}
+        <rect x="18" y="44" width="8" height="18" rx="4" fill="url(#earcupGrad)" />
+        <rect x="23" y="47" width="3" height="12" rx="1.5" fill="#A7F3D0" />
+
+        {/* Right Earcup */}
+        <rect x="84" y="44" width="8" height="18" rx="4" fill="url(#earcupGrad)" />
+        <rect x="84" y="47" width="3" height="12" rx="1.5" fill="#A7F3D0" />
+
+        {/* Microphone Arm */}
+        <path
+          d="M 88 56 C 92 72, 85 82, 68 82"
+          stroke="#0D9488"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+        {/* Microphone Sponge */}
+        <ellipse cx="66" cy="82" rx="4" ry="3" fill="#065F46" />
+
+        {/* Eyes with sparkle */}
+        <circle cx="45" cy="58" r="3.5" fill="#1E384C" />
+        <circle cx="43.8" cy="56.5" r="1.2" fill="#FFFFFF" />
+
+        <circle cx="69" cy="58" r="3.5" fill="#1E384C" />
+        <circle cx="67.8" cy="56.5" r="1.2" fill="#FFFFFF" />
+
+        {/* Rosy Cheeks */}
+        <circle cx="38" cy="65" r="4" fill="#FCA5A5" opacity="0.6" />
+        <circle cx="76" cy="65" r="4" fill="#FCA5A5" opacity="0.6" />
+
+        {/* Cute Smile */}
+        <path
+          d="M 51 65 Q 57 74 63 65"
+          stroke="#1E384C"
+          strokeWidth="2"
+          strokeLinecap="round"
+          fill="#F87171"
+        />
+
+        {/* Waving Hand (Left/Bottom) */}
+        <path
+          d="M 92 68 Q 102 62 104 52"
+          stroke="#CEEDE4"
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
+        <circle cx="104" cy="52" r="3" fill="#FFFFFF" stroke="#CEEDE4" strokeWidth="1.5" />
+
+        {/* Small sparkle */}
+        <path
+          d="M 96 28 Q 98 32 102 33 Q 98 34 96 38 Q 95 34 91 33 Q 95 32 96 28 Z"
+          fill="#34D399"
+          opacity="0.9"
+        />
+      </svg>
+    </div>
+  );
+};
+
+/**
+ * Minh họa Ghế Nha Khoa & Răng Thiên Thần cho Hero Banner Đặt Lịch (FE-2B.2)
+ */
+export const BookingHeroDentalArt: React.FC = () => {
+  return (
+    <div className="relative w-full h-full flex items-center justify-end select-none pointer-events-none overflow-hidden">
+      {/* Background Soft Medical Chair Blur Mask */}
+      <div className="absolute right-0 top-0 bottom-0 w-72 sm:w-88 opacity-30 mix-blend-multiply overflow-hidden rounded-r-3xl">
+        <img
+          src="/backgrounds/bg-patient-chair.jpg"
+          alt=""
+          className="w-full h-full object-cover object-center filter blur-[0.5px]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-[#E8F6F2]/75 to-[#E8F6F2]" />
+      </div>
+
+      {/* Modern Dental Chair Outline & Mascot with Shield */}
+      <div className="relative z-10 flex items-center gap-3 sm:gap-6 pr-3 sm:pr-8">
+        <svg
+          viewBox="0 0 240 160"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-48 h-36 sm:w-60 sm:h-44 drop-shadow-md"
+        >
+          <defs>
+            <linearGradient id="bookHeroToothGrad" x1="30" y1="15" x2="105" y2="135" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#FFFFFF" />
+              <stop offset="65%" stopColor="#F1FAF8" />
+              <stop offset="100%" stopColor="#D7EFEA" />
+            </linearGradient>
+
+            <linearGradient id="bookChairGrad" x1="140" y1="50" x2="220" y2="140" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#70B8AC" />
+              <stop offset="100%" stopColor="#2E877A" />
+            </linearGradient>
+
+            <linearGradient id="bookShieldGrad" x1="85" y1="75" x2="130" y2="130" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#34D399" />
+              <stop offset="100%" stopColor="#059669" />
+            </linearGradient>
+          </defs>
+
+          {/* Dental Chair in Background */}
+          <g opacity="0.8">
+            <ellipse cx="190" cy="148" rx="26" ry="6" fill="#CBD5E1" />
+            <rect x="186" y="115" width="8" height="32" rx="3" fill="#94A3B8" />
+            {/* Chair Contour */}
+            <path
+              d="M 158 85 C 158 72, 172 62, 185 64 L 202 67 C 210 69, 216 77, 213 86 L 206 108 C 204 113, 196 117, 188 115 L 168 112 C 161 110, 156 103, 158 97 Z"
+              fill="url(#bookChairGrad)"
+            />
+            {/* Headrest */}
+            <rect x="172" y="48" width="20" height="12" rx="5" fill="#344C52" opacity="0.85" />
+            {/* Lamp / instrument arm */}
+            <path d="M 196 115 Q 215 95 220 68" stroke="#94A3B8" strokeWidth="2.5" strokeLinecap="round" />
+            <circle cx="220" cy="68" r="4.5" fill="#38BDF8" />
+          </g>
+
+          {/* Cute 3D Tooth Hero with Cross Shield */}
+          {/* Shadow */}
+          <ellipse cx="68" cy="142" rx="38" ry="8" fill="#2E4741" opacity="0.1" />
+
+          {/* Tooth Body */}
+          <path
+            d="M 40 38
+               C 50 30, 60 32, 66 38
+               C 72 32, 82 30, 92 38
+               C 102 47, 105 70, 102 92
+               C 99 113, 88 128, 77 128
+               C 72 128, 70 118, 66 118
+               C 62 118, 60 128, 55 128
+               C 44 128, 33 113, 30 92
+               C 27 70, 30 47, 40 38 Z"
+            fill="url(#bookHeroToothGrad)"
+            stroke="#D0ECE4"
+            strokeWidth="1.8"
+          />
+
+          {/* Eyes */}
+          <circle cx="53" cy="66" r="3.5" fill="#1E384C" />
+          <circle cx="51.8" cy="64.5" r="1.2" fill="#FFFFFF" />
+          <circle cx="79" cy="66" r="3.5" fill="#1E384C" />
+          <circle cx="77.8" cy="64.5" r="1.2" fill="#FFFFFF" />
+
+          {/* Rosy Cheeks */}
+          <circle cx="45" cy="73" r="4" fill="#FCA5A5" opacity="0.6" />
+          <circle cx="87" cy="73" r="4" fill="#FCA5A5" opacity="0.6" />
+
+          {/* Happy Smile */}
+          <path
+            d="M 60 73 Q 66 81 72 73"
+            stroke="#1E384C"
+            strokeWidth="2"
+            strokeLinecap="round"
+            fill="#F87171"
+          />
+
+          {/* Front Medical Cross Shield */}
+          <g filter="drop-shadow(0 2px 4px rgba(4,120,87,0.25))">
+            <path
+              d="M 100 82
+                 C 114 82, 122 86, 122 86
+                 C 122 108, 114 125, 100 134
+                 C 86 125, 78 108, 78 86
+                 C 78 86, 86 82, 100 82 Z"
+              fill="url(#bookShieldGrad)"
+              stroke="#A7F3D0"
+              strokeWidth="2"
+            />
+            {/* White Cross on Shield */}
+            <path
+              d="M 96 102 H 104 M 100 98 V 106"
+              stroke="#FFFFFF"
+              strokeWidth="3.2"
+              strokeLinecap="round"
+            />
+          </g>
+
+          {/* Sparkles */}
+          <path
+            d="M 98 28 Q 100 32 103 33 Q 100 34 98 38 Q 97 34 94 33 Q 97 32 98 28 Z"
+            fill="#F59E0B"
+          />
+          <path
+            d="M 30 52 Q 32 55 35 56 Q 32 57 30 60 Q 29 57 26 56 Q 29 55 30 52 Z"
+            fill="#10B981"
+          />
+        </svg>
+      </div>
+    </div>
+  );
+};
 

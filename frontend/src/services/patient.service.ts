@@ -35,4 +35,13 @@ export const patientService = {
     const response = await apiClient.post<YeuCauDatLich>('/yeu-cau-dat-lich', payload);
     return response.data;
   },
+
+  /**
+   * Lấy chi tiết một yêu cầu đặt lịch theo mã yêu cầu
+   * GET /api/v1/yeu-cau-dat-lich/{maYeuCau}
+   */
+  async getAppointmentRequestById(maYeuCau: string): Promise<YeuCauDatLich> {
+    const response = await apiClient.get<YeuCauDatLich>(`/yeu-cau-dat-lich/${maYeuCau}`);
+    return response.data;
+  },
 };

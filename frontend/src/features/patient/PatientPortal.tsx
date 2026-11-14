@@ -5,9 +5,10 @@ import {
 } from './components/PatientSidebar';
 import { PatientHeader } from './components/PatientHeader';
 import { PatientDashboard } from './components/PatientDashboard';
+import { PatientBooking } from './components/PatientBooking';
 import { patientService } from '@/services/patient.service';
 import type { AuthSession } from '@/types/auth';
-import type { BenhNhanProfile, YeuCauDatLich, PatientDashboardSummary, CaKham } from '@/types/patient';
+import type { BenhNhanProfile, YeuCauDatLich, PatientDashboardSummary } from '@/types/patient';
 import { 
   CalendarPlus, 
   Calendar, 
@@ -20,7 +21,6 @@ import {
   Mail, 
   MapPin, 
   ShieldCheck, 
-  AlertCircle,
   HelpCircle,
   Bell
 } from 'lucide-react';
@@ -50,22 +50,32 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
   onLogout,
   onGoToLanding,
 }) => {
-  const [currentTab, setCurrentTab] = useState<PatientNavTab>('overview');
+  const [currentTab, setCurrentTab] = useState<PatientNavTab>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab') as PatientNavTab;
+      const validTabs: PatientNavTab[] = ['overview', 'booking', 'appointments', 'treatment-plan', 'profile', 'notifications', 'faq'];
+      if (tabParam && validTabs.includes(tabParam)) {
+        return tabParam;
+      }
+    }
+    return 'overview';
+  });
+
+  const handleSelectTab = (tab: PatientNavTab) => {
+    setCurrentTab(tab);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const [profile, setProfile] = useState<BenhNhanProfile | null>(null);
   const [appointments, setAppointments] = useState<YeuCauDatLich[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Booking form states
-  const [bookDate, setBookDate] = useState<string>('');
-  const [bookShift, setBookShift] = useState<CaKham>('CA_SANG');
-  const [bookReason, setBookReason] = useState<string>('');
-  const [bookNote, setBookNote] = useState<string>('');
-  const [bookingSubmitting, setBookingSubmitting] = useState<boolean>(false);
-  const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
-  const [bookingError, setBookingError] = useState<string | null>(null);
 
   // 1. Role Guard: Chỉ cho phép tài khoản BENH_NHAN
   const isBenhNhan = session.user?.vaiTro === 'BENH_NHAN';
@@ -114,41 +124,6 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
       loadData();
     }
   }, [isBenhNhan, loadData]);
-
-  // Xử lý gửi yêu cầu đặt lịch thực tế vào MySQL
-  const handleCreateBooking = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!bookDate || !bookReason.trim()) {
-      setBookingError('Vui lòng chọn ngày khám và nhập lý do khám.');
-      return;
-    }
-
-    setBookingSubmitting(true);
-    setBookingError(null);
-    setBookingSuccess(null);
-
-    try {
-      await patientService.createAppointmentRequest({
-        ngayMongMuon: bookDate,
-        caKham: bookShift,
-        lyDoKham: bookReason.trim(),
-        ghiChu: bookNote.trim() || undefined,
-      });
-
-      setBookingSuccess('Gửi yêu cầu đặt lịch thành công! Phòng khám sẽ sớm xác nhận.');
-      setBookDate('');
-      setBookReason('');
-      setBookNote('');
-      
-      // Reload danh sách lịch hẹn từ database
-      await loadData();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Không thể gửi yêu cầu đặt lịch.';
-      setBookingError(msg);
-    } finally {
-      setBookingSubmitting(false);
-    }
-  };
 
   // Nếu không phải quyền Bệnh Nhân -> hiển thị cảnh báo phân quyền Role Guard
   if (!isBenhNhan) {
@@ -203,7 +178,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
       {/* 1. Sidebar Trái */}
       <PatientSidebar
         currentTab={currentTab}
-        onSelectTab={setCurrentTab}
+        onSelectTab={handleSelectTab}
         onGoToLanding={onGoToLanding}
         onLogout={onLogout}
         session={session}
@@ -217,7 +192,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
           session={session}
           profile={profile}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
-          onNavigateTab={(tab) => setCurrentTab(tab)}
+          onNavigateTab={handleSelectTab}
           onGoToLanding={onGoToLanding}
           onLogout={onLogout}
         />
@@ -230,137 +205,20 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
               session={session}
               loading={loading}
               error={error}
-              onNavigateTab={(tab) => setCurrentTab(tab)}
+              onNavigateTab={handleSelectTab}
               onRetry={loadData}
             />
           )}
 
-          {/* TAB 2: Đặt lịch khám (Form gửi yêu cầu thật vào MySQL) */}
+          {/* TAB 2: Đặt lịch khám (FE-2B.2 Giao diện chuẩn duyệt + Dữ liệu thật) */}
           {currentTab === 'booking' && (
-            <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#E3ECE9]">
-                <div>
-                  <h2 className="text-xl font-bold text-[#1E384C]">Đặt lịch khám trực tuyến</h2>
-                  <p className="text-xs text-[#7A9A93] mt-1">
-                    Điền thông tin ca khám mong muốn để gửi yêu cầu đến phòng khám Nha Khoa Nụ Cười Xanh.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setCurrentTab('overview')}
-                  className="px-3.5 py-1.5 rounded-xl border border-[#E3ECE9] text-xs font-semibold text-[#344C52] hover:bg-[#F0F5F3] transition-colors inline-flex items-center gap-1.5"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  <span>Quay lại</span>
-                </button>
-              </div>
-
-              {bookingSuccess && (
-                <div className="p-4 rounded-2xl bg-[#E8F6F2] border border-[#CEEBE2] text-[#169C89] text-xs font-semibold flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 shrink-0" />
-                    <span>{bookingSuccess}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setCurrentTab('appointments')}
-                    className="underline text-xs font-bold hover:text-[#138776]"
-                  >
-                    Xem lịch đã gửi &gt;
-                  </button>
-                </div>
-              )}
-
-              {bookingError && (
-                <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-600 text-xs font-semibold flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
-                  <span>{bookingError}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleCreateBooking} className="p-6 rounded-3xl bg-white border border-[#E3ECE9] shadow-soft-card space-y-5">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#1E384C] block">
-                    Ngày mong muốn khám <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    value={bookDate}
-                    onChange={(e) => setBookDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    required
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#E1ECE7] focus:border-[#169C89] outline-hidden text-xs text-[#1E384C] bg-[#F8FBFA]"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#1E384C] block">
-                    Ca khám <span className="text-red-500">*</span>
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {(['CA_SANG', 'CA_CHIEU'] as CaKham[]).map((shift) => (
-                      <button
-                        key={shift}
-                        type="button"
-                        onClick={() => setBookShift(shift)}
-                        className={`p-3 rounded-2xl border text-xs font-bold transition-all text-left ${
-                          bookShift === shift
-                            ? 'bg-[#E8F6F2] border-[#169C89] text-[#169C89] shadow-2xs'
-                            : 'border-[#E3ECE9] hover:bg-[#F0F5F3] text-[#344C52]'
-                        }`}
-                      >
-                        <span className="block">{CA_KHAM_TIME[shift]}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#1E384C] block">
-                    Lý do khám / Dịch vụ mong muốn <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={bookReason}
-                    onChange={(e) => setBookReason(e.target.value)}
-                    placeholder="Ví dụ: Khám răng định kỳ, cạo vôi răng, đau răng hàm..."
-                    required
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#E1ECE7] focus:border-[#169C89] outline-hidden text-xs text-[#1E384C] bg-[#F8FBFA]"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#1E384C] block">
-                    Ghi chú thêm (nếu có)
-                  </label>
-                  <textarea
-                    value={bookNote}
-                    onChange={(e) => setBookNote(e.target.value)}
-                    rows={3}
-                    placeholder="Tình trạng răng miệng hiện tại hoặc thời gian ưu tiên..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#E1ECE7] focus:border-[#169C89] outline-hidden text-xs text-[#1E384C] bg-[#F8FBFA]"
-                  />
-                </div>
-
-                <div className="pt-2 flex items-center justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setCurrentTab('overview')}
-                    className="px-4 py-2.5 rounded-xl border border-[#E3ECE9] text-xs font-bold text-[#344C52] hover:bg-[#F0F5F3] transition-colors"
-                  >
-                    Hủy bỏ
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={bookingSubmitting}
-                    className="px-6 py-2.5 rounded-xl bg-[#169C89] hover:bg-[#138776] text-white text-xs font-bold transition-colors shadow-2xs disabled:opacity-50 inline-flex items-center gap-1.5"
-                  >
-                    <CalendarPlus className="h-4 w-4" />
-                    <span>{bookingSubmitting ? 'Đang gửi...' : 'Gửi yêu cầu đặt lịch'}</span>
-                  </button>
-                </div>
-              </form>
-            </div>
+            <PatientBooking
+              session={session}
+              profile={profile}
+              appointments={appointments}
+              onNavigateTab={handleSelectTab}
+              onReloadData={loadData}
+            />
           )}
 
           {/* TAB 3: Lịch khám của tôi (Dữ liệu thật từ MySQL) */}
@@ -375,7 +233,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                 </div>
                 <button
                   type="button"
-                  onClick={() => setCurrentTab('booking')}
+                  onClick={() => handleSelectTab('booking')}
                   className="px-4 py-2 rounded-xl bg-[#169C89] hover:bg-[#138776] text-white text-xs font-bold transition-colors shadow-2xs inline-flex items-center gap-1.5"
                 >
                   <CalendarPlus className="h-3.5 w-3.5" />
@@ -445,7 +303,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                   </p>
                   <button
                     type="button"
-                    onClick={() => setCurrentTab('booking')}
+                    onClick={() => handleSelectTab('booking')}
                     className="mt-2 px-4 py-2 rounded-xl bg-[#169C89] hover:bg-[#138776] text-white text-xs font-bold transition-colors shadow-2xs inline-flex items-center gap-1.5"
                   >
                     <CalendarPlus className="h-3.5 w-3.5" />
@@ -468,7 +326,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                 </div>
                 <button
                   type="button"
-                  onClick={() => setCurrentTab('overview')}
+                  onClick={() => handleSelectTab('overview')}
                   className="px-3.5 py-1.5 rounded-xl border border-[#E3ECE9] text-xs font-semibold text-[#344C52] hover:bg-[#F0F5F3] transition-colors inline-flex items-center gap-1.5"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -497,7 +355,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                 <div className="pt-2">
                   <button
                     type="button"
-                    onClick={() => setCurrentTab('booking')}
+                    onClick={() => handleSelectTab('booking')}
                     className="px-4 py-2 rounded-xl bg-[#169C89] hover:bg-[#138776] text-white text-xs font-bold transition-colors shadow-2xs inline-flex items-center gap-1.5"
                   >
                     <CalendarPlus className="h-3.5 w-3.5" />
@@ -520,7 +378,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                 </div>
                 <button
                   type="button"
-                  onClick={() => setCurrentTab('overview')}
+                  onClick={() => handleSelectTab('overview')}
                   className="px-3.5 py-1.5 rounded-xl border border-[#E3ECE9] text-xs font-semibold text-[#344C52] hover:bg-[#F0F5F3] transition-colors inline-flex items-center gap-1.5"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -605,7 +463,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                 </div>
                 <button
                   type="button"
-                  onClick={() => setCurrentTab('overview')}
+                  onClick={() => handleSelectTab('overview')}
                   className="px-3.5 py-1.5 rounded-xl border border-[#E3ECE9] text-xs font-semibold text-[#344C52] hover:bg-[#F0F5F3] transition-colors inline-flex items-center gap-1.5"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -637,7 +495,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                 </div>
                 <button
                   type="button"
-                  onClick={() => setCurrentTab('overview')}
+                  onClick={() => handleSelectTab('overview')}
                   className="px-3.5 py-1.5 rounded-xl border border-[#E3ECE9] text-xs font-semibold text-[#344C52] hover:bg-[#F0F5F3] transition-colors inline-flex items-center gap-1.5"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -667,10 +525,10 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                 </div>
 
                 <div className="p-4 rounded-2xl bg-[#E8F6F2] border border-[#CEEBE2] text-[#169C89] font-semibold flex items-center justify-between">
-                  <span>Hotline hỗ trợ bệnh nhân 24/7: <strong>1900 6868</strong></span>
+                  <span>Hỗ trợ bệnh nhân trực tiếp tại quầy tiếp đón phòng khám</span>
                   <button
                     type="button"
-                    onClick={() => setCurrentTab('booking')}
+                    onClick={() => handleSelectTab('booking')}
                     className="underline text-xs font-bold"
                   >
                     Đặt lịch ngay &gt;
