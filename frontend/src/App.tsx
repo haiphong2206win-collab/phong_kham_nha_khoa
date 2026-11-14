@@ -6,14 +6,18 @@ import { AuthLayout } from '@/features/auth/AuthLayout';
 import { LoginForm } from '@/features/auth/LoginForm';
 import { RegisterForm } from '@/features/auth/RegisterForm';
 import { UserDashboardPlaceholder } from '@/features/auth/UserDashboardPlaceholder';
+import { PatientPortal } from '@/features/patient/PatientPortal';
 import { Toast } from '@/components/ui/Toast';
 
 type ViewMode = 'landing' | 'auth' | 'dashboard';
 
 export const App: React.FC = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>('landing');
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [session, setSession] = useState<AuthSession>(() => authService.getStoredSession());
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const init = authService.getStoredSession();
+    return init.isAuthenticated && init.user ? 'dashboard' : 'landing';
+  });
+  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [toast, setToast] = useState<{
     message: string;
     type: 'success' | 'error' | 'info';
@@ -107,11 +111,19 @@ export const App: React.FC = () => {
       )}
 
       {viewMode === 'dashboard' && (
-        <UserDashboardPlaceholder
-          session={session}
-          onLogout={handleLogout}
-          onGoToLanding={handleBackToLanding}
-        />
+        session.user?.vaiTro === 'BENH_NHAN' ? (
+          <PatientPortal
+            session={session}
+            onLogout={handleLogout}
+            onGoToLanding={handleBackToLanding}
+          />
+        ) : (
+          <UserDashboardPlaceholder
+            session={session}
+            onLogout={handleLogout}
+            onGoToLanding={handleBackToLanding}
+          />
+        )
       )}
 
       {viewMode === 'auth' && (
