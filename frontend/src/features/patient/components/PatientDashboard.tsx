@@ -31,8 +31,8 @@ interface PatientDashboardProps {
 }
 
 const CA_KHAM_TIME: Record<string, string> = {
-  CA_SANG: 'Ca Sáng (08:00 - 11:30)',
-  CA_CHIEU: 'Ca Chiều (13:30 - 17:00)',
+  CA_SANG: 'Ca Sáng',
+  CA_CHIEU: 'Ca Chiều',
 };
 
 const TRANG_THAI_MAP: Record<string, { label: string; bg: string; text: string; border: string }> = {

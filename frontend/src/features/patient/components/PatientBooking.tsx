@@ -43,9 +43,9 @@ const DENTAL_SERVICES = [
   'Tẩy trắng răng & Bọc răng sứ thẩm mỹ',
 ];
 
-const CA_KHAM_CONFIG: Record<CaKham, { label: string; time: string }> = {
-  CA_SANG: { label: 'Ca Sáng', time: '08:00 - 11:30' },
-  CA_CHIEU: { label: 'Ca Chiều', time: '13:30 - 17:00' },
+const CA_KHAM_CONFIG: Record<CaKham, { label: string }> = {
+  CA_SANG: { label: 'Ca Sáng' },
+  CA_CHIEU: { label: 'Ca Chiều' },
 };
 
 const TRANG_THAI_CONFIG: Record<string, { label: string; bg: string; text: string; border: string }> = {
@@ -410,7 +410,7 @@ export const PatientBooking: React.FC<PatientBookingProps> = ({
                     >
                       {(['CA_SANG', 'CA_CHIEU'] as CaKham[]).map((ca) => (
                         <option key={ca} value={ca}>
-                          {CA_KHAM_CONFIG[ca].label} ({CA_KHAM_CONFIG[ca].time})
+                          {CA_KHAM_CONFIG[ca].label}
                         </option>
                       ))}
                     </select>
@@ -509,7 +509,7 @@ export const PatientBooking: React.FC<PatientBookingProps> = ({
                     <span className="text-[#7A9A93] block">Ngày & Ca khám mong muốn</span>
                     <span className="font-bold text-[#1E384C] text-sm flex items-center gap-1.5 mt-0.5">
                       <Calendar className="h-4 w-4 text-[#169C89] shrink-0" />
-                      {date} ({CA_KHAM_CONFIG[shift].label} - {CA_KHAM_CONFIG[shift].time})
+                      {date} ({CA_KHAM_CONFIG[shift].label})
                     </span>
                   </div>
                 </div>
@@ -779,9 +779,6 @@ export const PatientBooking: React.FC<PatientBookingProps> = ({
                       {/* Ca khám */}
                       <td className="py-3.5 px-3 text-[#5A777E]">
                         <div>{shiftInfo.label}</div>
-                        {shiftInfo.time && (
-                          <div className="text-[10px] text-[#7A9A93]">({shiftInfo.time})</div>
-                        )}
                       </td>
 
                       {/* Trạng thái */}
@@ -889,7 +886,7 @@ export const PatientBooking: React.FC<PatientBookingProps> = ({
                 <div className="flex items-center justify-between">
                   <span className="text-[#7A9A93]">Ca khám:</span>
                   <span className="font-bold text-[#1E384C]">
-                    {CA_KHAM_CONFIG[detailModal.caKham]?.label || detailModal.caKham} ({CA_KHAM_CONFIG[detailModal.caKham]?.time})
+                    {CA_KHAM_CONFIG[detailModal.caKham]?.label || detailModal.caKham}
                   </span>
                 </div>
 

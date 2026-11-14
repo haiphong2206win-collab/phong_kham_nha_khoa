@@ -628,3 +628,188 @@ export const BookingHeroDentalArt: React.FC = () => {
   );
 };
 
+/**
+ * Minh họa Răng 3D tươi cười đứng cạnh Lịch hẹn khám (FE-2B.3)
+ * Phù hợp hoàn hảo với ảnh mô phỏng Lịch khám của tôi
+ */
+export const AppointmentsHeroArt: React.FC = () => {
+  return (
+    <div className="relative w-full h-full flex items-center justify-end select-none pointer-events-none overflow-hidden">
+      {/* Background Soft Medical Chair Blur Mask */}
+      <div className="absolute right-0 top-0 bottom-0 w-72 sm:w-88 opacity-25 mix-blend-multiply overflow-hidden rounded-r-3xl">
+        <img
+          src="/backgrounds/bg-patient-chair.jpg"
+          alt=""
+          className="w-full h-full object-cover object-center filter blur-[0.5px]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-[#E8F6F2]/75 to-[#E8F6F2]" />
+      </div>
+
+      <div className="relative z-10 flex items-center gap-3 sm:gap-6 pr-3 sm:pr-8">
+        <svg
+          viewBox="0 0 240 160"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-48 h-36 sm:w-60 sm:h-44 drop-shadow-md"
+        >
+          <defs>
+            <linearGradient id="appToothGrad" x1="130" y1="20" x2="200" y2="135" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#FFFFFF" />
+              <stop offset="65%" stopColor="#F1FAF8" />
+              <stop offset="100%" stopColor="#D5EFE8" />
+            </linearGradient>
+
+            <linearGradient id="calHeaderGrad" x1="30" y1="40" x2="110" y2="40" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#38BDF8" />
+              <stop offset="100%" stopColor="#0EA5E9" />
+            </linearGradient>
+
+            <linearGradient id="calCheckGrad" x1="55" y1="75" x2="95" y2="115" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#34D399" />
+              <stop offset="100%" stopColor="#059669" />
+            </linearGradient>
+          </defs>
+
+          {/* 1. 3D Calendar Card on Left */}
+          <g filter="drop-shadow(0 4px 6px rgba(14,165,233,0.15))">
+            {/* Calendar Shadow */}
+            <ellipse cx="75" cy="142" rx="42" ry="7" fill="#1E384C" opacity="0.1" />
+
+            {/* Calendar Page Base */}
+            <rect x="35" y="45" width="78" height="88" rx="14" fill="#FFFFFF" stroke="#E0F2FE" strokeWidth="2" />
+
+            {/* Calendar Header Band */}
+            <path
+              d="M 35 59 C 35 51.268 41.268 45 49 45 L 99 45 C 106.732 45 113 51.268 113 59 L 113 72 L 35 72 Z"
+              fill="url(#calHeaderGrad)"
+            />
+
+            {/* Golden Binding Rings */}
+            <rect x="48" y="38" width="6" height="14" rx="3" fill="#FBBF24" stroke="#F59E0B" strokeWidth="1" />
+            <rect x="71" y="38" width="6" height="14" rx="3" fill="#FBBF24" stroke="#F59E0B" strokeWidth="1" />
+            <rect x="94" y="38" width="6" height="14" rx="3" fill="#FBBF24" stroke="#F59E0B" strokeWidth="1" />
+
+            {/* Calendar Sheet Lines */}
+            <rect x="45" y="82" width="22" height="4" rx="2" fill="#E2E8F0" />
+            <rect x="45" y="92" width="18" height="4" rx="2" fill="#E2E8F0" />
+            <rect x="45" y="102" width="26" height="4" rx="2" fill="#E2E8F0" />
+
+            {/* Big Green/Teal Check Badge on Calendar */}
+            <circle cx="86" cy="98" r="16" fill="url(#calCheckGrad)" stroke="#A7F3D0" strokeWidth="2" />
+            <path
+              d="M 78 98 L 84 104 L 95 92"
+              stroke="#FFFFFF"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+          </g>
+
+          {/* 2. Cute 3D Smiling Mascot Tooth on Right */}
+          {/* Tooth Shadow */}
+          <ellipse cx="165" cy="144" rx="38" ry="8" fill="#1E384C" opacity="0.08" />
+
+          {/* Tooth Body */}
+          <path
+            d="M 138 42
+               C 148 33, 158 35, 164 42
+               C 170 35, 180 33, 190 42
+               C 200 51, 203 75, 200 98
+               C 197 120, 186 134, 175 134
+               C 170 134, 168 123, 164 123
+               C 160 123, 158 134, 153 134
+               C 142 134, 131 120, 128 98
+               C 125 75, 128 51, 138 42 Z"
+            fill="url(#appToothGrad)"
+            stroke="#CEEDE4"
+            strokeWidth="2"
+          />
+
+          {/* Glossy Reflection */}
+          <path
+            d="M 140 45
+               C 146 38, 153 40, 159 45
+               C 151 45, 136 56, 134 76
+               C 132 64, 134 52, 140 45 Z"
+            fill="#FFFFFF"
+            opacity="0.8"
+          />
+
+          {/* Eyes */}
+          <circle cx="151" cy="70" r="3.5" fill="#1E384C" />
+          <circle cx="149.8" cy="68.5" r="1.2" fill="#FFFFFF" />
+          <circle cx="177" cy="70" r="3.5" fill="#1E384C" />
+          <circle cx="175.8" cy="68.5" r="1.2" fill="#FFFFFF" />
+
+          {/* Cheeks */}
+          <circle cx="143" cy="77" r="4" fill="#FCA5A5" opacity="0.6" />
+          <circle cx="185" cy="77" r="4" fill="#FCA5A5" opacity="0.6" />
+
+          {/* Open Smile */}
+          <path
+            d="M 158 77 Q 164 86 170 77"
+            stroke="#1E384C"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            fill="#F87171"
+          />
+
+          {/* Waving Hand on Right */}
+          <path
+            d="M 198 78 Q 212 70 216 58"
+            stroke="#CEEDE4"
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
+          <circle cx="216" cy="58" r="3.5" fill="#FFFFFF" stroke="#CEEDE4" strokeWidth="1.5" />
+
+          {/* Sparkles */}
+          <path
+            d="M 194 30 Q 196 34 199 35 Q 196 36 194 40 Q 193 36 190 35 Q 193 34 194 30 Z"
+            fill="#F59E0B"
+          />
+          <path
+            d="M 118 36 Q 120 39 123 40 Q 120 41 118 44 Q 117 41 114 40 Q 117 39 118 36 Z"
+            fill="#10B981"
+          />
+        </svg>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Minh họa Lịch mini 3D cho Card "Lưu ý về lịch khám"
+ */
+export const MiniCalendarArt: React.FC<{ className?: string }> = ({ className = "w-16 h-16" }) => {
+  return (
+    <div className={`relative flex items-center justify-center shrink-0 select-none pointer-events-none ${className}`}>
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-sm">
+        <defs>
+          <linearGradient id="miniCalGrad" x1="15" y1="15" x2="65" y2="70" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#38BDF8" />
+            <stop offset="100%" stopColor="#0284C7" />
+          </linearGradient>
+        </defs>
+        {/* Base */}
+        <rect x="12" y="18" width="56" height="52" rx="10" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="1.5" />
+        {/* Header */}
+        <path d="M 12 26 C 12 21.58 15.58 18 20 18 L 60 18 C 64.42 18 68 21.58 68 26 L 68 34 L 12 34 Z" fill="url(#miniCalGrad)" />
+        {/* Rings */}
+        <rect x="22" y="13" width="4" height="10" rx="2" fill="#FBBF24" />
+        <rect x="38" y="13" width="4" height="10" rx="2" fill="#FBBF24" />
+        <rect x="54" y="13" width="4" height="10" rx="2" fill="#FBBF24" />
+        {/* Grid dots / check */}
+        <circle cx="26" cy="44" r="2.5" fill="#94A3B8" />
+        <circle cx="38" cy="44" r="2.5" fill="#94A3B8" />
+        <circle cx="50" cy="44" r="2.5" fill="#94A3B8" />
+        <circle cx="26" cy="56" r="2.5" fill="#94A3B8" />
+        <circle cx="38" cy="56" r="2.5" fill="#94A3B8" />
+        <circle cx="50" cy="56" r="7" fill="#10B981" />
+        <path d="M 47 56 L 49.5 58.5 L 53.5 54" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
+  );
+};
+

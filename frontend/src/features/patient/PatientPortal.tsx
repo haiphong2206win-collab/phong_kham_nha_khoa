@@ -6,14 +6,13 @@ import {
 import { PatientHeader } from './components/PatientHeader';
 import { PatientDashboard } from './components/PatientDashboard';
 import { PatientBooking } from './components/PatientBooking';
+import { PatientAppointments } from './components/PatientAppointments';
 import { patientService } from '@/services/patient.service';
 import type { AuthSession } from '@/types/auth';
 import type { BenhNhanProfile, YeuCauDatLich, PatientDashboardSummary } from '@/types/patient';
 import { 
   CalendarPlus, 
   Calendar, 
-  Clock, 
-  CheckCircle2, 
   ArrowLeft, 
   ShieldAlert, 
   User, 
@@ -30,20 +29,6 @@ interface PatientPortalProps {
   onLogout: () => void;
   onGoToLanding: () => void;
 }
-
-const CA_KHAM_TIME: Record<string, string> = {
-  CA_SANG: 'Ca Sáng (08:00 - 11:30)',
-  CA_CHIEU: 'Ca Chiều (13:30 - 17:00)',
-};
-
-const TRANG_THAI_MAP: Record<string, { label: string; bg: string; text: string; border: string }> = {
-  CHO_PHAN_CONG: { label: 'Chờ phân công', bg: 'bg-[#FFFBEB]', text: 'text-[#D97706]', border: 'border-[#FEF3C7]' },
-  DA_PHAN_CONG: { label: 'Đã xác nhận', bg: 'bg-[#E8F6F2]', text: 'text-[#169C89]', border: 'border-[#CEEBE2]' },
-  CHO_XAC_NHAN: { label: 'Chờ xác nhận', bg: 'bg-[#FFFBEB]', text: 'text-[#D97706]', border: 'border-[#FEF3C7]' },
-  DA_XAC_NHAN: { label: 'Đã xác nhận', bg: 'bg-[#E8F6F2]', text: 'text-[#169C89]', border: 'border-[#CEEBE2]' },
-  TU_CHOI: { label: 'Từ chối', bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200' },
-  DA_HUY: { label: 'Đã hủy', bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-200' },
-};
 
 export const PatientPortal: React.FC<PatientPortalProps> = ({
   session,
@@ -221,97 +206,15 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
             />
           )}
 
-          {/* TAB 3: Lịch khám của tôi (Dữ liệu thật từ MySQL) */}
+          {/* TAB 3: Lịch khám của tôi (FE-2B.3 - Giao diện chuẩn duyệt + Dữ liệu thật) */}
           {currentTab === 'appointments' && (
-            <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#E3ECE9]">
-                <div>
-                  <h2 className="text-xl font-bold text-[#1E384C]">Lịch khám của tôi</h2>
-                  <p className="text-xs text-[#7A9A93] mt-1">
-                    Danh sách toàn bộ yêu cầu đặt lịch đã gửi và trạng thái xử lý từ phòng khám.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleSelectTab('booking')}
-                  className="px-4 py-2 rounded-xl bg-[#169C89] hover:bg-[#138776] text-white text-xs font-bold transition-colors shadow-2xs inline-flex items-center gap-1.5"
-                >
-                  <CalendarPlus className="h-3.5 w-3.5" />
-                  <span>+ Đặt lịch mới</span>
-                </button>
-              </div>
-
-              {appointments.length > 0 ? (
-                <div className="space-y-3">
-                  {appointments.map((req) => (
-                    <div
-                      key={req.maYeuCau}
-                      className="p-4 sm:p-5 rounded-3xl bg-white border border-[#E3ECE9] shadow-2xs hover:shadow-soft-card transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-                    >
-                      <div className="space-y-1.5 min-w-0">
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-xs font-bold text-[#1E384C]">
-                            Mã: {req.maYeuCau}
-                          </span>
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                            TRANG_THAI_MAP[req.trangThai]?.border || 'border-gray-200'
-                          } ${TRANG_THAI_MAP[req.trangThai]?.bg || 'bg-gray-50'} ${
-                            TRANG_THAI_MAP[req.trangThai]?.text || 'text-gray-600'
-                          }`}>
-                            <CheckCircle2 className="h-3 w-3" />
-                            <span>{TRANG_THAI_MAP[req.trangThai]?.label || req.trangThai}</span>
-                          </span>
-                        </div>
-
-                        <h4 className="text-sm font-bold text-[#1E384C]">
-                          {req.lyDoKham}
-                        </h4>
-
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-[#5A777E]">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3.5 w-3.5 text-[#169C89]" />
-                            Ngày hẹn: <strong>{req.ngayMongMuon}</strong>
-                          </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5 text-[#169C89]" />
-                            {CA_KHAM_TIME[req.caKham] || req.caKham}
-                          </span>
-                        </div>
-
-                        {req.ghiChu && (
-                          <p className="text-[11px] text-[#7A9A93] italic">
-                            Ghi chú: {req.ghiChu}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="text-right text-[11px] text-[#7A9A93] shrink-0 sm:self-center">
-                        <span>Gửi lúc: {new Date(req.thoiGianGui).toLocaleDateString('vi-VN')}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-12 rounded-3xl bg-white border border-[#E3ECE9] shadow-soft-card text-center space-y-3">
-                  <div className="h-12 w-12 rounded-2xl bg-[#E8F6F2] text-[#169C89] flex items-center justify-center mx-auto">
-                    <Calendar className="h-6 w-6" />
-                  </div>
-                  <h3 className="text-sm font-bold text-[#1E384C]">Chưa có yêu cầu đặt lịch nào</h3>
-                  <p className="text-xs text-[#7A9A93] max-w-sm mx-auto">
-                    Bạn chưa gửi yêu cầu đặt lịch khám nào trong hệ thống. Hãy gửi yêu cầu để bác sĩ tiếp nhận và phân công.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => handleSelectTab('booking')}
-                    className="mt-2 px-4 py-2 rounded-xl bg-[#169C89] hover:bg-[#138776] text-white text-xs font-bold transition-colors shadow-2xs inline-flex items-center gap-1.5"
-                  >
-                    <CalendarPlus className="h-3.5 w-3.5" />
-                    <span>Đặt lịch khám ngay</span>
-                  </button>
-                </div>
-              )}
-            </div>
+            <PatientAppointments
+              session={session}
+              profile={profile}
+              appointments={appointments}
+              onNavigateTab={handleSelectTab}
+              onReloadData={loadData}
+            />
           )}
 
           {/* TAB 4: Lộ trình điều trị */}
