@@ -1,5 +1,5 @@
 import { apiClient } from './api-client';
-import type { BenhNhanProfile, YeuCauDatLich, CaKham } from '@/types/patient';
+import type { BenhNhanProfile, CapNhatHoSoPayload, YeuCauDatLich, CaKham } from '@/types/patient';
 
 export interface TaoYeuCauDatLichPayload {
   ngayMongMuon: string;
@@ -15,6 +15,15 @@ export const patientService = {
    */
   async getMyProfile(): Promise<BenhNhanProfile> {
     const response = await apiClient.get<BenhNhanProfile>('/benh-nhan/ho-so-cua-toi');
+    return response.data;
+  },
+
+  /**
+   * Hoàn thiện hoặc cập nhật hồ sơ cá nhân của tài khoản bệnh nhân đang đăng nhập
+   * PUT /api/v1/benh-nhan/ho-so-cua-toi
+   */
+  async updateMyProfile(payload: CapNhatHoSoPayload): Promise<BenhNhanProfile> {
+    const response = await apiClient.put<BenhNhanProfile>('/benh-nhan/ho-so-cua-toi', payload);
     return response.data;
   },
 

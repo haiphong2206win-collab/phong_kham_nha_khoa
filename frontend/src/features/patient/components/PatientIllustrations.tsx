@@ -813,3 +813,213 @@ export const MiniCalendarArt: React.FC<{ className?: string }> = ({ className = 
   );
 };
 
+/**
+ * Minh họa 3D Hero Art cho trang Hồ sơ cá nhân (FE-2B.4)
+ * Bao gồm hồ sơ y tế / clipboard với dấu tích chứng nhận + Mascot răng trắng vui vẻ
+ * Khớp chuẩn ảnh mockup duyệt FE-2B.4
+ */
+export const ProfileHeroArt: React.FC<{ className?: string }> = ({ className = "w-64 h-36" }) => {
+  return (
+    <div className={`relative flex items-center justify-center shrink-0 select-none pointer-events-none ${className}`}>
+      {/* Mint glow */}
+      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#D7F3EB]/60 via-[#E8F8F4]/80 to-transparent blur-xl" />
+
+      <svg
+        viewBox="0 0 280 160"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-full h-full relative z-10 drop-shadow-sm"
+      >
+        <defs>
+          {/* Clipboard gradients */}
+          <linearGradient id="clipBoardGrad" x1="60" y1="20" x2="160" y2="150" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="100%" stopColor="#E2F5EF" />
+          </linearGradient>
+          <linearGradient id="clipBorderGrad" x1="60" y1="20" x2="160" y2="150" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#7CD5C1" />
+            <stop offset="100%" stopColor="#2BB89B" />
+          </linearGradient>
+
+          {/* Tooth gradients */}
+          <linearGradient id="profileToothBody" x1="160" y1="30" x2="250" y2="150" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="65%" stopColor="#F4FCF9" />
+            <stop offset="100%" stopColor="#DBEFE8" />
+          </linearGradient>
+          <linearGradient id="profileToothCap" x1="180" y1="18" x2="225" y2="45" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#6EE7B7" />
+            <stop offset="100%" stopColor="#10B981" />
+          </linearGradient>
+          <linearGradient id="verifiedCheckGrad" x1="120" y1="100" x2="155" y2="140" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#10B981" />
+            <stop offset="100%" stopColor="#059669" />
+          </linearGradient>
+        </defs>
+
+        {/* Ambient dental chair silhouette / background soft arcs */}
+        <path
+          d="M 20 120 C 35 70, 75 40, 120 45"
+          stroke="#CDEEE5"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeDasharray="4 6"
+          opacity="0.7"
+        />
+        <path
+          d="M 30 135 C 50 110, 80 95, 110 100"
+          stroke="#DDF4EE"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          opacity="0.6"
+        />
+
+        {/* Floating mint leaf decor */}
+        <path
+          d="M 35 48 C 24 35 28 20 42 28 C 46 32 46 45 35 48 Z"
+          fill="#A7F3D0"
+          opacity="0.8"
+        />
+        <path
+          d="M 250 120 C 265 110 268 95 258 88 C 252 93 245 106 250 120 Z"
+          fill="#A7F3D0"
+          opacity="0.7"
+        />
+
+        {/* === MEDICAL CLIPBOARD (LEFT) === */}
+        <g transform="translate(48, 22)">
+          {/* Shadow */}
+          <rect x="2" y="6" width="94" height="118" rx="14" fill="#134E4A" opacity="0.08" />
+
+          {/* Board base */}
+          <rect
+            x="0"
+            y="0"
+            width="94"
+            height="118"
+            rx="14"
+            fill="url(#clipBoardGrad)"
+            stroke="url(#clipBorderGrad)"
+            strokeWidth="2.2"
+          />
+
+          {/* Top Gold Clip */}
+          <rect x="30" y="-8" width="34" height="14" rx="4" fill="#FBBF24" stroke="#F59E0B" strokeWidth="1.2" />
+          <circle cx="47" cy="-2" r="2.5" fill="#FFFFFF" />
+
+          {/* Inner ID Card Sheet */}
+          <rect x="10" y="16" width="74" height="88" rx="8" fill="#FFFFFF" opacity="0.9" />
+
+          {/* Avatar circle placeholder */}
+          <circle cx="47" cy="40" r="16" fill="#E6F7F2" />
+          <path
+            d="M 40 48 C 40 43, 44 40, 47 40 C 50 40, 54 43, 54 48 Z"
+            fill="#7CD5C1"
+          />
+          <circle cx="47" cy="34" r="5" fill="#7CD5C1" />
+
+          {/* ID Card info lines */}
+          <rect x="20" y="64" width="54" height="4.5" rx="2.25" fill="#BCE7DD" />
+          <rect x="26" y="74" width="42" height="3.5" rx="1.75" fill="#D3F1E9" />
+          <rect x="22" y="83" width="50" height="3.5" rx="1.75" fill="#D3F1E9" />
+        </g>
+
+        {/* Verified Badge Overlay on Clipboard */}
+        <g transform="translate(112, 100)">
+          <circle cx="16" cy="16" r="16" fill="#FFFFFF" stroke="#E2F5EF" strokeWidth="2" />
+          <circle cx="16" cy="16" r="13" fill="url(#verifiedCheckGrad)" />
+          <path
+            d="M 10 16 L 14 20 L 22 12"
+            stroke="#FFFFFF"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </g>
+
+        {/* === CUTE 3D TOOTH CHARACTER (RIGHT) === */}
+        <g transform="translate(150, 18)">
+          {/* Ground shadow */}
+          <ellipse cx="60" cy="124" rx="42" ry="9" fill="#134E4A" opacity="0.12" />
+
+          {/* Left Little Arm */}
+          <path
+            d="M 22 68 Q 12 78 18 88"
+            stroke="#C4EBE0"
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
+
+          {/* Tooth Body */}
+          <path
+            d="M 32 30
+               C 44 18, 55 22, 62 28
+               C 69 22, 80 18, 92 30
+               C 104 42, 106 68, 102 92
+               C 99 114, 86 122, 75 122
+               C 68 122, 65 110, 60 110
+               C 55 110, 52 122, 45 122
+               C 34 122, 21 114, 18 92
+               C 14 68, 16 42, 32 30 Z"
+            fill="url(#profileToothBody)"
+            stroke="#CEEDE4"
+            strokeWidth="2.2"
+          />
+
+          {/* Mint Dental Cap / Cute Tuft */}
+          <path
+            d="M 68 16 C 75 10 88 12 94 20 C 85 24 74 23 68 16 Z"
+            fill="url(#profileToothCap)"
+          />
+
+          {/* Tooth Highlight */}
+          <path
+            d="M 34 32 C 40 24 50 25 56 30 C 48 30 28 42 26 62 C 24 50 28 38 34 32 Z"
+            fill="#FFFFFF"
+            opacity="0.85"
+          />
+
+          {/* Eyes */}
+          <circle cx="48" cy="58" r="4" fill="#1E384C" />
+          <circle cx="46.5" cy="56.5" r="1.3" fill="#FFFFFF" />
+
+          <circle cx="76" cy="58" r="4" fill="#1E384C" />
+          <circle cx="74.5" cy="56.5" r="1.3" fill="#FFFFFF" />
+
+          {/* Rosy Cheeks */}
+          <ellipse cx="40" cy="66" rx="4.5" ry="3" fill="#FCA5A5" opacity="0.65" />
+          <ellipse cx="84" cy="66" rx="4.5" ry="3" fill="#FCA5A5" opacity="0.65" />
+
+          {/* Happy Smile */}
+          <path
+            d="M 54 66 Q 62 76 70 66"
+            stroke="#1E384C"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            fill="#F87171"
+          />
+
+          {/* Waving Right Hand */}
+          <path
+            d="M 98 62 Q 112 52 116 42"
+            stroke="#C4EBE0"
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
+          <circle cx="116" cy="42" r="4" fill="#FFFFFF" stroke="#C4EBE0" strokeWidth="2" />
+        </g>
+
+        {/* Sparkles */}
+        <path
+          d="M 252 26 Q 254 30 257 31 Q 254 32 252 36 Q 251 32 248 31 Q 251 30 252 26 Z"
+          fill="#F59E0B"
+        />
+        <path
+          d="M 148 16 Q 150 19 153 20 Q 150 21 148 24 Q 147 21 144 20 Q 147 19 148 16 Z"
+          fill="#10B981"
+        />
+      </svg>
+    </div>
+  );
+};
+

@@ -8,8 +8,20 @@ export interface BenhNhanProfile {
   diaChi?: string | null;
   soDienThoai?: string | null;
   email?: string | null;
+  tienSuBenh?: string | null;
   diUngThuoc?: string | null;
   maTaiKhoan?: string | null;
+}
+
+export interface CapNhatHoSoPayload {
+  hoTen: string;
+  ngaySinh: string;
+  gioiTinh?: GioiTinh | null;
+  soDienThoai: string;
+  email?: string | null;
+  diaChi?: string | null;
+  tienSuBenh?: string | null;
+  diUngThuoc?: string | null;
 }
 
 export type CaKham = 'CA_SANG' | 'CA_CHIEU';

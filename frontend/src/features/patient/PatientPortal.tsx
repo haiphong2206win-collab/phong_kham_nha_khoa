@@ -7,18 +7,14 @@ import { PatientHeader } from './components/PatientHeader';
 import { PatientDashboard } from './components/PatientDashboard';
 import { PatientBooking } from './components/PatientBooking';
 import { PatientAppointments } from './components/PatientAppointments';
+import { PatientProfile } from './components/PatientProfile';
 import { patientService } from '@/services/patient.service';
 import type { AuthSession } from '@/types/auth';
 import type { BenhNhanProfile, YeuCauDatLich, PatientDashboardSummary } from '@/types/patient';
 import { 
   CalendarPlus, 
-  Calendar, 
   ArrowLeft, 
   ShieldAlert, 
-  User, 
-  Phone, 
-  Mail, 
-  MapPin, 
   ShieldCheck, 
   HelpCircle,
   Bell
@@ -47,7 +43,16 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
     return 'overview';
   });
 
+  const [isProfileDirty, setIsProfileDirty] = useState<boolean>(false);
+
   const handleSelectTab = (tab: PatientNavTab) => {
+    if (currentTab === 'profile' && isProfileDirty && tab !== 'profile') {
+      const confirmLeave = window.confirm(
+        'Bạn có thay đổi chưa lưu trong hồ sơ cá nhân. Bạn có chắc chắn muốn chuyển trang mà không lưu?'
+      );
+      if (!confirmLeave) return;
+      setIsProfileDirty(false);
+    }
     setCurrentTab(tab);
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
@@ -269,88 +274,16 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
             </div>
           )}
 
-          {/* TAB 5: Hồ sơ cá nhân (Dữ liệu thật từ MySQL) */}
+          {/* TAB 5: Hồ sơ cá nhân (FE-2B.4 kết nối Backend thật qua PUT/GET) */}
           {currentTab === 'profile' && (
-            <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#E3ECE9]">
-                <div>
-                  <h2 className="text-xl font-bold text-[#1E384C]">Hồ sơ cá nhân</h2>
-                  <p className="text-xs text-[#7A9A93] mt-1">
-                    Thông tin bệnh nhân đăng ký trong hệ thống Nha Khoa Nụ Cười Xanh.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleSelectTab('overview')}
-                  className="px-3.5 py-1.5 rounded-xl border border-[#E3ECE9] text-xs font-semibold text-[#344C52] hover:bg-[#F0F5F3] transition-colors inline-flex items-center gap-1.5"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  <span>Quay lại</span>
-                </button>
-              </div>
-
-              <div className="p-6 rounded-3xl bg-white border border-[#E3ECE9] shadow-soft-card space-y-5">
-                <div className="flex items-center gap-4 pb-4 border-b border-[#F0F5F3]">
-                  <div className="h-16 w-16 rounded-full bg-[#E8F6F2] border-2 border-[#70B8AC] text-[#169C89] font-black text-xl flex items-center justify-center">
-                    {(profile?.hoTen || session.user?.tenDangNhap || 'B').charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-[#1E384C]">
-                      {profile?.hoTen || session.user?.tenDangNhap}
-                    </h3>
-                    <span className="text-xs text-[#169C89] font-semibold">
-                      Mã bệnh nhân: {profile?.maBenhNhan || 'BN-Chưa cấp'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                  <div className="p-3 rounded-2xl bg-[#F8FBFA] border border-[#E3ECE9] space-y-1">
-                    <span className="text-[#7A9A93] flex items-center gap-1.5">
-                      <User className="h-3.5 w-3.5 text-[#169C89]" /> Tên đăng nhập
-                    </span>
-                    <span className="font-bold text-[#1E384C] block">
-                      {session.user?.tenDangNhap}
-                    </span>
-                  </div>
-
-                  <div className="p-3 rounded-2xl bg-[#F8FBFA] border border-[#E3ECE9] space-y-1">
-                    <span className="text-[#7A9A93] flex items-center gap-1.5">
-                      <Phone className="h-3.5 w-3.5 text-[#169C89]" /> Số điện thoại
-                    </span>
-                    <span className="font-bold text-[#1E384C] block">
-                      {profile?.soDienThoai || 'Chưa cập nhật'}
-                    </span>
-                  </div>
-
-                  <div className="p-3 rounded-2xl bg-[#F8FBFA] border border-[#E3ECE9] space-y-1">
-                    <span className="text-[#7A9A93] flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5 text-[#169C89]" /> Ngày sinh
-                    </span>
-                    <span className="font-bold text-[#1E384C] block">
-                      {profile?.ngaySinh || 'Chưa cập nhật'}
-                    </span>
-                  </div>
-
-                  <div className="p-3 rounded-2xl bg-[#F8FBFA] border border-[#E3ECE9] space-y-1">
-                    <span className="text-[#7A9A93] flex items-center gap-1.5">
-                      <Mail className="h-3.5 w-3.5 text-[#169C89]" /> Email
-                    </span>
-                    <span className="font-bold text-[#1E384C] block">
-                      {profile?.email || 'Chưa cập nhật'}
-                    </span>
-                  </div>
-
-                  <div className="sm:col-span-2 p-3 rounded-2xl bg-[#F8FBFA] border border-[#E3ECE9] space-y-1">
-                    <span className="text-[#7A9A93] flex items-center gap-1.5">
-                      <MapPin className="h-3.5 w-3.5 text-[#169C89]" /> Địa chỉ
-                    </span>
-                    <span className="font-bold text-[#1E384C] block">
-                      {profile?.diaChi || 'Chưa cập nhật'}
-                    </span>
-                  </div>
-                </div>
-              </div>
+            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+              <PatientProfile
+                session={session}
+                profile={profile}
+                onReloadData={loadData}
+                onNavigateTab={handleSelectTab}
+                onDirtyChange={setIsProfileDirty}
+              />
             </div>
           )}
 
