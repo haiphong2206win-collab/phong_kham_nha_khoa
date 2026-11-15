@@ -47,7 +47,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'treatment-plan', label: 'Lộ trình điều trị', icon: ClipboardList },
   { id: 'profile', label: 'Hồ sơ cá nhân', icon: User },
   { id: 'notifications', label: 'Thông báo', icon: Bell },
-  { id: 'faq', label: 'Hỏi đáp (FAQ)', icon: HelpCircle },
+  { id: 'faq', label: 'Câu hỏi thường gặp', icon: HelpCircle },
 ];
 
 export const PatientSidebar: React.FC<PatientSidebarProps> = ({

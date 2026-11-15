@@ -1276,3 +1276,243 @@ export const ToothMascotWithQuestion: React.FC<{ className?: string }> = ({ clas
     </div>
   );
 };
+
+/**
+ * FE-2B.6: Mascot Hero Art cho Câu hỏi thường gặp (FAQ)
+ * Bao gồm Mascot Răng 3D, Bảng kiểm nha khoa, bong bóng dấu hỏi và tia sáng
+ */
+export const FaqHeroArt: React.FC<{ className?: string }> = ({ className = "w-64 h-36" }) => {
+  return (
+    <div className={`relative flex items-center justify-center select-none pointer-events-none ${className}`}>
+      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#D1F2E8]/70 via-[#E4F8F2]/50 to-transparent blur-xl" />
+
+      <svg
+        viewBox="0 0 280 160"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-full h-full relative z-10 drop-shadow-sm"
+      >
+        <defs>
+          <linearGradient id="faqToothGrad" x1="120" y1="30" x2="200" y2="135" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="65%" stopColor="#F2FBF8" />
+            <stop offset="100%" stopColor="#D4EFE9" />
+          </linearGradient>
+
+          <linearGradient id="faqBoardGrad" x1="180" y1="20" x2="260" y2="130" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="100%" stopColor="#E6F5F1" />
+          </linearGradient>
+
+          <linearGradient id="faqBubbleGrad" x1="70" y1="40" x2="115" y2="90" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#34D399" />
+            <stop offset="100%" stopColor="#0D9488" />
+          </linearGradient>
+        </defs>
+
+        {/* Ambient Leaves */}
+        <path d="M 235 125 C 255 110, 260 135, 245 145 Z" fill="#A7F3D0" opacity="0.7" />
+        <path d="M 245 105 C 265 95, 268 115, 255 122 Z" fill="#6EE7B7" opacity="0.6" />
+
+        {/* Shadow */}
+        <ellipse cx="165" cy="138" rx="55" ry="9" fill="#144C3F" opacity="0.12" />
+        <ellipse cx="225" cy="136" rx="35" ry="7" fill="#144C3F" opacity="0.10" />
+
+        {/* Dental Clipboard Board behind Tooth */}
+        <g transform="translate(185, 25) rotate(6)">
+          <rect x="0" y="0" width="62" height="92" rx="10" fill="url(#faqBoardGrad)" stroke="#BEE3D9" strokeWidth="2" />
+          {/* Clip */}
+          <rect x="18" y="-6" width="26" height="12" rx="4" fill="#169C89" />
+          <circle cx="31" cy="-1" r="2.5" fill="#FFFFFF" />
+          {/* Check lines */}
+          <circle cx="12" cy="24" r="4" fill="#34D399" />
+          <path d="M 10 24 L 11.5 25.5 L 14 22.5" stroke="#FFFFFF" strokeWidth="1.2" strokeLinecap="round" />
+          <line x1="20" y1="24" x2="52" y2="24" stroke="#A4CAC1" strokeWidth="2.5" strokeLinecap="round" />
+
+          <circle cx="12" cy="40" r="4" fill="#34D399" />
+          <path d="M 10 40 L 11.5 41.5 L 14 38.5" stroke="#FFFFFF" strokeWidth="1.2" strokeLinecap="round" />
+          <line x1="20" y1="40" x2="52" y2="40" stroke="#A4CAC1" strokeWidth="2.5" strokeLinecap="round" />
+
+          <circle cx="12" cy="56" r="4" fill="#34D399" />
+          <path d="M 10 56 L 11.5 57.5 L 14 54.5" stroke="#FFFFFF" strokeWidth="1.2" strokeLinecap="round" />
+          <line x1="20" y1="56" x2="48" y2="56" stroke="#A4CAC1" strokeWidth="2.5" strokeLinecap="round" />
+
+          <line x1="12" y1="72" x2="42" y2="72" stroke="#CEEBE3" strokeWidth="2" strokeLinecap="round" />
+        </g>
+
+        {/* 3D Smiling Tooth Mascot */}
+        <g transform="translate(95, 20)">
+          <path
+            d="M 45 28
+               C 56 18, 68 22, 75 28
+               C 82 22, 94 18, 105 28
+               C 116 38, 114 58, 111 76
+               C 109 90, 104 106, 95 110
+               C 87 114, 83 100, 80 91
+               C 78 84, 72 84, 70 91
+               C 67 100, 63 114, 55 110
+               C 46 106, 41 90, 39 76
+               C 36 58, 34 38, 45 28 Z"
+            fill="url(#faqToothGrad)"
+            stroke="#C0ECE1"
+            strokeWidth="1.5"
+          />
+
+          {/* Happy Eyes */}
+          <circle cx="62" cy="50" r="4" fill="#1E384C" />
+          <circle cx="60.5" cy="48.5" r="1.3" fill="#FFFFFF" />
+
+          <circle cx="88" cy="50" r="4" fill="#1E384C" />
+          <circle cx="86.5" cy="48.5" r="1.3" fill="#FFFFFF" />
+
+          {/* Blush Cheeks */}
+          <circle cx="53" cy="60" r="4" fill="#FCA5A5" opacity="0.65" />
+          <circle cx="97" cy="60" r="4" fill="#FCA5A5" opacity="0.65" />
+
+          {/* Warm Happy Smile */}
+          <path
+            d="M 68 60 Q 75 70 82 60"
+            stroke="#1E384C"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            fill="#F87171"
+          />
+
+          {/* Star Sparkle on Tooth */}
+          <path
+            d="M 46 36 Q 48 39 51 40 Q 48 41 46 44 Q 45 41 42 40 Q 45 39 46 36 Z"
+            fill="#34D399"
+          />
+        </g>
+
+        {/* Left Speech Bubble with Question Mark '?' */}
+        <g transform="translate(60, 48)">
+          <circle cx="25" cy="25" r="22" fill="url(#faqBubbleGrad)" stroke="#FFFFFF" strokeWidth="2.5" />
+          <path d="M 38 40 L 46 48 L 41 38 Z" fill="#0D9488" />
+          <text
+            x="25"
+            y="33"
+            textAnchor="middle"
+            fill="#FFFFFF"
+            fontSize="24"
+            fontWeight="900"
+            fontFamily="sans-serif"
+          >
+            ?
+          </text>
+        </g>
+
+        {/* Golden Sunburst Sparkles */}
+        <path
+          d="M 195 18 Q 197 22 201 23 Q 197 24 195 28 Q 194 24 190 23 Q 194 22 195 18 Z"
+          fill="#F59E0B"
+        />
+        <path
+          d="M 78 24 Q 79 26 82 27 Q 79 28 78 30 Q 77 28 75 27 Q 77 26 78 24 Z"
+          fill="#F59E0B"
+        />
+      </svg>
+    </div>
+  );
+};
+
+/**
+ * FE-2B.6: Mascot Răng Đeo Tai Nghe (Headphone Mascot)
+ * Cho khối "Cần thêm hỗ trợ?" theo đúng chuẩn mockup được duyệt
+ */
+export const ToothMascotWithHeadphone: React.FC<{ className?: string }> = ({ className = "w-28 h-24" }) => {
+  return (
+    <div className={`relative flex items-center justify-center select-none pointer-events-none ${className}`}>
+      <svg
+        viewBox="0 0 160 140"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-full h-full drop-shadow-sm"
+      >
+        <defs>
+          <linearGradient id="hpToothGrad" x1="35" y1="25" x2="115" y2="115" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="65%" stopColor="#F2FBF8" />
+            <stop offset="100%" stopColor="#D4EFE9" />
+          </linearGradient>
+
+          <linearGradient id="hpGrad" x1="20" y1="20" x2="135" y2="90" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#2DD4BF" />
+            <stop offset="100%" stopColor="#0F766E" />
+          </linearGradient>
+
+          <linearGradient id="chatBubbleGrad" x1="105" y1="75" x2="140" y2="105" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#34D399" />
+            <stop offset="100%" stopColor="#059669" />
+          </linearGradient>
+        </defs>
+
+        {/* Shadow */}
+        <ellipse cx="78" cy="120" rx="36" ry="7" fill="#144C3F" opacity="0.12" />
+
+        {/* Headphone Arch Over Tooth */}
+        <path
+          d="M 38 60 C 35 25, 120 25, 118 60"
+          stroke="url(#hpGrad)"
+          strokeWidth="6"
+          strokeLinecap="round"
+          fill="none"
+        />
+
+        {/* Tooth Body */}
+        <path
+          d="M 52 40
+             C 61 32, 71 35, 78 40
+             C 85 35, 95 32, 104 40
+             C 113 49, 111 66, 109 82
+             C 107 94, 103 108, 95 112
+             C 88 116, 84 104, 82 96
+             C 80 90, 76 90, 74 96
+             C 72 104, 68 116, 61 112
+             C 53 108, 49 94, 47 82
+             C 45 66, 43 49, 52 40 Z"
+          fill="url(#hpToothGrad)"
+          stroke="#C0ECE1"
+          strokeWidth="1.5"
+        />
+
+        {/* Left Earcup */}
+        <rect x="30" y="52" width="12" height="22" rx="6" fill="#169C89" stroke="#A7F3D0" strokeWidth="1.5" />
+        <ellipse cx="36" cy="63" rx="3.5" ry="7" fill="#0F766E" />
+
+        {/* Right Earcup */}
+        <rect x="114" y="52" width="12" height="22" rx="6" fill="#169C89" stroke="#A7F3D0" strokeWidth="1.5" />
+        <ellipse cx="120" cy="63" rx="3.5" ry="7" fill="#0F766E" />
+
+        {/* Eyes */}
+        <circle cx="67" cy="58" r="3.5" fill="#1E384C" />
+        <circle cx="65.5" cy="56.5" r="1.1" fill="#FFFFFF" />
+
+        <circle cx="89" cy="58" r="3.5" fill="#1E384C" />
+        <circle cx="87.5" cy="56.5" r="1.1" fill="#FFFFFF" />
+
+        {/* Cheeks */}
+        <circle cx="59" cy="66" r="3.5" fill="#FCA5A5" opacity="0.6" />
+        <circle cx="97" cy="66" r="3.5" fill="#FCA5A5" opacity="0.6" />
+
+        {/* Smile */}
+        <path
+          d="M 73 66 Q 78 74 83 66"
+          stroke="#1E384C"
+          strokeWidth="2"
+          strokeLinecap="round"
+          fill="#F87171"
+        />
+
+        {/* Little Speech Bubble with Three Dots */}
+        <g transform="translate(108, 72)">
+          <rect x="0" y="0" width="30" height="20" rx="10" fill="url(#chatBubbleGrad)" />
+          <path d="M 6 18 L 0 24 L 8 20 Z" fill="#059669" />
+          <circle cx="9" cy="10" r="1.8" fill="#FFFFFF" />
+          <circle cx="15" cy="10" r="1.8" fill="#FFFFFF" />
+          <circle cx="21" cy="10" r="1.8" fill="#FFFFFF" />
+        </g>
+      </svg>
+    </div>
+  );
+};

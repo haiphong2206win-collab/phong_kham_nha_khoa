@@ -9,13 +9,13 @@ import { PatientBooking } from './components/PatientBooking';
 import { PatientAppointments } from './components/PatientAppointments';
 import { PatientProfile } from './components/PatientProfile';
 import { PatientTreatment } from './components/PatientTreatment';
+import { PatientFAQ } from './components/PatientFAQ';
 import { patientService } from '@/services/patient.service';
 import type { AuthSession } from '@/types/auth';
 import type { BenhNhanProfile, YeuCauDatLich, PatientDashboardSummary } from '@/types/patient';
 import { 
   ArrowLeft, 
   ShieldAlert, 
-  HelpCircle,
   Bell
 } from 'lucide-react';
 
@@ -276,58 +276,10 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
             </div>
           )}
 
-          {/* TAB 7: Hỏi đáp FAQ */}
+          {/* TAB 7: Câu hỏi thường gặp (FE-2B.6) */}
           {currentTab === 'faq' && (
-            <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#E3ECE9]">
-                <div>
-                  <h2 className="text-xl font-bold text-[#1E384C]">Hỏi đáp & Hỗ trợ (FAQ)</h2>
-                  <p className="text-xs text-[#7A9A93] mt-1">
-                    Giải đáp thắc mắc thường gặp về quy trình khám và chăm sóc răng miệng.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleSelectTab('overview')}
-                  className="px-3.5 py-1.5 rounded-xl border border-[#E3ECE9] text-xs font-semibold text-[#344C52] hover:bg-[#F0F5F3] transition-colors inline-flex items-center gap-1.5"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  <span>Quay lại</span>
-                </button>
-              </div>
-
-              <div className="p-6 rounded-3xl bg-white border border-[#E3ECE9] shadow-soft-card space-y-3 text-xs">
-                <div className="p-4 rounded-2xl bg-[#F8FBFA] border border-[#E3ECE9] space-y-1">
-                  <h4 className="font-bold text-[#1E384C] flex items-center gap-1.5">
-                    <HelpCircle className="h-4 w-4 text-[#169C89]" />
-                    Làm sao để biết lịch hẹn đã được xác nhận?
-                  </h4>
-                  <p className="text-[#5A777E] leading-relaxed">
-                    Sau khi bạn gửi yêu cầu đặt lịch, nhân viên phòng khám sẽ liên hệ và cập nhật trạng thái thành <strong>Đã xác nhận</strong> ngay trên bảng điều khiển của bạn.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-[#F8FBFA] border border-[#E3ECE9] space-y-1">
-                  <h4 className="font-bold text-[#1E384C] flex items-center gap-1.5">
-                    <HelpCircle className="h-4 w-4 text-[#169C89]" />
-                    Tôi có thể đổi lịch hẹn khám không?
-                  </h4>
-                  <p className="text-[#5A777E] leading-relaxed">
-                    Bạn có thể gửi yêu cầu đặt lịch mới với ngày giờ mong muốn hoặc liên hệ hotline phòng khám để được hỗ trợ nhanh nhất.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-[#E8F6F2] border border-[#CEEBE2] text-[#169C89] font-semibold flex items-center justify-between">
-                  <span>Hỗ trợ bệnh nhân trực tiếp tại quầy tiếp đón phòng khám</span>
-                  <button
-                    type="button"
-                    onClick={() => handleSelectTab('booking')}
-                    className="underline text-xs font-bold"
-                  >
-                    Đặt lịch ngay &gt;
-                  </button>
-                </div>
-              </div>
+            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+              <PatientFAQ onNavigateTab={handleSelectTab} />
             </div>
           )}
         </main>
