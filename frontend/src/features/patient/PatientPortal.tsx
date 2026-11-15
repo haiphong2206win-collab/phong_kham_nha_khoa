@@ -8,14 +8,13 @@ import { PatientDashboard } from './components/PatientDashboard';
 import { PatientBooking } from './components/PatientBooking';
 import { PatientAppointments } from './components/PatientAppointments';
 import { PatientProfile } from './components/PatientProfile';
+import { PatientTreatment } from './components/PatientTreatment';
 import { patientService } from '@/services/patient.service';
 import type { AuthSession } from '@/types/auth';
 import type { BenhNhanProfile, YeuCauDatLich, PatientDashboardSummary } from '@/types/patient';
 import { 
-  CalendarPlus, 
   ArrowLeft, 
   ShieldAlert, 
-  ShieldCheck, 
   HelpCircle,
   Bell
 } from 'lucide-react';
@@ -222,55 +221,13 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
             />
           )}
 
-          {/* TAB 4: Lộ trình điều trị */}
+          {/* TAB 4: Lộ trình điều trị (FE-2B.5) */}
           {currentTab === 'treatment-plan' && (
-            <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#E3ECE9]">
-                <div>
-                  <h2 className="text-xl font-bold text-[#1E384C]">Lộ trình điều trị nha khoa</h2>
-                  <p className="text-xs text-[#7A9A93] mt-1">
-                    Theo dõi các giai đoạn phác đồ điều trị được bác sĩ chuyên khoa phụ trách thiết lập.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleSelectTab('overview')}
-                  className="px-3.5 py-1.5 rounded-xl border border-[#E3ECE9] text-xs font-semibold text-[#344C52] hover:bg-[#F0F5F3] transition-colors inline-flex items-center gap-1.5"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  <span>Quay lại</span>
-                </button>
-              </div>
-
-              <div className="p-6 rounded-3xl bg-white border border-[#E3ECE9] shadow-soft-card space-y-4">
-                <div className="h-12 w-12 rounded-2xl bg-[#E8F6F2] text-[#169C89] flex items-center justify-center">
-                  <ShieldCheck className="h-6 w-6" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-[#1E384C]">
-                    Hồ sơ phác đồ điều trị cá nhân
-                  </h3>
-                  <p className="text-xs text-[#7A9A93] leading-relaxed">
-                    Theo quy trình y khoa chuẩn tại Nha Khoa Nụ Cười Xanh, phác đồ điều trị (chỉnh nha, implant, phục hình răng sứ...) chỉ được kích hoạt sau khi bác sĩ thăm khám và chụp X-quang trực tiếp tại phòng khám.
-                  </p>
-                </div>
-                <div className="p-3.5 rounded-2xl bg-[#F8FBFA] border border-[#E3ECE9] text-xs text-[#5A777E] space-y-1">
-                  <span className="font-bold text-[#1E384C] block">Phân quyền bảo mật Backend:</span>
-                  <p>
-                    Endpoint <code>/api/v1/lo-trinh-dieu-tri</code> chỉ cấp quyền truy cập chỉnh sửa cho vai trò <strong>Bác sĩ</strong> và <strong>Chủ phòng khám</strong> để đảm bảo tính an toàn chuyên môn y tế.
-                  </p>
-                </div>
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={() => handleSelectTab('booking')}
-                    className="px-4 py-2 rounded-xl bg-[#169C89] hover:bg-[#138776] text-white text-xs font-bold transition-colors shadow-2xs inline-flex items-center gap-1.5"
-                  >
-                    <CalendarPlus className="h-3.5 w-3.5" />
-                    <span>Đặt lịch khám tư vấn lộ trình</span>
-                  </button>
-                </div>
-              </div>
+            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+              <PatientTreatment
+                session={session}
+                onNavigateTab={handleSelectTab}
+              />
             </div>
           )}
 

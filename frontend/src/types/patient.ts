@@ -48,3 +48,55 @@ export interface PatientDashboardSummary {
   treatmentPlanNote: string;
 }
 
+// ============================================================================
+// FE-2B.5: LỘ TRÌNH ĐIỀU TRỊ & BUỔI ĐIỀU TRỊ (TREATMENT PLAN CONTRACT)
+// ============================================================================
+
+export type TrangThaiLoTrinh =
+  | 'CHUA_BAT_DAU'
+  | 'DANG_DIEU_TRI'
+  | 'TAM_DUNG'
+  | 'HOAN_THANH'
+  | 'DA_HUY';
+
+export type TrangThaiBuoiDieuTri =
+  | 'CHUA_LEN_LICH'
+  | 'DA_LEN_LICH'
+  | 'LICH_DA_HUY'
+  | 'DANG_THUC_HIEN'
+  | 'HOAN_THANH'
+  | 'TAM_HOAN'
+  | 'DA_BO';
+
+export interface LoTrinhDieuTri {
+  maLoTrinhDieuTri: string;
+  maBenhNhan: string;
+  maLoTrinhMau?: string | null;
+  tenLoTrinh: string;
+  ghiChu?: string | null;
+  trangThai: TrangThaiLoTrinh;
+  tongSoBuoi: number;
+  soBuoiHoanThanh: number;
+  soBuoiDaBo: number;
+  thoiGianTao: string;
+  thoiGianCapNhat?: string | null;
+  version?: number;
+}
+
+export interface BuoiDieuTri {
+  maBuoiDieuTri: string;
+  maLoTrinhDieuTri: string;
+  soThuTu: number;
+  tenBuoi: string;
+  noiDung?: string | null;
+  khoangCachMin?: number | null;
+  khoangCachMax?: number | null;
+  ghiChu?: string | null;
+  trangThai: TrangThaiBuoiDieuTri;
+  buoiBoSung?: boolean;
+  lyDoBo?: string | null;
+  thoiGianTao?: string;
+  thoiGianCapNhat?: string | null;
+  version?: number;
+  maLichKham?: string | null;
+}

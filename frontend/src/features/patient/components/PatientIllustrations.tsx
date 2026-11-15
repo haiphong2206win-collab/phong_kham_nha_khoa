@@ -154,9 +154,7 @@ export const ToothMascotWithShield: React.FC<{ className?: string }> = ({ classN
       </svg>
     </div>
   );
-};
-
-/**
+};/**
  * Minh họa Răng Niềng 3D cho Card "Tiến độ điều trị"
  */
 export const ToothWithBraces: React.FC<{ className?: string }> = ({ className = "w-20 h-20" }) => {
@@ -227,9 +225,7 @@ export const ToothWithBraces: React.FC<{ className?: string }> = ({ className = 
       </svg>
     </div>
   );
-};
-
-/**
+};/**
  * Minh họa nha khoa tổng hợp cho Hero Banner:
  * Gồm Răng 3D cầm kính lúp khám nha khoa + Ghế nha khoa hiện đại
  */
@@ -493,9 +489,7 @@ export const ToothWithHeadset: React.FC<{ className?: string }> = ({ className =
       </svg>
     </div>
   );
-};
-
-/**
+};/**
  * Minh họa Ghế Nha Khoa & Răng Thiên Thần cho Hero Banner Đặt Lịch (FE-2B.2)
  */
 export const BookingHeroDentalArt: React.FC = () => {
@@ -626,9 +620,7 @@ export const BookingHeroDentalArt: React.FC = () => {
       </div>
     </div>
   );
-};
-
-/**
+};/**
  * Minh họa Răng 3D tươi cười đứng cạnh Lịch hẹn khám (FE-2B.3)
  * Phù hợp hoàn hảo với ảnh mô phỏng Lịch khám của tôi
  */
@@ -777,9 +769,7 @@ export const AppointmentsHeroArt: React.FC = () => {
       </div>
     </div>
   );
-};
-
-/**
+};/**
  * Minh họa Lịch mini 3D cho Card "Lưu ý về lịch khám"
  */
 export const MiniCalendarArt: React.FC<{ className?: string }> = ({ className = "w-16 h-16" }) => {
@@ -811,9 +801,7 @@ export const MiniCalendarArt: React.FC<{ className?: string }> = ({ className = 
       </svg>
     </div>
   );
-};
-
-/**
+};/**
  * Minh họa 3D Hero Art cho trang Hồ sơ cá nhân (FE-2B.4)
  * Bao gồm hồ sơ y tế / clipboard với dấu tích chứng nhận + Mascot răng trắng vui vẻ
  * Khớp chuẩn ảnh mockup duyệt FE-2B.4
@@ -1021,5 +1009,270 @@ export const ProfileHeroArt: React.FC<{ className?: string }> = ({ className = "
       </svg>
     </div>
   );
-};
+};/**
+ * FE-2B.5: Minh họa nha khoa Hero Art cho Lộ trình điều trị
+ * Gồm Răng 3D cầm khiên bảo vệ, bảng checklist lộ trình y tế và lịch tái khám
+ */
+export const TreatmentHeroArt: React.FC<{ className?: string }> = ({ className = 'w-64 h-36' }) => {
+  return (
+    <div className={`relative select-none pointer-events-none flex items-center justify-center ${className}`}>
+      <svg
+        viewBox="0 0 320 180"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-full h-full drop-shadow-md"
+      >
+        <defs>
+          <linearGradient id="treatToothGrad" x1="140" y1="20" x2="220" y2="150" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="50%" stopColor="#F2FAF8" />
+            <stop offset="100%" stopColor="#D2EFE8" />
+          </linearGradient>
 
+          <linearGradient id="treatClipboardGrad" x1="200" y1="20" x2="290" y2="160" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#6EE7B7" />
+            <stop offset="100%" stopColor="#10B981" />
+          </linearGradient>
+
+          <linearGradient id="treatShieldGrad" x1="180" y1="90" x2="230" y2="150" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#2DD4BF" />
+            <stop offset="100%" stopColor="#0D9488" />
+          </linearGradient>
+
+          <linearGradient id="treatCalendarGrad" x1="240" y1="70" x2="310" y2="160" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="100%" stopColor="#F0FDF4" />
+          </linearGradient>
+        </defs>
+
+        {/* Backdrop Glow */}
+        <ellipse cx="200" cy="95" rx="100" ry="60" fill="#E6F7F2" opacity="0.6" />
+
+        {/* 1. Medical Treatment Checklist / Clipboard (Behind Tooth) */}
+        <g>
+          {/* Board */}
+          <rect x="210" y="32" width="76" height="96" rx="14" fill="#34D399" opacity="0.9" />
+          <rect x="214" y="36" width="68" height="88" rx="10" fill="#FFFFFF" />
+          {/* Clip */}
+          <rect x="236" y="26" width="24" height="12" rx="4" fill="#F59E0B" />
+          <circle cx="248" cy="32" r="2.5" fill="#FFFFFF" />
+
+          {/* Checklist rows */}
+          {/* Row 1 */}
+          <rect x="222" y="48" width="10" height="10" rx="3" fill="#10B981" />
+          <path d="M 224 53 L 226.5 55.5 L 230 50.5" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <rect x="236" y="51" width="38" height="4" rx="2" fill="#94A3B8" />
+
+          {/* Row 2 */}
+          <rect x="222" y="64" width="10" height="10" rx="3" fill="#10B981" />
+          <path d="M 224 69 L 226.5 71.5 L 230 66.5" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <rect x="236" y="67" width="32" height="4" rx="2" fill="#94A3B8" />
+
+          {/* Row 3 */}
+          <rect x="222" y="80" width="10" height="10" rx="3" fill="#E2E8F0" />
+          <rect x="236" y="83" width="40" height="4" rx="2" fill="#CBD5E1" />
+
+          {/* Row 4 */}
+          <rect x="222" y="96" width="10" height="10" rx="3" fill="#E2E8F0" />
+          <rect x="236" y="99" width="28" height="4" rx="2" fill="#CBD5E1" />
+        </g>
+
+        {/* 2. Calendar Grid Card (Right Side) */}
+        <g>
+          {/* Calendar Body */}
+          <rect x="250" y="74" width="62" height="66" rx="12" fill="url(#treatCalendarGrad)" stroke="#A7F3D0" strokeWidth="1.5" />
+          <path d="M 250 86 L 312 86" stroke="#A7F3D0" strokeWidth="1" />
+          {/* Hanging Rings */}
+          <rect x="262" y="70" width="5" height="7" rx="2.5" fill="#10B981" />
+          <rect x="278" y="70" width="5" height="7" rx="2.5" fill="#10B981" />
+          <rect x="294" y="70" width="5" height="7" rx="2.5" fill="#10B981" />
+
+          {/* Mini Calendar Dots / Grid */}
+          <circle cx="262" cy="98" r="3" fill="#10B981" />
+          <circle cx="274" cy="98" r="3" fill="#10B981" />
+          <circle cx="286" cy="98" r="3" fill="#10B981" />
+          <circle cx="298" cy="98" r="3" fill="#CBD5E1" />
+
+          <circle cx="262" cy="112" r="3" fill="#10B981" />
+          <circle cx="274" cy="112" r="3" fill="#CBD5E1" />
+          <circle cx="286" cy="112" r="3" fill="#CBD5E1" />
+          <circle cx="298" cy="112" r="3" fill="#CBD5E1" />
+
+          <circle cx="262" cy="126" r="3" fill="#CBD5E1" />
+          <circle cx="274" cy="126" r="3" fill="#CBD5E1" />
+          <circle cx="286" cy="126" r="3" fill="#CBD5E1" />
+        </g>
+
+        {/* 3. Cute 3D Tooth Mascot */}
+        <g>
+          {/* Shadow */}
+          <ellipse cx="170" cy="162" rx="46" ry="10" fill="#144C3F" opacity="0.14" />
+
+          {/* Tooth Body Outline */}
+          <path
+            d="M 135 52
+               C 148 40, 162 45, 170 52
+               C 178 45, 192 40, 205 52
+               C 218 64, 215 88, 212 110
+               C 210 126, 204 148, 194 154
+               C 184 160, 178 142, 175 130
+               C 173 122, 167 122, 165 130
+               C 162 142, 156 160, 146 154
+               C 136 148, 130 126, 128 110
+               C 125 88, 122 64, 135 52 Z"
+            fill="url(#treatToothGrad)"
+            stroke="#B6E6DC"
+            strokeWidth="1.8"
+          />
+
+          {/* Cute Eyes */}
+          <circle cx="156" cy="78" r="4.5" fill="#1E384C" />
+          <circle cx="154.5" cy="76" r="1.5" fill="#FFFFFF" />
+
+          <circle cx="184" cy="78" r="4.5" fill="#1E384C" />
+          <circle cx="182.5" cy="76" r="1.5" fill="#FFFFFF" />
+
+          {/* Rosy Cheeks */}
+          <ellipse cx="147" cy="88" rx="5" ry="3.5" fill="#FCA5A5" opacity="0.65" />
+          <ellipse cx="193" cy="88" rx="5" ry="3.5" fill="#FCA5A5" opacity="0.65" />
+
+          {/* Cheerful Smile */}
+          <path
+            d="M 163 88 Q 170 99 177 88"
+            stroke="#1E384C"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            fill="#F87171"
+          />
+
+          {/* Left Hand Holding Shield */}
+          <path
+            d="M 132 94 Q 120 102 126 114"
+            stroke="#C0ECE2"
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
+
+          {/* Shield */}
+          <path
+            d="M 108 98 Q 126 94 144 98 C 144 118, 134 136, 126 144 C 118 136, 108 118, 108 98 Z"
+            fill="url(#treatShieldGrad)"
+            stroke="#FFFFFF"
+            strokeWidth="2"
+          />
+          {/* White Plus Symbol on Shield */}
+          <rect x="123" y="107" width="6" height="18" rx="2" fill="#FFFFFF" />
+          <rect x="117" y="113" width="18" height="6" rx="2" fill="#FFFFFF" />
+
+          {/* Right Hand Pointing to Checklist */}
+          <path
+            d="M 206 90 Q 218 84 224 88"
+            stroke="#C0ECE2"
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
+          <circle cx="224" cy="88" r="4" fill="#FFFFFF" stroke="#C0ECE2" strokeWidth="2" />
+        </g>
+
+        {/* Decorative Sparkles & Mint Leaves */}
+        <path
+          d="M 94 40 Q 96 44 100 45 Q 96 46 94 50 Q 93 46 89 45 Q 93 44 94 40 Z"
+          fill="#10B981"
+        />
+        <path
+          d="M 288 38 Q 290 41 293 42 Q 290 43 288 46 Q 287 43 284 42 Q 287 41 288 38 Z"
+          fill="#F59E0B"
+        />
+      </svg>
+    </div>
+  );
+};/**
+ * FE-2B.5: Mascot răng nha khoa cầm dấu hỏi "?" cho card Hỗ trợ & hướng dẫn
+ */
+export const ToothMascotWithQuestion: React.FC<{ className?: string }> = ({ className = 'w-24 h-24' }) => {
+  return (
+    <div className={`relative select-none pointer-events-none flex items-center justify-center ${className}`}>
+      <svg
+        viewBox="0 0 120 120"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-full h-full drop-shadow-sm"
+      >
+        <defs>
+          <linearGradient id="qToothGrad" x1="30" y1="20" x2="90" y2="100" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="60%" stopColor="#F1FAF8" />
+            <stop offset="100%" stopColor="#D4EFE9" />
+          </linearGradient>
+
+          <linearGradient id="qBubbleGrad" x1="15" y1="50" x2="50" y2="85" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#5EEAD4" />
+            <stop offset="100%" stopColor="#0D9488" />
+          </linearGradient>
+        </defs>
+
+        {/* Shadow */}
+        <ellipse cx="68" cy="108" rx="34" ry="7" fill="#144C3F" opacity="0.12" />
+
+        {/* Tooth Body */}
+        <path
+          d="M 45 36
+             C 54 28, 64 31, 70 36
+             C 76 31, 86 28, 95 36
+             C 104 45, 102 62, 100 78
+             C 98 90, 94 104, 86 108
+             C 79 112, 75 100, 73 92
+             C 71 86, 67 86, 65 92
+             C 63 100, 59 112, 52 108
+             C 44 104, 40 90, 38 78
+             C 36 62, 34 45, 45 36 Z"
+          fill="url(#qToothGrad)"
+          stroke="#C2ECE3"
+          strokeWidth="1.5"
+        />
+
+        {/* Cute Eyes */}
+        <circle cx="58" cy="56" r="3.5" fill="#1E384C" />
+        <circle cx="57" cy="55" r="1" fill="#FFFFFF" />
+
+        <circle cx="80" cy="56" r="3.5" fill="#1E384C" />
+        <circle cx="79" cy="55" r="1" fill="#FFFFFF" />
+
+        {/* Cheeks */}
+        <circle cx="51" cy="64" r="3.5" fill="#FCA5A5" opacity="0.6" />
+        <circle cx="87" cy="64" r="3.5" fill="#FCA5A5" opacity="0.6" />
+
+        {/* Curious Smile */}
+        <path
+          d="M 64 64 Q 69 72 74 64"
+          stroke="#1E384C"
+          strokeWidth="2"
+          strokeLinecap="round"
+          fill="#F87171"
+        />
+
+        {/* Question Bubble Badge on Left */}
+        <g>
+          <circle cx="32" cy="72" r="16" fill="url(#qBubbleGrad)" stroke="#FFFFFF" strokeWidth="2" />
+          <text
+            x="32"
+            y="78"
+            textAnchor="middle"
+            fill="#FFFFFF"
+            fontSize="18"
+            fontWeight="bold"
+            fontFamily="sans-serif"
+          >
+            ?
+          </text>
+        </g>
+
+        {/* Small Sparkles */}
+        <path
+          d="M 98 28 Q 100 31 103 32 Q 100 33 98 36 Q 97 33 94 32 Q 97 31 98 28 Z"
+          fill="#F59E0B"
+        />
+      </svg>
+    </div>
+  );
+};
