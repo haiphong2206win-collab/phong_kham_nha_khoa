@@ -134,3 +134,99 @@ export const TRANG_THAI_LICH_MAP: Record<TrangThaiDatLich, TrangThaiInfo> = {
     description: 'Bệnh nhân đề xuất đổi thời gian khám',
   },
 };
+
+// =========================================================================
+// ENUMS & INTERFACES FOR FE-3.3 (CONSULTATION & TREATMENT SESSIONS)
+// =========================================================================
+
+export type TrangThaiLoTrinh =
+  | 'CHUA_BAT_DAU'
+  | 'DANG_DIEU_TRI'
+  | 'TAM_DUNG'
+  | 'HOAN_THANH'
+  | 'DA_HUY';
+
+export type TrangThaiBuoiDieuTri =
+  | 'CHUA_LEN_LICH'
+  | 'DA_LEN_LICH'
+  | 'LICH_DA_HUY'
+  | 'DANG_THUC_HIEN'
+  | 'HOAN_THANH'
+  | 'TAM_HOAN'
+  | 'DA_BO';
+
+export interface LoTrinhDieuTriResponse {
+  maLoTrinhDieuTri: string;
+  maBenhNhan: string;
+  maLoTrinhMau: string;
+  tenLoTrinh: string;
+  ghiChu?: string | null;
+  trangThai: TrangThaiLoTrinh;
+  tongSoBuoi: number;
+  soBuoiHoanThanh: number;
+  soBuoiDaBo: number;
+  thoiGianTao: string;
+  thoiGianCapNhat?: string | null;
+  version?: number;
+}
+
+export interface BuoiDieuTriResponse {
+  maBuoiDieuTri: string;
+  maLoTrinhDieuTri: string;
+  soThuTu: number;
+  tenBuoi: string;
+  noiDung: string;
+  khoangCachMin?: number | null;
+  khoangCachMax?: number | null;
+  ghiChu?: string | null;
+  trangThai: TrangThaiBuoiDieuTri;
+  buoiBoSung: boolean;
+  lyDoBo?: string | null;
+  thoiGianTao?: string;
+  thoiGianCapNhat?: string;
+  version?: number;
+  maLichKham?: string | null;
+}
+
+export interface LienKetBuoiVoiLichRequest {
+  maLichKham: string;
+}
+
+export interface CapNhatBuoiDieuTriRequest {
+  tenBuoi: string;
+  noiDung: string;
+  khoangCachMin?: number | null;
+  khoangCachMax?: number | null;
+  ghiChu?: string | null;
+}
+
+export const TRANG_THAI_BUOI_MAP: Record<TrangThaiBuoiDieuTri, { label: string; badgeClass: string }> = {
+  CHUA_LEN_LICH: {
+    label: 'Chưa lên lịch',
+    badgeClass: 'bg-slate-100 text-slate-600 border-slate-200',
+  },
+  DA_LEN_LICH: {
+    label: 'Đã lên lịch',
+    badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
+  },
+  DANG_THUC_HIEN: {
+    label: 'Đang thực hiện',
+    badgeClass: 'bg-teal-50 text-teal-800 border-teal-300 font-semibold',
+  },
+  HOAN_THANH: {
+    label: 'Đã hoàn thành',
+    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 font-semibold',
+  },
+  TAM_HOAN: {
+    label: 'Tạm hoãn',
+    badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
+  },
+  LICH_DA_HUY: {
+    label: 'Lịch đã hủy',
+    badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
+  },
+  DA_BO: {
+    label: 'Đã bỏ qua',
+    badgeClass: 'bg-gray-100 text-gray-500 border-gray-200',
+  },
+};

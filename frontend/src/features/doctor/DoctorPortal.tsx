@@ -10,8 +10,9 @@ import { DoctorSidebar } from './components/DoctorSidebar';
 import { DoctorHeader } from './components/DoctorHeader';
 import { DoctorDashboard } from './components/DoctorDashboard';
 import { DoctorAppointments } from './components/DoctorAppointments';
+import { DoctorConsultation } from './components/DoctorConsultation';
 import { Toast } from '@/components/ui/Toast';
-import { Stethoscope, ClipboardList, ShieldAlert, ArrowLeft } from 'lucide-react';
+import { ClipboardList, ShieldAlert, ArrowLeft } from 'lucide-react';
 
 interface DoctorPortalProps {
   session: AuthSession;
@@ -203,26 +204,21 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
               onUpdateStatus={handleUpdateStatus}
               selectedAppointment={selectedAppointment}
               onSelectAppointment={setSelectedAppointment}
+              onSelectTab={handleSelectTab}
             />
           )}
 
           {currentTab === 'consultation' && (
-            <div className="bg-white rounded-3xl p-8 border border-slate-200 text-center max-w-lg mx-auto my-12 space-y-4">
-              <div className="h-16 w-16 mx-auto rounded-full bg-teal-50 text-teal-600 flex items-center justify-center">
-                <Stethoscope className="h-8 w-8" />
-              </div>
-              <h2 className="text-xl font-bold text-slate-800">Tính năng Khám & Điều trị</h2>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Màn hình khám và can thiệp nha khoa (FE-3.3) đang được lên kế hoạch triển khai ở giai đoạn kế tiếp theo lộ trình phát triển của dự án.
-              </p>
-              <button
-                onClick={() => handleSelectTab('appointments')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#169C89] text-white text-xs font-bold hover:bg-[#0F6F61] transition-all"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>Quay lại Lịch khám của tôi</span>
-              </button>
-            </div>
+            <DoctorConsultation
+              schedule={schedule}
+              loading={loading}
+              error={error}
+              onRetry={loadSchedule}
+              selectedAppointment={selectedAppointment}
+              onSelectAppointment={setSelectedAppointment}
+              onUpdateStatus={handleUpdateStatus}
+              onSelectTab={handleSelectTab}
+            />
           )}
 
           {currentTab === 'treatment-plan' && (

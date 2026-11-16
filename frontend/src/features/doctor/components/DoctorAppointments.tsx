@@ -8,12 +8,14 @@ import {
   CheckCircle2,
   XCircle,
   Eye,
-  RefreshCw
+  RefreshCw,
+  Stethoscope
 } from 'lucide-react';
 import type {
   LichKhamBacSiResponse,
   TrangThaiDatLich,
-  DoctorKPISummary
+  DoctorKPISummary,
+  DoctorNavTab
 } from '@/types/doctor';
 import { TRANG_THAI_LICH_MAP } from '@/types/doctor';
 import { DoctorPatientModal } from './DoctorPatientModal';
@@ -30,6 +32,7 @@ interface DoctorAppointmentsProps {
   onUpdateStatus: (maLich: string, trangThai: TrangThaiDatLich) => Promise<void>;
   selectedAppointment: LichKhamBacSiResponse | null;
   onSelectAppointment: (appointment: LichKhamBacSiResponse | null) => void;
+  onSelectTab?: (tab: DoctorNavTab) => void;
 }
 
 type DateFilterOption = 'today' | 'tomorrow' | 'all';
@@ -45,6 +48,7 @@ export const DoctorAppointments: React.FC<DoctorAppointmentsProps> = ({
   onUpdateStatus,
   selectedAppointment,
   onSelectAppointment,
+  onSelectTab,
 }) => {
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('today');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -558,23 +562,51 @@ export const DoctorAppointments: React.FC<DoctorAppointmentsProps> = ({
                     )}
 
                     {activeAppointment.trangThai === 'DA_DEN' && (
-                      <button
-                        onClick={() => handleOpenStatusConfirm(activeAppointment, 'DANG_KHAM')}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-xs"
-                      >
-                        <PlayCircle className="h-4 w-4" />
-                        <span>Bắt đầu khám bệnh nhân</span>
-                      </button>
+                      <div className="flex flex-col gap-2 w-full">
+                        <button
+                          onClick={() => handleOpenStatusConfirm(activeAppointment, 'DANG_KHAM')}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-xs"
+                        >
+                          <PlayCircle className="h-4 w-4" />
+                          <span>Bắt đầu khám bệnh nhân</span>
+                        </button>
+                        {onSelectTab && (
+                          <button
+                            onClick={() => {
+                              onSelectAppointment(activeAppointment);
+                              onSelectTab('consultation');
+                            }}
+                            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white hover:bg-teal-50 text-[#169C89] text-xs font-bold border border-[#169C89]/30 transition-all"
+                          >
+                            <Stethoscope className="h-3.5 w-3.5" />
+                            <span>Mở bàn khám & Điều trị (FE-3.3)</span>
+                          </button>
+                        )}
+                      </div>
                     )}
 
                     {activeAppointment.trangThai === 'DANG_KHAM' && (
-                      <button
-                        onClick={() => handleOpenStatusConfirm(activeAppointment, 'HOAN_THANH')}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs"
-                      >
-                        <CheckCircle2 className="h-4 w-4" />
-                        <span>Hoàn tất ca khám này</span>
-                      </button>
+                      <div className="flex flex-col gap-2 w-full">
+                        {onSelectTab && (
+                          <button
+                            onClick={() => {
+                              onSelectAppointment(activeAppointment);
+                              onSelectTab('consultation');
+                            }}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#169C89] hover:bg-[#0F6F61] text-white text-xs font-bold transition-all shadow-xs"
+                          >
+                            <Stethoscope className="h-4 w-4" />
+                            <span>Vào bàn khám & Điều trị (FE-3.3)</span>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleOpenStatusConfirm(activeAppointment, 'HOAN_THANH')}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          <span>Hoàn tất ca khám này</span>
+                        </button>
+                      </div>
                     )}
 
                     {activeAppointment.trangThai === 'HOAN_THANH' && (

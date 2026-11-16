@@ -5,7 +5,10 @@ import type {
   CapNhatTrangThaiLichRequest,
   DoctorNotification,
   TrangThaiDatLich,
-  DoctorKPISummary
+  DoctorKPISummary,
+  LoTrinhDieuTriResponse,
+  BuoiDieuTriResponse,
+  LienKetBuoiVoiLichRequest
 } from '@/types/doctor';
 
 export const doctorService = {
@@ -54,29 +57,81 @@ export const doctorService = {
 
   /**
    * Lấy danh sách thông báo của tài khoản bác sĩ
-   * Endpoint: GET /api/v1/thong-bao
+   * Lưu ý bảo mật: Backend Spring Security hiện chỉ cấu hình /api/v1/thong-bao/** cho vai trò BENH_NHAN.
+   * Để tránh bị 401 Unauthorized dẫn đến ngắt phiên làm việc của Bác sĩ, hàm trả về danh sách rỗng
+   * cho đến khi Backend mở quyền thông báo riêng cho vai trò BAC_SI.
    */
   async getNotifications(): Promise<DoctorNotification[]> {
-    const response = await apiClient.get<DoctorNotification[]>('/thong-bao');
-    return response.data || [];
+    return [];
   },
 
   /**
    * Đếm số lượng thông báo chưa đọc
-   * Endpoint: GET /api/v1/thong-bao/chua-doc/dem
+   * Lưu ý bảo mật: Backend Spring Security chỉ cho phép vai trò BENH_NHAN truy cập /api/v1/thong-bao/chua-doc/dem.
    */
   async getUnreadNotificationCount(): Promise<number> {
-    const response = await apiClient.get<{ soLuongChuaDoc: number }>('/thong-bao/chua-doc/dem');
-    return response.data?.soLuongChuaDoc || 0;
+    return 0;
   },
 
   /**
    * Đánh dấu một thông báo đã đọc
-   * Endpoint: PATCH /api/v1/thong-bao/{maThongBao}/da-doc
    */
-  async markNotificationAsRead(maThongBao: string): Promise<void> {
-    if (!maThongBao) return;
-    await apiClient.patch(`/thong-bao/${encodeURIComponent(maThongBao)}/da-doc`);
+  async markNotificationAsRead(_maThongBao: string): Promise<void> {
+    return;
+  },
+
+  /**
+   * Lấy danh sách lộ trình điều trị của bệnh nhân
+   * Endpoint: GET /api/v1/lo-trinh-dieu-tri/benh-nhan/{maBenhNhan}
+   */
+  async getPatientTreatmentPlans(maBenhNhan: string): Promise<LoTrinhDieuTriResponse[]> {
+    if (!maBenhNhan) return [];
+    const response = await apiClient.get<LoTrinhDieuTriResponse[]>(
+      `/lo-trinh-dieu-tri/benh-nhan/${encodeURIComponent(maBenhNhan)}`
+    );
+    return response.data || [];
+  },
+
+  /**
+   * Lấy danh sách các buổi điều trị của một lộ trình
+   * Endpoint: GET /api/v1/lo-trinh-dieu-tri/{maLoTrinhDieuTri}/buoi
+   */
+  async getTreatmentPlanSessions(maLoTrinhDieuTri: string): Promise<BuoiDieuTriResponse[]> {
+    if (!maLoTrinhDieuTri) return [];
+    const response = await apiClient.get<BuoiDieuTriResponse[]>(
+      `/lo-trinh-dieu-tri/${encodeURIComponent(maLoTrinhDieuTri)}/buoi`
+    );
+    return response.data || [];
+  },
+
+  /**
+   * Liên kết buổi điều trị với lịch khám hiện tại của bác sĩ
+   * Endpoint: POST /api/v1/lo-trinh-dieu-tri/{maLoTrinh}/buoi/{maBuoi}/lien-ket-lich
+   */
+  async linkSessionToAppointment(
+    maLoTrinh: string,
+    maBuoi: string,
+    maLichKham: string
+  ): Promise<void> {
+    if (!maLoTrinh || !maBuoi || !maLichKham) {
+      throw new Error('Thiếu thông tin để liên kết buổi điều trị.');
+    }
+    const payload: LienKetBuoiVoiLichRequest = { maLichKham };
+    await apiClient.post(
+      `/lo-trinh-dieu-tri/${encodeURIComponent(maLoTrinh)}/buoi/${encodeURIComponent(maBuoi)}/lien-ket-lich`,
+      payload
+    );
+  },
+
+  /**
+   * Gỡ liên kết lịch khám khỏi buổi điều trị
+   * Endpoint: DELETE /api/v1/lo-trinh-dieu-tri/{maLoTrinh}/buoi/{maBuoi}/lich-kham
+   */
+  async unlinkSessionFromAppointment(maLoTrinh: string, maBuoi: string): Promise<void> {
+    if (!maLoTrinh || !maBuoi) return;
+    await apiClient.delete(
+      `/lo-trinh-dieu-tri/${encodeURIComponent(maLoTrinh)}/buoi/${encodeURIComponent(maBuoi)}/lich-kham`
+    );
   },
 
   /**

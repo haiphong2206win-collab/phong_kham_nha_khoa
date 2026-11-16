@@ -47,9 +47,7 @@ const NAV_ITEMS: NavItemConfig[] = [
     id: 'consultation',
     number: '03',
     label: 'Khám & Điều trị',
-    icon: Stethoscope,
-    disabled: true,
-    badge: 'Sắp có'
+    icon: Stethoscope
   },
   {
     id: 'treatment-plan',
