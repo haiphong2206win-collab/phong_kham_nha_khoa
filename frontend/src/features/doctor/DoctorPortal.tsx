@@ -11,8 +11,9 @@ import { DoctorHeader } from './components/DoctorHeader';
 import { DoctorDashboard } from './components/DoctorDashboard';
 import { DoctorAppointments } from './components/DoctorAppointments';
 import { DoctorConsultation } from './components/DoctorConsultation';
+import { DoctorTreatmentPlans } from './components/DoctorTreatmentPlans';
 import { Toast } from '@/components/ui/Toast';
-import { ClipboardList, ShieldAlert, ArrowLeft } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 
 interface DoctorPortalProps {
   session: AuthSession;
@@ -222,22 +223,12 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
           )}
 
           {currentTab === 'treatment-plan' && (
-            <div className="bg-white rounded-3xl p-8 border border-slate-200 text-center max-w-lg mx-auto my-12 space-y-4">
-              <div className="h-16 w-16 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <ClipboardList className="h-8 w-8" />
-              </div>
-              <h2 className="text-xl font-bold text-slate-800">Quản lý Lộ trình điều trị</h2>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Tính năng tạo và theo dõi lộ trình điều trị mẫu (FE-3.4) sẽ được tích hợp trong giai đoạn tiếp theo.
-              </p>
-              <button
-                onClick={() => handleSelectTab('overview')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#169C89] text-white text-xs font-bold hover:bg-[#0F6F61] transition-all"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>Quay lại Trang tổng quan</span>
-              </button>
-            </div>
+            <DoctorTreatmentPlans
+              schedule={schedule}
+              loading={loading}
+              onRefreshSchedule={loadSchedule}
+              onSelectTab={handleSelectTab}
+            />
           )}
         </main>
       </div>

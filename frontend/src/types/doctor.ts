@@ -230,3 +230,31 @@ export const TRANG_THAI_BUOI_MAP: Record<TrangThaiBuoiDieuTri, { label: string; 
     badgeClass: 'bg-gray-100 text-gray-500 border-gray-200',
   },
 };
+
+export interface LoTrinhMauResponse {
+  maLoTrinh: string;
+  tenLoTrinh: string;
+  moTa?: string | null;
+  tongSoBuoi: number;
+  thoiGianDuKien?: string | null;
+}
+
+export interface BuoiMauResponse {
+  maBuoi: string;
+  maLoTrinh: string;
+  soThuTu: number;
+  tenBuoi: string;
+  noiDung: string;
+  khoangCachMin?: number | null;
+  khoangCachMax?: number | null;
+  ghiChu?: string | null;
+}
+
+export interface TaoLoTrinhDieuTriRequest {
+  maBenhNhan: string;
+  maLoTrinhMau: string;
+  tenLoTrinh?: string;
+  ghiChu?: string;
+}
+
+export type TreatmentPlanTab = 'patient-plans' | 'template-plans';

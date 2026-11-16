@@ -53,9 +53,7 @@ const NAV_ITEMS: NavItemConfig[] = [
     id: 'treatment-plan',
     number: '04',
     label: 'Lộ trình điều trị',
-    icon: ClipboardList,
-    disabled: true,
-    badge: 'Sắp có'
+    icon: ClipboardList
   },
 ];
 

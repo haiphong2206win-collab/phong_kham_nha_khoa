@@ -8,7 +8,10 @@ import type {
   DoctorKPISummary,
   LoTrinhDieuTriResponse,
   BuoiDieuTriResponse,
-  LienKetBuoiVoiLichRequest
+  LienKetBuoiVoiLichRequest,
+  LoTrinhMauResponse,
+  BuoiMauResponse,
+  TaoLoTrinhDieuTriRequest
 } from '@/types/doctor';
 
 export const doctorService = {
@@ -132,6 +135,44 @@ export const doctorService = {
     await apiClient.delete(
       `/lo-trinh-dieu-tri/${encodeURIComponent(maLoTrinh)}/buoi/${encodeURIComponent(maBuoi)}/lich-kham`
     );
+  },
+
+  /**
+   * Lấy danh sách tất cả lộ trình mẫu (phác đồ mẫu)
+   * Endpoint: GET /api/v1/lo-trinh-mau
+   */
+  async getTemplatePlans(): Promise<LoTrinhMauResponse[]> {
+    const response = await apiClient.get<LoTrinhMauResponse[]>('/lo-trinh-mau');
+    return response.data || [];
+  },
+
+  /**
+   * Lấy chi tiết thông tin một lộ trình mẫu
+   * Endpoint: GET /api/v1/lo-trinh-mau/{maLoTrinh}
+   */
+  async getTemplatePlanDetails(maLoTrinh: string): Promise<LoTrinhMauResponse> {
+    const response = await apiClient.get<LoTrinhMauResponse>(`/lo-trinh-mau/${encodeURIComponent(maLoTrinh)}`);
+    return response.data;
+  },
+
+  /**
+   * Lấy danh sách các buổi điều trị mẫu của một lộ trình mẫu
+   * Endpoint: GET /api/v1/lo-trinh-mau/{maLoTrinh}/buoi
+   */
+  async getTemplatePlanSessions(maLoTrinh: string): Promise<BuoiMauResponse[]> {
+    if (!maLoTrinh) return [];
+    const response = await apiClient.get<BuoiMauResponse[]>(`/lo-trinh-mau/${encodeURIComponent(maLoTrinh)}/buoi`);
+    return response.data || [];
+  },
+
+  /**
+   * Tạo lộ trình riêng cho bệnh nhân dựa trên lộ trình mẫu
+   * Endpoint: POST /api/v1/lo-trinh-dieu-tri
+   * Lưu ý bảo mật: Backend hiện thiếu kiểm tra phân công Bác sĩ - Bệnh nhân.
+   */
+  async createTreatmentPlan(payload: TaoLoTrinhDieuTriRequest): Promise<LoTrinhDieuTriResponse> {
+    const response = await apiClient.post<LoTrinhDieuTriResponse>('/lo-trinh-dieu-tri', payload);
+    return response.data;
   },
 
   /**
