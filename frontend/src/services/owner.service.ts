@@ -13,7 +13,16 @@ import type {
   CapNhatTrangThaiTaiKhoanRequest,
   OwnerKPISummary,
   VaiTroNguoiDung,
-  TrangThaiTaiKhoan
+  TrangThaiTaiKhoan,
+  LoTrinhMauResponse,
+  BuoiMauResponse,
+  LoTrinhDieuTriResponse,
+  BuoiDieuTriResponse,
+  TaoLoTrinhDieuTriRequest,
+  ThemBuoiDieuTriRequest,
+  CapNhatBuoiDieuTriRequest,
+  BoBuoiDieuTriRequest,
+  LienKetBuoiVoiLichRequest
 } from '@/types/owner';
 
 export const ownerService = {
@@ -203,5 +212,157 @@ export const ownerService = {
       pendingAppointments,
       totalAccounts,
     };
+  },
+
+  /**
+   * ========================================================
+   * FE-4.4 – GIÁM SÁT ĐIỀU TRỊ (TREATMENT SUPERVISION) APIS
+   * ========================================================
+   */
+
+  /**
+   * Lấy danh sách tất cả lộ trình mẫu (phác đồ mẫu chuẩn)
+   * Endpoint: GET /api/v1/lo-trinh-mau
+   */
+  async getTemplatePlans(): Promise<LoTrinhMauResponse[]> {
+    const response = await apiClient.get<LoTrinhMauResponse[]>('/lo-trinh-mau');
+    return response.data || [];
+  },
+
+  /**
+   * Lấy chi tiết một lộ trình mẫu
+   * Endpoint: GET /api/v1/lo-trinh-mau/{maLoTrinh}
+   */
+  async getTemplatePlanDetails(maLoTrinh: string): Promise<LoTrinhMauResponse> {
+    const response = await apiClient.get<LoTrinhMauResponse>(`/lo-trinh-mau/${encodeURIComponent(maLoTrinh)}`);
+    return response.data;
+  },
+
+  /**
+   * Lấy danh sách các buổi của lộ trình mẫu
+   * Endpoint: GET /api/v1/lo-trinh-mau/{maLoTrinh}/buoi
+   */
+  async getTemplatePlanSessions(maLoTrinh: string): Promise<BuoiMauResponse[]> {
+    if (!maLoTrinh) return [];
+    const response = await apiClient.get<BuoiMauResponse[]>(`/lo-trinh-mau/${encodeURIComponent(maLoTrinh)}/buoi`);
+    return response.data || [];
+  },
+
+  /**
+   * Lấy danh sách lộ trình điều trị của bệnh nhân
+   * Endpoint: GET /api/v1/lo-trinh-dieu-tri/benh-nhan/{maBenhNhan}
+   */
+  async getPatientTreatmentPlans(maBenhNhan: string): Promise<LoTrinhDieuTriResponse[]> {
+    if (!maBenhNhan) return [];
+    const response = await apiClient.get<LoTrinhDieuTriResponse[]>(
+      `/lo-trinh-dieu-tri/benh-nhan/${encodeURIComponent(maBenhNhan)}`
+    );
+    return response.data || [];
+  },
+
+  /**
+   * Lấy chi tiết thông tin một lộ trình điều trị
+   * Endpoint: GET /api/v1/lo-trinh-dieu-tri/{maLoTrinhDieuTri}
+   */
+  async getTreatmentPlanDetails(maLoTrinh: string): Promise<LoTrinhDieuTriResponse> {
+    const response = await apiClient.get<LoTrinhDieuTriResponse>(
+      `/lo-trinh-dieu-tri/${encodeURIComponent(maLoTrinh)}`
+    );
+    return response.data;
+  },
+
+  /**
+   * Lấy danh sách các buổi điều trị của một lộ trình
+   * Endpoint: GET /api/v1/lo-trinh-dieu-tri/{maLoTrinhDieuTri}/buoi
+   */
+  async getTreatmentPlanSessions(maLoTrinh: string): Promise<BuoiDieuTriResponse[]> {
+    if (!maLoTrinh) return [];
+    const response = await apiClient.get<BuoiDieuTriResponse[]>(
+      `/lo-trinh-dieu-tri/${encodeURIComponent(maLoTrinh)}/buoi`
+    );
+    return response.data || [];
+  },
+
+  /**
+   * Tạo lộ trình điều trị mới cho bệnh nhân từ phác đồ mẫu
+   * Endpoint: POST /api/v1/lo-trinh-dieu-tri
+   */
+  async createTreatmentPlan(payload: TaoLoTrinhDieuTriRequest): Promise<LoTrinhDieuTriResponse> {
+    const response = await apiClient.post<LoTrinhDieuTriResponse>('/lo-trinh-dieu-tri', payload);
+    return response.data;
+  },
+
+  /**
+   * Thêm buổi điều trị mới vào lộ trình
+   * Endpoint: POST /api/v1/lo-trinh-dieu-tri/{maLoTrinh}/buoi
+   */
+  async addTreatmentSession(
+    maLoTrinh: string,
+    payload: ThemBuoiDieuTriRequest
+  ): Promise<BuoiDieuTriResponse> {
+    const response = await apiClient.post<BuoiDieuTriResponse>(
+      `/lo-trinh-dieu-tri/${encodeURIComponent(maLoTrinh)}/buoi`,
+      payload
+    );
+    return response.data;
+  },
+
+  /**
+   * Cập nhật nội dung buổi điều trị (khi chưa lên lịch)
+   * Endpoint: PUT /api/v1/lo-trinh-dieu-tri/{maLoTrinh}/buoi/{maBuoi}
+   */
+  async updateTreatmentSession(
+    maLoTrinh: string,
+    maBuoi: string,
+    payload: CapNhatBuoiDieuTriRequest
+  ): Promise<BuoiDieuTriResponse> {
+    const response = await apiClient.put<BuoiDieuTriResponse>(
+      `/lo-trinh-dieu-tri/${encodeURIComponent(maLoTrinh)}/buoi/${encodeURIComponent(maBuoi)}`,
+      payload
+    );
+    return response.data;
+  },
+
+  /**
+   * Bỏ buổi điều trị (chuyển trạng thái DA_BO, không xóa dữ liệu)
+   * Endpoint: PATCH /api/v1/lo-trinh-dieu-tri/{maLoTrinh}/buoi/{maBuoi}/bo
+   */
+  async skipTreatmentSession(
+    maLoTrinh: string,
+    maBuoi: string,
+    lyDoBo: string
+  ): Promise<BuoiDieuTriResponse> {
+    const payload: BoBuoiDieuTriRequest = { lyDoBo };
+    const response = await apiClient.patch<BuoiDieuTriResponse>(
+      `/lo-trinh-dieu-tri/${encodeURIComponent(maLoTrinh)}/buoi/${encodeURIComponent(maBuoi)}/bo`,
+      payload
+    );
+    return response.data;
+  },
+
+  /**
+   * Liên kết buổi điều trị với lịch khám
+   * Endpoint: POST /api/v1/lo-trinh-dieu-tri/{maLoTrinh}/buoi/{maBuoi}/lien-ket-lich
+   */
+  async linkSessionToAppointment(
+    maLoTrinh: string,
+    maBuoi: string,
+    maLichKham: string
+  ): Promise<void> {
+    const payload: LienKetBuoiVoiLichRequest = { maLichKham };
+    await apiClient.post(
+      `/lo-trinh-dieu-tri/${encodeURIComponent(maLoTrinh)}/buoi/${encodeURIComponent(maBuoi)}/lien-ket-lich`,
+      payload
+    );
+  },
+
+  /**
+   * Gỡ liên kết lịch khám khỏi buổi điều trị
+   * Endpoint: DELETE /api/v1/lo-trinh-dieu-tri/{maLoTrinh}/buoi/{maBuoi}/lich-kham
+   */
+  async unlinkSessionFromAppointment(maLoTrinh: string, maBuoi: string): Promise<void> {
+    await apiClient.delete(
+      `/lo-trinh-dieu-tri/${encodeURIComponent(maLoTrinh)}/buoi/${encodeURIComponent(maBuoi)}/lich-kham`
+    );
   },
 };

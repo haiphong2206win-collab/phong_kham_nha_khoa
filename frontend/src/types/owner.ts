@@ -173,3 +173,198 @@ export interface OwnerKPISummary {
   pendingAppointments: number;
   totalAccounts: number;
 }
+
+/**
+ * ========================================================
+ * FE-4.4 – GIÁM SÁT ĐIỀU TRỊ (TREATMENT SUPERVISION) TYPES
+ * ========================================================
+ */
+
+export type TrangThaiLoTrinh =
+  | 'CHUA_BAT_DAU'
+  | 'DANG_DIEU_TRI'
+  | 'TAM_DUNG'
+  | 'HOAN_THANH'
+  | 'DA_HUY';
+
+export type TrangThaiBuoiDieuTri =
+  | 'CHUA_LEN_LICH'
+  | 'DA_LEN_LICH'
+  | 'LICH_DA_HUY'
+  | 'DANG_THUC_HIEN'
+  | 'HOAN_THANH'
+  | 'TAM_HOAN'
+  | 'DA_BO';
+
+export type TreatmentSupervisionTab = 'patient-plans' | 'template-plans';
+
+/**
+ * DTO LoTrinhMauResponse từ GET /api/v1/lo-trinh-mau
+ */
+export interface LoTrinhMauResponse {
+  maLoTrinh: string;
+  tenLoTrinh: string;
+  moTa?: string | null;
+  tongSoBuoi: number;
+  thoiGianDuKien?: string | null;
+}
+
+/**
+ * DTO BuoiMauResponse từ GET /api/v1/lo-trinh-mau/{maLoTrinh}/buoi
+ */
+export interface BuoiMauResponse {
+  maBuoi: string;
+  maLoTrinh: string;
+  soThuTu: number;
+  tenBuoi: string;
+  noiDung: string;
+  khoangCachMin?: number | null;
+  khoangCachMax?: number | null;
+  ghiChu?: string | null;
+}
+
+/**
+ * DTO LoTrinhDieuTriResponse từ GET /api/v1/lo-trinh-dieu-tri/benh-nhan/{maBenhNhan}
+ */
+export interface LoTrinhDieuTriResponse {
+  maLoTrinhDieuTri: string;
+  maBenhNhan: string;
+  maLoTrinhMau: string;
+  tenLoTrinh: string;
+  ghiChu?: string | null;
+  trangThai: TrangThaiLoTrinh;
+  tongSoBuoi: number;
+  soBuoiHoanThanh: number;
+  soBuoiDaBo: number;
+  thoiGianTao: string;
+  thoiGianCapNhat?: string | null;
+  version?: number;
+}
+
+/**
+ * DTO BuoiDieuTriResponse từ GET /api/v1/lo-trinh-dieu-tri/{maLoTrinhDieuTri}/buoi
+ */
+export interface BuoiDieuTriResponse {
+  maBuoiDieuTri: string;
+  maLoTrinhDieuTri: string;
+  soThuTu: number;
+  tenBuoi: string;
+  noiDung: string;
+  khoangCachMin?: number | null;
+  khoangCachMax?: number | null;
+  ghiChu?: string | null;
+  trangThai: TrangThaiBuoiDieuTri;
+  buoiBoSung: boolean;
+  lyDoBo?: string | null;
+  thoiGianTao?: string;
+  thoiGianCapNhat?: string;
+  version?: number;
+  maLichKham?: string | null;
+}
+
+/**
+ * DTO TaoLoTrinhDieuTriRequest cho POST /api/v1/lo-trinh-dieu-tri
+ */
+export interface TaoLoTrinhDieuTriRequest {
+  maBenhNhan: string;
+  maLoTrinhMau: string;
+  tenLoTrinh?: string;
+  ghiChu?: string;
+}
+
+/**
+ * DTO ThemBuoiDieuTriRequest cho POST /api/v1/lo-trinh-dieu-tri/{maLoTrinh}/buoi
+ */
+export interface ThemBuoiDieuTriRequest {
+  soThuTu: number;
+  tenBuoi: string;
+  noiDung: string;
+  khoangCachMin?: number | null;
+  khoangCachMax?: number | null;
+  ghiChu?: string;
+}
+
+/**
+ * DTO CapNhatBuoiDieuTriRequest cho PUT /api/v1/lo-trinh-dieu-tri/{maLoTrinh}/buoi/{maBuoi}
+ */
+export interface CapNhatBuoiDieuTriRequest {
+  tenBuoi: string;
+  noiDung: string;
+  khoangCachMin?: number | null;
+  khoangCachMax?: number | null;
+  ghiChu?: string;
+}
+
+/**
+ * DTO BoBuoiDieuTriRequest cho PATCH /api/v1/lo-trinh-dieu-tri/{maLoTrinh}/buoi/{maBuoi}/bo
+ */
+export interface BoBuoiDieuTriRequest {
+  lyDoBo: string;
+}
+
+/**
+ * DTO LienKetBuoiVoiLichRequest cho POST .../lien-ket-lich
+ */
+export interface LienKetBuoiVoiLichRequest {
+  maLichKham: string;
+}
+
+/**
+ * Ánh xạ trạng thái buổi điều trị sang giao diện trực quan
+ */
+export const TRANG_THAI_BUOI_MAP: Record<TrangThaiBuoiDieuTri, { label: string; badgeClass: string }> = {
+  CHUA_LEN_LICH: {
+    label: 'Chưa lên lịch',
+    badgeClass: 'bg-slate-100 text-slate-700 border-slate-200',
+  },
+  DA_LEN_LICH: {
+    label: 'Đã lên lịch',
+    badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
+  },
+  LICH_DA_HUY: {
+    label: 'Lịch đã hủy',
+    badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
+  },
+  DANG_THUC_HIEN: {
+    label: 'Đang thực hiện',
+    badgeClass: 'bg-purple-50 text-purple-700 border-purple-200',
+  },
+  HOAN_THANH: {
+    label: 'Hoàn thành',
+    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  },
+  TAM_HOAN: {
+    label: 'Tạm hoãn',
+    badgeClass: 'bg-orange-50 text-orange-700 border-orange-200',
+  },
+  DA_BO: {
+    label: 'Đã bỏ buổi',
+    badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
+  },
+};
+
+/**
+ * Ánh xạ trạng thái lộ trình điều trị
+ */
+export const TRANG_THAI_LO_TRINH_MAP: Record<TrangThaiLoTrinh, { label: string; badgeClass: string }> = {
+  CHUA_BAT_DAU: {
+    label: 'Chưa bắt đầu',
+    badgeClass: 'bg-slate-100 text-slate-700 border-slate-200',
+  },
+  DANG_DIEU_TRI: {
+    label: 'Đang điều trị',
+    badgeClass: 'bg-teal-50 text-[#169C89] border-teal-200',
+  },
+  TAM_DUNG: {
+    label: 'Tạm dừng',
+    badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
+  },
+  HOAN_THANH: {
+    label: 'Hoàn thành',
+    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  },
+  DA_HUY: {
+    label: 'Đã hủy',
+    badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
+  },
+};

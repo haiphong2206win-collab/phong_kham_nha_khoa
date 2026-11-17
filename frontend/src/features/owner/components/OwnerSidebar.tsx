@@ -68,8 +68,6 @@ const NAV_ITEMS: NavItemConfig[] = [
     number: '06',
     label: 'Giám sát Điều trị',
     icon: ClipboardList,
-    disabled: true,
-    badge: 'FE-4.4',
   },
   {
     id: 'rooms-shifts',

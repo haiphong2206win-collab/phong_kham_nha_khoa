@@ -27,6 +27,7 @@ import { OwnerAccountDetailModal } from './components/OwnerAccountDetailModal';
 import { OwnerAccountEditModal } from './components/OwnerAccountEditModal';
 import { OwnerAccountLockModal } from './components/OwnerAccountLockModal';
 import { OwnerAccountDeleteModal } from './components/OwnerAccountDeleteModal';
+import { OwnerTreatmentSupervision } from './components/OwnerTreatmentSupervision';
 import { Toast } from '@/components/ui/Toast';
 
 interface OwnerPortalProps {
@@ -257,9 +258,12 @@ export const OwnerPortal: React.FC<OwnerPortalProps> = ({
             />
           )}
 
-          {/* Các tab tiếp theo ở giai đoạn FE-4.4 */}
-          {(currentTab === 'treatments' ||
-            currentTab === 'rooms-shifts' ||
+          {currentTab === 'treatments' && (
+            <OwnerTreatmentSupervision />
+          )}
+
+          {/* Các tab tiếp theo đang chờ Backend */}
+          {(currentTab === 'rooms-shifts' ||
             currentTab === 'reports') && (
             <div className="max-w-2xl mx-auto py-16 text-center space-y-4">
               <div className="h-16 w-16 mx-auto rounded-3xl bg-[#E8F8F5] border border-[#BDE8E0] flex items-center justify-center text-[#169C89] font-bold text-xl">
