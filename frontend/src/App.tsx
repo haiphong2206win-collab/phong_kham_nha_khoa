@@ -8,6 +8,7 @@ import { RegisterForm } from '@/features/auth/RegisterForm';
 import { UserDashboardPlaceholder } from '@/features/auth/UserDashboardPlaceholder';
 import { PatientPortal } from '@/features/patient/PatientPortal';
 import { DoctorPortal } from '@/features/doctor/DoctorPortal';
+import { OwnerPortal } from '@/features/owner/OwnerPortal';
 import { Toast } from '@/components/ui/Toast';
 
 type ViewMode = 'landing' | 'auth' | 'dashboard';
@@ -120,6 +121,12 @@ export const App: React.FC = () => {
           />
         ) : session.user?.vaiTro === 'BAC_SI' ? (
           <DoctorPortal
+            session={session}
+            onLogout={handleLogout}
+            onGoToLanding={handleBackToLanding}
+          />
+        ) : session.user?.vaiTro === 'CHU_PHONG_KHAM' ? (
+          <OwnerPortal
             session={session}
             onLogout={handleLogout}
             onGoToLanding={handleBackToLanding}
