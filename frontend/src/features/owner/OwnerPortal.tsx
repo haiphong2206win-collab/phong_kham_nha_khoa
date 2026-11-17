@@ -19,6 +19,14 @@ import { OwnerRejectModal } from './components/OwnerRejectModal';
 import { OwnerDoctorDetailModal } from './components/OwnerDoctorDetailModal';
 import { OwnerCreateDoctorModal } from './components/OwnerCreateDoctorModal';
 import { OwnerUpdateAccountModal } from './components/OwnerUpdateAccountModal';
+import { OwnerPatientManagement } from './components/OwnerPatientManagement';
+import { OwnerPatientDetailModal } from './components/OwnerPatientDetailModal';
+import { OwnerCreatePatientModal } from './components/OwnerCreatePatientModal';
+import { OwnerAccountManagement } from './components/OwnerAccountManagement';
+import { OwnerAccountDetailModal } from './components/OwnerAccountDetailModal';
+import { OwnerAccountEditModal } from './components/OwnerAccountEditModal';
+import { OwnerAccountLockModal } from './components/OwnerAccountLockModal';
+import { OwnerAccountDeleteModal } from './components/OwnerAccountDeleteModal';
 import { Toast } from '@/components/ui/Toast';
 
 interface OwnerPortalProps {
@@ -59,6 +67,18 @@ export const OwnerPortal: React.FC<OwnerPortalProps> = ({
     'toggle-status'
   );
   const [isAccountModalOpen, setIsAccountModalOpen] = useState<boolean>(false);
+
+  // Patient modals state (FE-4.3A)
+  const [selectedPatient, setSelectedPatient] = useState<BenhNhanQuanLyResponse | null>(null);
+  const [isPatientDetailOpen, setIsPatientDetailOpen] = useState<boolean>(false);
+  const [isCreatePatientOpen, setIsCreatePatientOpen] = useState<boolean>(false);
+
+  // Account modals state (FE-4.3B)
+  const [selectedAccount, setSelectedAccount] = useState<TaiKhoanQuanLyResponse | null>(null);
+  const [isAccountDetailOpen, setIsAccountDetailOpen] = useState<boolean>(false);
+  const [isAccountEditOpen, setIsAccountEditOpen] = useState<boolean>(false);
+  const [isAccountLockOpen, setIsAccountLockOpen] = useState<boolean>(false);
+  const [isAccountDeleteOpen, setIsAccountDeleteOpen] = useState<boolean>(false);
 
   // Tải dữ liệu toàn diện từ các API thật
   const fetchAllData = useCallback(async () => {
@@ -197,10 +217,48 @@ export const OwnerPortal: React.FC<OwnerPortalProps> = ({
             />
           )}
 
-          {/* Các tab tiếp theo ở giai đoạn FE-4.3 và FE-4.4 */}
-          {(currentTab === 'patients' ||
-            currentTab === 'accounts' ||
-            currentTab === 'treatments' ||
+          {currentTab === 'patients' && (
+            <OwnerPatientManagement
+              patients={patients}
+              loading={loading}
+              onRefresh={fetchAllData}
+              onOpenCreatePatientModal={() => setIsCreatePatientOpen(true)}
+              onOpenPatientDetailModal={(pat) => {
+                setSelectedPatient(pat);
+                setIsPatientDetailOpen(true);
+              }}
+            />
+          )}
+
+          {currentTab === 'accounts' && (
+            <OwnerAccountManagement
+              accounts={accounts}
+              loading={loading}
+              onRefresh={fetchAllData}
+              onOpenCreateDoctorAccount={() => setIsCreateDoctorOpen(true)}
+              onOpenCreatePatientAccount={() => setIsCreatePatientOpen(true)}
+              onOpenDetail={(acc) => {
+                setSelectedAccount(acc);
+                setIsAccountDetailOpen(true);
+              }}
+              onOpenEdit={(acc) => {
+                setSelectedAccount(acc);
+                setIsAccountEditOpen(true);
+              }}
+              onOpenLock={(acc) => {
+                setSelectedAccount(acc);
+                setIsAccountLockOpen(true);
+              }}
+              onOpenDelete={(acc) => {
+                setSelectedAccount(acc);
+                setIsAccountDeleteOpen(true);
+              }}
+              currentUser={session.user}
+            />
+          )}
+
+          {/* Các tab tiếp theo ở giai đoạn FE-4.4 */}
+          {(currentTab === 'treatments' ||
             currentTab === 'rooms-shifts' ||
             currentTab === 'reports') && (
             <div className="max-w-2xl mx-auto py-16 text-center space-y-4">
@@ -211,7 +269,7 @@ export const OwnerPortal: React.FC<OwnerPortalProps> = ({
                 Tính năng đang phát triển ở các giai đoạn tiếp theo
               </h2>
               <p className="text-sm text-gray-500 max-w-md mx-auto">
-                Màn hình này nằm trong kế hoạch FE-4.3 / FE-4.4 hoặc đang chờ Backend bổ sung API phòng khám & ca trực.
+                Màn hình này nằm trong kế hoạch FE-4.4 hoặc đang chờ Backend bổ sung API phòng khám & ca trực.
               </p>
               <button
                 onClick={() => setCurrentTab('overview')}
@@ -265,6 +323,62 @@ export const OwnerPortal: React.FC<OwnerPortalProps> = ({
         }}
         doctor={accountModalDoctor}
         mode={accountModalMode}
+        onSuccess={handleActionSuccess}
+      />
+
+      {/* FE-4.3A Modals */}
+      <OwnerPatientDetailModal
+        isOpen={isPatientDetailOpen}
+        onClose={() => {
+          setIsPatientDetailOpen(false);
+          setSelectedPatient(null);
+        }}
+        patient={selectedPatient}
+      />
+
+      <OwnerCreatePatientModal
+        isOpen={isCreatePatientOpen}
+        onClose={() => setIsCreatePatientOpen(false)}
+        onSuccess={handleActionSuccess}
+      />
+
+      {/* FE-4.3B Modals */}
+      <OwnerAccountDetailModal
+        isOpen={isAccountDetailOpen}
+        onClose={() => {
+          setIsAccountDetailOpen(false);
+          setSelectedAccount(null);
+        }}
+        account={selectedAccount}
+      />
+
+      <OwnerAccountEditModal
+        isOpen={isAccountEditOpen}
+        onClose={() => {
+          setIsAccountEditOpen(false);
+          setSelectedAccount(null);
+        }}
+        account={selectedAccount}
+        onSuccess={handleActionSuccess}
+      />
+
+      <OwnerAccountLockModal
+        isOpen={isAccountLockOpen}
+        onClose={() => {
+          setIsAccountLockOpen(false);
+          setSelectedAccount(null);
+        }}
+        account={selectedAccount}
+        onSuccess={handleActionSuccess}
+      />
+
+      <OwnerAccountDeleteModal
+        isOpen={isAccountDeleteOpen}
+        onClose={() => {
+          setIsAccountDeleteOpen(false);
+          setSelectedAccount(null);
+        }}
+        account={selectedAccount}
         onSuccess={handleActionSuccess}
       />
     </div>

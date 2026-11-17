@@ -56,16 +56,12 @@ const NAV_ITEMS: NavItemConfig[] = [
     number: '04',
     label: 'Quản lý Bệnh nhân',
     icon: Users,
-    disabled: true,
-    badge: 'FE-4.3',
   },
   {
     id: 'accounts',
     number: '05',
     label: 'Quản trị Tài khoản',
     icon: ShieldCheck,
-    disabled: true,
-    badge: 'FE-4.3',
   },
   {
     id: 'treatments',

@@ -8,6 +8,7 @@ import type {
   BenhNhanQuanLyResponse,
   TaiKhoanQuanLyResponse,
   TaoTaiKhoanBacSiRequest,
+  TaoTaiKhoanBenhNhanRequest,
   CapNhatTaiKhoanRequest,
   CapNhatTrangThaiTaiKhoanRequest,
   OwnerKPISummary,
@@ -119,6 +120,15 @@ export const ownerService = {
    */
   async createDoctorAccount(payload: TaoTaiKhoanBacSiRequest): Promise<TaiKhoanQuanLyResponse> {
     const response = await apiClient.post<TaiKhoanQuanLyResponse>('/tai-khoan/bac-si', payload);
+    return response.data;
+  },
+
+  /**
+   * Tạo tài khoản bệnh nhân mới kèm hồ sơ bệnh nhân
+   * Endpoint: POST /api/v1/tai-khoan/benh-nhan
+   */
+  async createPatientAccount(payload: TaoTaiKhoanBenhNhanRequest): Promise<TaiKhoanQuanLyResponse> {
+    const response = await apiClient.post<TaiKhoanQuanLyResponse>('/tai-khoan/benh-nhan', payload);
     return response.data;
   },
 

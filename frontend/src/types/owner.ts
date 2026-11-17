@@ -17,6 +17,7 @@ export type TrangThaiYeuCau = 'CHO_PHAN_CONG' | 'DA_PHAN_CONG' | 'TU_CHOI' | 'DA
 export type CaKham = 'CA_SANG' | 'CA_CHIEU';
 export type TrangThaiTaiKhoan = 'DANG_HOAT_DONG' | 'BI_KHOA';
 export type VaiTroNguoiDung = 'BENH_NHAN' | 'BAC_SI' | 'CHU_PHONG_KHAM';
+export type GioiTinh = 'NAM' | 'NU' | 'KHAC';
 
 /**
  * DTO YeuCauDatLichResponse từ Backend GET /api/v1/quan-ly/yeu-cau-dat-lich
@@ -129,6 +130,20 @@ export interface TaoTaiKhoanBacSiRequest {
   hoTen: string;
   soDienThoai?: string;
   soChungChi?: string;
+}
+
+/**
+ * DTO TaoTaiKhoanBenhNhanRequest cho POST /api/v1/tai-khoan/benh-nhan
+ */
+export interface TaoTaiKhoanBenhNhanRequest {
+  tenDangNhap: string;
+  matKhau: string;
+  hoTen: string;
+  ngaySinh: string;
+  gioiTinh: GioiTinh;
+  soDienThoai: string;
+  email?: string | null;
+  diaChi?: string | null;
 }
 
 /**
