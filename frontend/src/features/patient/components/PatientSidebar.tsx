@@ -31,6 +31,7 @@ interface PatientSidebarProps {
   session?: AuthSession;
   isOpenMobile?: boolean;
   onCloseMobile?: () => void;
+  unreadNotifCount?: number;
 }
 
 interface NavItem {
@@ -57,6 +58,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
   onLogout,
   isOpenMobile = false,
   onCloseMobile,
+  unreadNotifCount = 0,
 }) => {
   const content = (
     <div className="flex flex-col h-full bg-white border-r border-[#E3ECE9] select-none shadow-xs">
@@ -106,6 +108,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
         {NAV_ITEMS.map((item) => {
           const isActive = currentTab === item.id;
           const Icon = item.icon;
+          const dynamicBadge = item.id === 'notifications' && unreadNotifCount > 0 ? unreadNotifCount : item.badge;
           return (
             <button
               key={item.id}
@@ -126,7 +129,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
               </div>
 
               {/* Notification Badge if any */}
-              {item.badge !== undefined && (
+              {dynamicBadge !== undefined && (
                 <span
                   className={`text-[10px] font-bold h-4 min-w-[16px] px-1 rounded-full flex items-center justify-center ${
                     isActive
@@ -134,7 +137,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
                       : 'bg-red-500 text-white'
                   }`}
                 >
-                  {item.badge}
+                  {dynamicBadge}
                 </span>
               )}
             </button>

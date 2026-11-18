@@ -19,6 +19,11 @@ public interface LichKhamRepository extends JpaRepository<LichKham, String> {
             String maBacSi
     );
 
+    // Lấy danh sách lịch của một bệnh nhân theo tên đăng nhập tài khoản
+    List<LichKham> findByBenhNhan_TaiKhoan_TenDangNhapOrderByNgayKhamDescGioBatDauDesc(
+            String tenDangNhap
+    );
+
     // Chỉ tìm lịch nếu nó thuộc đúng bác sĩ đang đăng nhập
     Optional<LichKham> findByMaLichAndBacSi_TaiKhoan_TenDangNhap(
             String maLich,

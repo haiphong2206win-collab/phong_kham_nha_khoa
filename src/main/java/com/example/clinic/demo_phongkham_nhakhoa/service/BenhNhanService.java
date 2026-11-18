@@ -233,7 +233,23 @@ public class BenhNhanService {
     }
 
     // ==================================================
-    // 11. CHUYEN ENTITY SANG DTO
+    // 11. LAY DANH SACH LICH KHAM CUA BENH NHAN
+    // ==================================================
+
+    @Transactional(readOnly = true)
+    public List<LichKhamBenhNhanResponse> layDanhSachLichKham(String tenDangNhap) {
+        // Xac minh benh nhan ton tai theo ten dang nhap
+        timTheoTenDangNhap(tenDangNhap);
+
+        return lichKhamRepository
+                .findByBenhNhan_TaiKhoan_TenDangNhapOrderByNgayKhamDescGioBatDauDesc(tenDangNhap)
+                .stream()
+                .map(this::chuyenSangLichKhamResponse)
+                .toList();
+    }
+
+    // ==================================================
+    // 12. CHUYEN ENTITY SANG DTO
     // GIU NGUYEN
     // ==================================================
 

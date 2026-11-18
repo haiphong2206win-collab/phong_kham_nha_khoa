@@ -6,6 +6,8 @@ import type {
   CaKham,
   LoTrinhDieuTri,
   BuoiDieuTri,
+  LichKhamBenhNhan,
+  ThongBaoItem,
 } from '@/types/patient';
 
 export interface TaoYeuCauDatLichPayload {
@@ -107,5 +109,60 @@ export const patientService = {
     } catch {
       return [];
     }
+  },
+
+  /**
+   * FE-2C: Lấy danh sách lịch khám chính thức của bệnh nhân đăng nhập
+   * GET /api/v1/benh-nhan/lich-kham
+   */
+  async getMyOfficialAppointments(): Promise<LichKhamBenhNhan[]> {
+    const response = await apiClient.get<LichKhamBenhNhan[]>('/benh-nhan/lich-kham');
+    return response.data || [];
+  },
+
+  /**
+   * FE-2C: Bệnh nhân xác nhận lịch khám đã được phân công
+   * PATCH /api/v1/benh-nhan/lich-kham/{maLich}/xac-nhan
+   */
+  async confirmAppointment(maLich: string): Promise<LichKhamBenhNhan> {
+    const response = await apiClient.patch<LichKhamBenhNhan>(`/benh-nhan/lich-kham/${maLich}/xac-nhan`);
+    return response.data;
+  },
+
+  /**
+   * FE-2C: Bệnh nhân từ chối lịch khám đã được phân công
+   * PATCH /api/v1/benh-nhan/lich-kham/{maLich}/tu-choi
+   */
+  async rejectAppointment(maLich: string, lyDo: string): Promise<LichKhamBenhNhan> {
+    const response = await apiClient.patch<LichKhamBenhNhan>(`/benh-nhan/lich-kham/${maLich}/tu-choi`, {
+      lyDo: lyDo.trim(),
+    });
+    return response.data;
+  },
+
+  /**
+   * FE-2C: Lấy danh sách thông báo của tài khoản bệnh nhân đang đăng nhập
+   * GET /api/v1/thong-bao
+   */
+  async getNotifications(): Promise<ThongBaoItem[]> {
+    const response = await apiClient.get<ThongBaoItem[]>('/thong-bao');
+    return response.data || [];
+  },
+
+  /**
+   * FE-2C: Lấy số lượng thông báo chưa đọc
+   * GET /api/v1/thong-bao/chua-doc/dem -> { soLuongChuaDoc: number }
+   */
+  async getUnreadNotificationCount(): Promise<number> {
+    const response = await apiClient.get<{ soLuongChuaDoc: number }>('/thong-bao/chua-doc/dem');
+    return response.data?.soLuongChuaDoc ?? 0;
+  },
+
+  /**
+   * FE-2C: Đánh dấu một thông báo đã đọc
+   * PATCH /api/v1/thong-bao/{maThongBao}/da-doc
+   */
+  async markNotificationAsRead(maThongBao: string): Promise<void> {
+    await apiClient.patch(`/thong-bao/${maThongBao}/da-doc`);
   },
 };

@@ -40,10 +40,59 @@ export interface YeuCauDatLich {
   lyDoTuChoi?: string | null;
 }
 
+// ============================================================================
+// FE-2C: LỊCH KHÁM CHÍNH THỨC & THÔNG BÁO BỆNH NHÂN
+// ============================================================================
+
+export type TrangThaiDatLich =
+  | 'CHO_BENH_NHAN_XAC_NHAN'
+  | 'DA_XAC_NHAN'
+  | 'YEU_CAU_THAY_DOI'
+  | 'DA_DEN'
+  | 'DANG_KHAM'
+  | 'HOAN_THANH'
+  | 'VANG_MAT'
+  | 'DA_HUY';
+
+export interface LichKhamBenhNhan {
+  maLich: string;
+  maYeuCau?: string | null;
+  maBacSi: string;
+  tenBacSi: string;
+  maPhong: string;
+  tenPhong: string;
+  ngayKham: string;
+  gioBatDau: string;
+  gioKetThuc: string;
+  lyDoKham?: string | null;
+  trangThai: TrangThaiDatLich;
+  lyDoHuyThayDoi?: string | null;
+  thoiGianTao: string;
+}
+
+export type LoaiThongBao =
+  | 'LICH_DA_TAO'
+  | 'LICH_DA_PHAN_CONG'
+  | 'LICH_DA_XAC_NHAN'
+  | 'YEU_CAU_THAY_DOI'
+  | 'LICH_BI_HUY';
+
+export interface ThongBaoItem {
+  maThongBao: string;
+  loaiThongBao: LoaiThongBao;
+  tieuDe: string;
+  noiDung: string;
+  maLich?: string | null;
+  daDoc: boolean;
+  thoiGianTao: string;
+}
+
 export interface PatientDashboardSummary {
   profile: BenhNhanProfile | null;
   appointmentRequests: YeuCauDatLich[];
+  officialAppointments?: LichKhamBenhNhan[];
   nearestAppointment: YeuCauDatLich | null;
+  nearestOfficialAppointment?: LichKhamBenhNhan | null;
   treatmentPlanAvailable: boolean;
   treatmentPlanNote: string;
 }

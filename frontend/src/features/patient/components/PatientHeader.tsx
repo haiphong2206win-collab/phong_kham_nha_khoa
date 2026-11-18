@@ -9,15 +9,18 @@ import {
   Globe
 } from 'lucide-react';
 import type { AuthSession } from '@/types/auth';
-import type { BenhNhanProfile } from '@/types/patient';
+import type { BenhNhanProfile, ThongBaoItem } from '@/types/patient';
 
 interface PatientHeaderProps {
   session: AuthSession;
   profile: BenhNhanProfile | null;
   onOpenMobileMenu: () => void;
-  onNavigateTab?: (tab: 'profile' | 'notifications') => void;
+  onNavigateTab?: (tab: 'profile' | 'notifications' | 'appointments') => void;
   onGoToLanding?: () => void;
   onLogout?: () => void;
+  unreadNotifCount?: number;
+  notifications?: ThongBaoItem[];
+  onMarkNotificationAsRead?: (maThongBao: string) => Promise<void>;
 }
 
 export const PatientHeader: React.FC<PatientHeaderProps> = ({
@@ -27,6 +30,9 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
   onNavigateTab,
   onGoToLanding,
   onLogout,
+  unreadNotifCount = 0,
+  notifications = [],
+  onMarkNotificationAsRead,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -109,6 +115,11 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
             aria-label="Thông báo"
           >
             <Bell className="h-5 w-5" />
+            {unreadNotifCount > 0 && (
+              <span className="absolute top-1 right-1 h-4 min-w-[16px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-xs">
+                {unreadNotifCount > 99 ? '99+' : unreadNotifCount}
+              </span>
+            )}
           </button>
 
           {/* Notifications Dropdown Popover */}
@@ -116,24 +127,84 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
             <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-3xl bg-white border border-[#E3ECE9] shadow-soft-card p-4 space-y-3 z-50 animate-in fade-in zoom-in-95 duration-150">
               <div className="flex items-center justify-between pb-2 border-b border-[#EBF2F0]">
                 <h4 className="text-xs font-bold text-[#1E384C]">Thông báo của bạn</h4>
-                <span className="text-[10px] font-semibold text-[#7A9A93] bg-[#F0F5F3] px-2 py-0.5 rounded-full">
-                  0 chưa đọc
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                  unreadNotifCount > 0
+                    ? 'bg-red-50 text-red-600 border border-red-200'
+                    : 'bg-[#F0F5F3] text-[#7A9A93]'
+                }`}>
+                  {unreadNotifCount} chưa đọc
                 </span>
               </div>
 
-              <div className="py-6 px-4 text-center space-y-2">
-                <div className="h-10 w-10 rounded-2xl bg-[#E8F6F2] text-[#169C89] flex items-center justify-center mx-auto">
-                  <Bell className="h-5 w-5" />
+              {notifications.length > 0 ? (
+                <div className="divide-y divide-[#F0F5F3] max-h-80 overflow-y-auto space-y-1">
+                  {notifications.slice(0, 5).map((n) => (
+                    <div
+                      key={n.maThongBao}
+                      className={`p-2.5 rounded-2xl transition-colors text-left space-y-1 ${
+                        !n.daDoc ? 'bg-[#F0F9F7]' : 'hover:bg-[#F8FBFA]'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span className={`text-xs font-bold leading-tight ${
+                          !n.daDoc ? 'text-[#169C89]' : 'text-[#1E384C]'
+                        }`}>
+                          {n.tieuDe}
+                        </span>
+                        {!n.daDoc && (
+                          <span className="w-2 h-2 rounded-full bg-[#169C89] shrink-0 mt-1" />
+                        )}
+                      </div>
+                      <p className="text-[11px] text-[#5A777E] line-clamp-2 leading-relaxed">
+                        {n.noiDung}
+                      </p>
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-[10px] text-[#7A9A93]">
+                          {n.thoiGianTao ? new Date(n.thoiGianTao).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : ''}
+                        </span>
+                        {!n.daDoc && onMarkNotificationAsRead && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onMarkNotificationAsRead(n.maThongBao);
+                            }}
+                            className="text-[10px] font-semibold text-[#169C89] hover:underline"
+                          >
+                            Đã đọc
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  <div className="pt-2 text-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsNotifOpen(false);
+                        if (onNavigateTab) onNavigateTab('notifications');
+                      }}
+                      className="text-xs font-bold text-[#169C89] hover:underline"
+                    >
+                      Xem tất cả thông báo →
+                    </button>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <span className="text-xs font-bold text-[#1E384C] block">
-                    Chưa có thông báo mới
-                  </span>
-                  <p className="text-[11px] text-[#7A9A93] leading-relaxed max-w-xs mx-auto">
-                    Thông báo về xác nhận lịch hẹn và lịch tái khám sẽ hiển thị tại đây khi bác sĩ cập nhật.
-                  </p>
+              ) : (
+                <div className="py-6 px-4 text-center space-y-2">
+                  <div className="h-10 w-10 rounded-2xl bg-[#E8F6F2] text-[#169C89] flex items-center justify-center mx-auto">
+                    <Bell className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs font-bold text-[#1E384C] block">
+                      Chưa có thông báo mới
+                    </span>
+                    <p className="text-[11px] text-[#7A9A93] leading-relaxed max-w-xs mx-auto">
+                      Thông báo về xác nhận lịch hẹn và lịch tái khám sẽ hiển thị tại đây khi bác sĩ hoặc phòng khám cập nhật.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>
