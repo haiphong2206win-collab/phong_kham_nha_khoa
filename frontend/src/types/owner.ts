@@ -51,8 +51,6 @@ export interface PhanCongRequest {
  * DTO KetQuaPhanCongResponse từ POST /api/v1/phan-cong
  */
 export interface KetQuaPhanCongResponse {
-  maLich: string;
-  maYeuCau: string;
   maBacSi: string;
   tenBacSi: string;
   maPhong: string;
@@ -60,8 +58,19 @@ export interface KetQuaPhanCongResponse {
   ngayKham: string;
   gioBatDau: string;
   gioKetThuc: string;
-  trangThaiLich: string;
-  thongBao: string;
+  maNguoiPhanCong?: string;
+  tenNguoiPhanCong?: string;
+  thoiGianPhanCong?: string;
+}
+
+/**
+ * DTO PhongKhamResponse từ GET /api/v1/quan-ly/phong-kham
+ */
+export interface PhongKhamResponse {
+  maPhong: string;
+  tenPhong: string;
+  trangThai: 'TRONG' | 'DANG_SU_DUNG' | 'TAM_NGUNG' | 'BAO_TRI' | string;
+  ghiChu?: string | null;
 }
 
 /**

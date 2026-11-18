@@ -2,11 +2,14 @@ package com.example.clinic.demo_phongkham_nhakhoa.service;
 
 import com.example.clinic.demo_phongkham_nhakhoa.dto.response.BacSiQuanLyResponse;
 import com.example.clinic.demo_phongkham_nhakhoa.dto.response.BenhNhanQuanLyResponse;
+import com.example.clinic.demo_phongkham_nhakhoa.dto.response.PhongKhamResponse;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.BacSi;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.BenhNhan;
+import com.example.clinic.demo_phongkham_nhakhoa.entity.PhongKham;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.TaiKhoan;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.BacSiRepository;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.BenhNhanRepository;
+import com.example.clinic.demo_phongkham_nhakhoa.repository.PhongKhamRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,13 +23,16 @@ public class QuanLyHoSoService {
 
     private final BacSiRepository bacSiRepository;
     private final BenhNhanRepository benhNhanRepository;
+    private final PhongKhamRepository phongKhamRepository;
 
     public QuanLyHoSoService(
             BacSiRepository bacSiRepository,
-            BenhNhanRepository benhNhanRepository
+            BenhNhanRepository benhNhanRepository,
+            PhongKhamRepository phongKhamRepository
     ) {
         this.bacSiRepository = bacSiRepository;
         this.benhNhanRepository = benhNhanRepository;
+        this.phongKhamRepository = phongKhamRepository;
     }
 
     // Lấy danh sách bác sĩ
@@ -67,6 +73,14 @@ public class QuanLyHoSoService {
                 ));
 
         return chuyenBenhNhanSangResponse(benhNhan);
+    }
+
+    // Lấy danh sách phòng khám
+    public List<PhongKhamResponse> layDanhSachPhongKham() {
+        return phongKhamRepository.findAll()
+                .stream()
+                .map(this::chuyenPhongKhamSangResponse)
+                .toList();
     }
 
     // Chuyển entity BacSi sang DTO
@@ -118,6 +132,18 @@ public class QuanLyHoSoService {
                         ? taiKhoan.getTrangThai() : null,
                 taiKhoan != null
                         ? taiKhoan.getNgayTao() : null
+        );
+    }
+
+    // Chuyển entity PhongKham sang DTO
+    private PhongKhamResponse chuyenPhongKhamSangResponse(
+            PhongKham phongKham
+    ) {
+        return new PhongKhamResponse(
+                phongKham.getMaPhong(),
+                phongKham.getTenPhong(),
+                phongKham.getTrangThai(),
+                phongKham.getGhiChu()
         );
     }
 }

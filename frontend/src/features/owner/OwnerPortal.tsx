@@ -6,6 +6,7 @@ import type {
   BacSiQuanLyResponse,
   BenhNhanQuanLyResponse,
   TaiKhoanQuanLyResponse,
+  PhongKhamResponse,
   OwnerKPISummary,
 } from '@/types/owner';
 import { ownerService } from '@/services/owner.service';
@@ -48,6 +49,7 @@ export const OwnerPortal: React.FC<OwnerPortalProps> = ({
   const [doctors, setDoctors] = useState<BacSiQuanLyResponse[]>([]);
   const [patients, setPatients] = useState<BenhNhanQuanLyResponse[]>([]);
   const [accounts, setAccounts] = useState<TaiKhoanQuanLyResponse[]>([]);
+  const [rooms, setRooms] = useState<PhongKhamResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,7 +88,7 @@ export const OwnerPortal: React.FC<OwnerPortalProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const [reqList, docList, patList, accList] = await Promise.all([
+      const [reqList, docList, patList, accList, roomList] = await Promise.all([
         ownerService.getAppointmentRequests().catch((e) => {
           console.warn('Lỗi tải yêu cầu đặt lịch:', e);
           return [];
@@ -103,12 +105,17 @@ export const OwnerPortal: React.FC<OwnerPortalProps> = ({
           console.warn('Lỗi tải tài khoản:', e);
           return [];
         }),
+        ownerService.getRooms().catch((e) => {
+          console.warn('Lỗi tải phòng khám:', e);
+          return [];
+        }),
       ]);
 
       setRequests(reqList);
       setDoctors(docList);
       setPatients(patList);
       setAccounts(accList);
+      setRooms(roomList);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Không thể tải dữ liệu từ máy chủ.';
       setError(msg);
@@ -292,6 +299,7 @@ export const OwnerPortal: React.FC<OwnerPortalProps> = ({
         onClose={() => setAssignRequest(null)}
         request={assignRequest}
         doctors={doctors}
+        rooms={rooms}
         currentOwnerDoctorId={ownerDoc.maBacSi}
         onSuccess={handleActionSuccess}
       />

@@ -6,6 +6,7 @@ import type {
   TuChoiRequest,
   BacSiQuanLyResponse,
   BenhNhanQuanLyResponse,
+  PhongKhamResponse,
   TaiKhoanQuanLyResponse,
   TaoTaiKhoanBacSiRequest,
   TaoTaiKhoanBenhNhanRequest,
@@ -32,6 +33,15 @@ export const ownerService = {
    */
   async getAppointmentRequests(): Promise<YeuCauDatLichResponse[]> {
     const response = await apiClient.get<YeuCauDatLichResponse[]>('/quan-ly/yeu-cau-dat-lich');
+    return response.data || [];
+  },
+
+  /**
+   * Lấy danh sách toàn bộ phòng khám
+   * Endpoint: GET /api/v1/quan-ly/phong-kham
+   */
+  async getRooms(): Promise<PhongKhamResponse[]> {
+    const response = await apiClient.get<PhongKhamResponse[]>('/quan-ly/phong-kham');
     return response.data || [];
   },
 

@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, AlertTriangle, ShieldAlert, Info, Lock } from 'lucide-react';
+import { X, Calendar, ShieldAlert, Info } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import type { YeuCauDatLichResponse, BacSiQuanLyResponse, PhanCongRequest } from '@/types/owner';
+import type {
+  YeuCauDatLichResponse,
+  BacSiQuanLyResponse,
+  PhongKhamResponse,
+  PhanCongRequest
+} from '@/types/owner';
 import { ownerService } from '@/services/owner.service';
 
 interface OwnerAssignModalProps {
@@ -9,6 +14,7 @@ interface OwnerAssignModalProps {
   onClose: () => void;
   request: YeuCauDatLichResponse | null;
   doctors: BacSiQuanLyResponse[];
+  rooms: PhongKhamResponse[];
   currentOwnerDoctorId: string;
   onSuccess: (message: string) => void;
 }
@@ -18,6 +24,7 @@ export const OwnerAssignModal: React.FC<OwnerAssignModalProps> = ({
   onClose,
   request,
   doctors,
+  rooms,
   currentOwnerDoctorId,
   onSuccess,
 }) => {
@@ -29,10 +36,6 @@ export const OwnerAssignModal: React.FC<OwnerAssignModalProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Backend hiện thiếu API GET danh sách phòng khám (/api/v1/quan-ly/phong-kham)
-  // Đánh dấu trạng thái BLOCKED theo quy chuẩn bảo vệ dữ liệu sản xuất
-  const isRoomApiAvailable = false;
-
   useEffect(() => {
     if (request) {
       // Đặt giờ mặc định theo ca sáng hoặc ca chiều
@@ -40,21 +43,23 @@ export const OwnerAssignModal: React.FC<OwnerAssignModalProps> = ({
       // Mặc định chọn bác sĩ điều trị đầu tiên
       const treatingDoc = doctors.find((d) => d.maBacSi !== currentOwnerDoctorId && d.dangLamViec);
       setSelectedDoctorId(treatingDoc ? treatingDoc.maBacSi : doctors[0]?.maBacSi || '');
-      setSelectedRoomId('');
+
+      // Mặc định chọn phòng khám sẵn sàng đầu tiên
+      const availableRoom =
+        rooms.find((r) => r.trangThai === 'TRONG') ||
+        rooms.find((r) => r.trangThai !== 'BAO_TRI' && r.trangThai !== 'TAM_NGUNG');
+      setSelectedRoomId(availableRoom ? availableRoom.maPhong : (rooms[0]?.maPhong || ''));
+
       setDuration(30);
       setIsConfirmed(false);
       setErrorMessage(null);
     }
-  }, [request, doctors, currentOwnerDoctorId]);
+  }, [request, doctors, rooms, currentOwnerDoctorId]);
 
   if (!isOpen || !request) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isRoomApiAvailable) {
-      setErrorMessage('Chức năng phân công đang tạm hoãn (BLOCKED) do Backend chưa có API danh mục phòng khám.');
-      return;
-    }
     if (!selectedDoctorId) {
       setErrorMessage('Vui lòng chọn bác sĩ phụ trách ca khám.');
       return;
@@ -86,7 +91,7 @@ export const OwnerAssignModal: React.FC<OwnerAssignModalProps> = ({
       };
 
       const result = await ownerService.assignAppointment(payload);
-      onSuccess(result.thongBao || `Phân công thành công ca khám ${result.maLich}!`);
+      onSuccess(`Phân công thành công cho Bác sĩ ${result.tenBacSi} tại ${result.tenPhong}!`);
       onClose();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Lỗi khi phân công ca khám.';
@@ -140,18 +145,6 @@ export const OwnerAssignModal: React.FC<OwnerAssignModalProps> = ({
           )}
         </div>
 
-        {/* Cảnh báo trạng thái BLOCKED do thiếu API phòng khám */}
-        <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
-          <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-          <div className="space-y-1 leading-relaxed">
-            <p className="font-bold">Tính năng phân công phòng khám đang tạm hoãn (BLOCKED):</p>
-            <p className="text-[11px] text-amber-800">
-              Backend hiện chưa cung cấp endpoint <code className="font-mono font-semibold">GET /api/v1/quan-ly/phong-kham</code> để truy vấn danh mục phòng khám thực tế.
-              Để ngăn chặn việc tạo lịch khám với mã phòng chưa được xác minh trong hệ thống sản xuất, nút phân công tạm thời được khóa cho đến khi Backend bổ sung API này.
-            </p>
-          </div>
-        </div>
-
         {/* Cảnh báo quy tắc ca làm việc (Trung tính) */}
         <div className="p-3.5 rounded-2xl bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-start gap-2.5">
           <Info className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
@@ -185,23 +178,30 @@ export const OwnerAssignModal: React.FC<OwnerAssignModalProps> = ({
             </select>
           </div>
 
-          {/* Chọn Phòng khám (Bị khóa do thiếu API) */}
+          {/* Chọn Phòng khám (Đã mở khóa kết nối API thật) */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-gray-700">
-                Phòng khám <span className="text-red-500">*</span>
-              </label>
-              <span className="text-[10px] text-amber-600 font-semibold flex items-center gap-1">
-                <Lock className="h-3 w-3" /> Chờ API Backend
-              </span>
-            </div>
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">
+              Phòng khám <span className="text-red-500">*</span>
+            </label>
             <select
-              value=""
-              disabled={true}
-              className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed font-medium"
+              value={selectedRoomId}
+              onChange={(e) => setSelectedRoomId(e.target.value)}
+              className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-300 bg-white focus:outline-hidden focus:ring-2 focus:ring-[#169C89] focus:border-transparent font-medium"
+              required
             >
-              <option value="">-- Chờ Backend bổ sung API danh mục phòng khám --</option>
+              <option value="">-- Chọn Phòng khám --</option>
+              {rooms.map((room) => {
+                const isBlocked = room.trangThai === 'BAO_TRI' || room.trangThai === 'TAM_NGUNG';
+                return (
+                  <option key={room.maPhong} value={room.maPhong} disabled={isBlocked}>
+                    {room.tenPhong} ({room.maPhong}) {room.trangThai === 'TRONG' ? '• Sẵn sàng' : room.trangThai === 'DANG_SU_DUNG' ? '• Đang sử dụng' : `• ${room.trangThai}`}
+                  </option>
+                );
+              })}
             </select>
+            <p className="mt-1 text-[11px] text-gray-400">
+              Lưu ý: Trạng thái phòng sẵn sàng/đang sử dụng; Backend sẽ xác minh xung đột giờ khám thực tế.
+            </p>
           </div>
 
           {/* Giờ bắt đầu & Thời lượng */}
@@ -242,8 +242,7 @@ export const OwnerAssignModal: React.FC<OwnerAssignModalProps> = ({
                 type="checkbox"
                 checked={isConfirmed}
                 onChange={(e) => setIsConfirmed(e.target.checked)}
-                disabled={!isRoomApiAvailable}
-                className="mt-0.5 h-4 w-4 rounded-sm border-gray-300 text-[#169C89] focus:ring-[#169C89] disabled:opacity-50"
+                className="mt-0.5 h-4 w-4 rounded-sm border-gray-300 text-[#169C89] focus:ring-[#169C89]"
               />
               <span className="text-xs text-gray-600 leading-snug">
                 Tôi xác nhận thông tin phân công trên là chính xác và đồng ý tạo lịch khám chính thức trong hệ thống.
@@ -274,11 +273,10 @@ export const OwnerAssignModal: React.FC<OwnerAssignModalProps> = ({
             <Button
               type="submit"
               size="sm"
-              disabled={true}
-              className="bg-gray-300 text-gray-500 cursor-not-allowed font-medium px-4 py-2"
-              title="Chức năng tạm khóa do Backend chưa có API danh mục phòng khám"
+              disabled={loading || !selectedDoctorId || !selectedRoomId || !startTime || !isConfirmed}
+              className="bg-[#169C89] hover:bg-[#138575] text-white font-medium px-4 py-2 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
             >
-              Tạm khóa (Chờ API phòng khám)
+              {loading ? 'Đang phân công...' : 'Xác nhận phân công'}
             </Button>
           </div>
         </form>
