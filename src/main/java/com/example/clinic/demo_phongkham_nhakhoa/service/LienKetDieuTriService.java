@@ -12,11 +12,13 @@ import com.example.clinic.demo_phongkham_nhakhoa.repository.BuoiDieuTriRepositor
 import com.example.clinic.demo_phongkham_nhakhoa.repository.LichKhamRepository;
 
 import org.springframework.context.event.EventListener;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,9 +48,11 @@ public class LienKetDieuTriService {
                                 .getAuthentication();
 
                 if (authentication == null
-                                || !authentication.isAuthenticated()) {
+                                || !authentication.isAuthenticated()
+                                || "anonymousUser".equals(authentication.getPrincipal())) {
 
-                        throw new SecurityException(
+                        throw new ResponseStatusException(
+                                        HttpStatus.UNAUTHORIZED,
                                         "Nguoi dung chua dang nhap");
                 }
 
@@ -69,7 +73,8 @@ public class LienKetDieuTriService {
                                                 .equals(quyen.getAuthority()));
 
                 if (!laBacSi) {
-                        throw new SecurityException(
+                        throw new ResponseStatusException(
+                                        HttpStatus.FORBIDDEN,
                                         "Khong co quyen quan ly lich dieu tri");
                 }
 
@@ -88,7 +93,8 @@ public class LienKetDieuTriService {
                 if (!tenDangNhapBacSi.equals(
                                 authentication.getName())) {
 
-                        throw new SecurityException(
+                        throw new ResponseStatusException(
+                                        HttpStatus.FORBIDDEN,
                                         "Bac si khong duoc phan cong lich nay");
                 }
         }
@@ -165,6 +171,14 @@ public class LienKetDieuTriService {
                                                 "Khong tim thay lich kham"));
 
                 kiemTraQuyen(lichKham);
+
+                String maBnLoTrinh = buoi.getLoTrinhDieuTri().getBenhNhan().getMaBenhNhan();
+                String maBnLichKham = lichKham.getBenhNhan().getMaBenhNhan();
+
+                if (!maBnLoTrinh.equals(maBnLichKham)) {
+                        throw new IllegalArgumentException(
+                                        "Buổi điều trị và lịch khám không thuộc cùng một bệnh nhân");
+                }
 
                 kiemTraLoTrinhDangHoatDong(
                                 buoi.getLoTrinhDieuTri());

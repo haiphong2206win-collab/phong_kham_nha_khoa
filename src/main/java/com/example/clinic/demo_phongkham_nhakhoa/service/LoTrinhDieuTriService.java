@@ -12,30 +12,42 @@ import com.example.clinic.demo_phongkham_nhakhoa.entity.LoTrinhDieuTri;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.LoTrinhMau;
 
 import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiBuoiDieuTri;
+import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiDatLich;
 
 import com.example.clinic.demo_phongkham_nhakhoa.repository.BenhNhanRepository;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.BuoiDieuTriRepository;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.BuoiMauRepository;
+import com.example.clinic.demo_phongkham_nhakhoa.repository.LichKhamRepository;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.LoTrinhDieuTriRepository;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.LoTrinhMauRepository;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Transactional(readOnly = true)
 public class LoTrinhDieuTriService {
+
+        private static final Set<TrangThaiDatLich> TRANG_THAI_DANG_PHU_TRACH = Set.of(
+                        TrangThaiDatLich.CHO_BENH_NHAN_XAC_NHAN,
+                        TrangThaiDatLich.DA_XAC_NHAN,
+                        TrangThaiDatLich.DA_DEN,
+                        TrangThaiDatLich.DANG_KHAM);
 
         private final LoTrinhDieuTriRepository loTrinhDieuTriRepository;
         private final BuoiDieuTriRepository buoiDieuTriRepository;
         private final BenhNhanRepository benhNhanRepository;
         private final LoTrinhMauRepository loTrinhMauRepository;
         private final BuoiMauRepository buoiMauRepository;
+        private final LichKhamRepository lichKhamRepository;
 
         // Constructor Dependency Injection
         public LoTrinhDieuTriService(
@@ -43,17 +55,58 @@ public class LoTrinhDieuTriService {
                         BuoiDieuTriRepository buoiDieuTriRepository,
                         BenhNhanRepository benhNhanRepository,
                         LoTrinhMauRepository loTrinhMauRepository,
-                        BuoiMauRepository buoiMauRepository) {
+                        BuoiMauRepository buoiMauRepository,
+                        LichKhamRepository lichKhamRepository) {
 
                 this.loTrinhDieuTriRepository = loTrinhDieuTriRepository;
-
                 this.buoiDieuTriRepository = buoiDieuTriRepository;
-
                 this.benhNhanRepository = benhNhanRepository;
-
                 this.loTrinhMauRepository = loTrinhMauRepository;
-
                 this.buoiMauRepository = buoiMauRepository;
+                this.lichKhamRepository = lichKhamRepository;
+        }
+
+        // ==================================================
+        // KIEM TRA QUYEN TRUY CAP CUA BAC SI / CHU PHONG KHAM
+        // ==================================================
+
+        public void kiemTraQuyenTruyCapBenhNhan(String maBenhNhan) {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+                if (authentication == null
+                                || !authentication.isAuthenticated()
+                                || "anonymousUser".equals(authentication.getPrincipal())) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.UNAUTHORIZED,
+                                        "Nguoi dung chua dang nhap");
+                }
+
+                boolean laChuPhongKham = authentication.getAuthorities().stream()
+                                .anyMatch(quyen -> "ROLE_CHU_PHONG_KHAM".equals(quyen.getAuthority()));
+                if (laChuPhongKham) {
+                        return;
+                }
+
+                boolean laBacSi = authentication.getAuthorities().stream()
+                                .anyMatch(quyen -> "ROLE_BAC_SI".equals(quyen.getAuthority()));
+                if (!laBacSi) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.FORBIDDEN,
+                                        "Khong co quyen quan ly lo trinh dieu tri");
+                }
+
+                String tenDangNhap = authentication.getName();
+                boolean dangPhuTrach = lichKhamRepository
+                                .existsByBacSi_TaiKhoan_TenDangNhapAndBenhNhan_MaBenhNhanAndTrangThaiIn(
+                                                tenDangNhap,
+                                                maBenhNhan,
+                                                TRANG_THAI_DANG_PHU_TRACH);
+
+                if (!dangPhuTrach) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.FORBIDDEN,
+                                        "Bac si khong co quyen thao tac tren lo trinh dieu tri cua benh nhan nay");
+                }
         }
 
         // 1. TAO LO TRINH RIENG CHO BENH NHAN
@@ -78,6 +131,7 @@ public class LoTrinhDieuTriService {
                 }
 
                 maBenhNhan = maBenhNhan.trim();
+                kiemTraQuyenTruyCapBenhNhan(maBenhNhan);
 
                 // Kiem tra ma lo trinh mau
                 String maLoTrinhMau = request.getMaLoTrinhMau();
@@ -188,6 +242,7 @@ public class LoTrinhDieuTriService {
                         String maLoTrinhDieuTri) {
 
                 LoTrinhDieuTri loTrinh = timLoTrinhTheoMa(maLoTrinhDieuTri);
+                kiemTraQuyenTruyCapBenhNhan(loTrinh.getBenhNhan().getMaBenhNhan());
 
                 return chuyenSangResponse(loTrinh);
         }
@@ -203,6 +258,7 @@ public class LoTrinhDieuTriService {
                 }
 
                 maBenhNhan = maBenhNhan.trim();
+                kiemTraQuyenTruyCapBenhNhan(maBenhNhan);
 
                 if (!benhNhanRepository.existsById(maBenhNhan)) {
                         throw new ResponseStatusException(
@@ -225,6 +281,7 @@ public class LoTrinhDieuTriService {
                         String maLoTrinhDieuTri) {
 
                 LoTrinhDieuTri loTrinh = timLoTrinhTheoMa(maLoTrinhDieuTri);
+                kiemTraQuyenTruyCapBenhNhan(loTrinh.getBenhNhan().getMaBenhNhan());
 
                 List<BuoiDieuTri> danhSachBuoi = buoiDieuTriRepository
                                 .findByLoTrinhDieuTri_MaLoTrinhDieuTriOrderBySoThuTuAsc(

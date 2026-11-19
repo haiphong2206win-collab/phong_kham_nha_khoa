@@ -7,8 +7,10 @@ import com.example.clinic.demo_phongkham_nhakhoa.entity.YeuCauDatLich;
 import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiYeuCau;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.BenhNhanRepository;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.YeuCauDatLichRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -101,15 +103,38 @@ public class YeuCauDatLichService {
     // 4. Bệnh nhân tự hủy yêu cầu đang chờ xử lý
     @Transactional
     public YeuCauDatLichResponse huyYeuCau(String maYeuCau, String tenDangNhap, String lyDo) {
-        YeuCauDatLich yeuCauDatLich = timTheoId(maYeuCau);
+        YeuCauDatLich yeuCauDatLich = repository.findById(maYeuCau)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy yêu cầu đặt lịch với mã: " + maYeuCau
+                ));
 
-        if (!yeuCauDatLich.getBenhNhan().getTaiKhoan().getTenDangNhap().equals(tenDangNhap)) {
-            throw new IllegalArgumentException("Bạn không có quyền hủy yêu cầu này");
+        if (yeuCauDatLich.getBenhNhan() == null
+                || yeuCauDatLich.getBenhNhan().getTaiKhoan() == null
+                || !yeuCauDatLich.getBenhNhan().getTaiKhoan().getTenDangNhap().equals(tenDangNhap)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Bạn không có quyền hủy yêu cầu đặt lịch này"
+            );
         }
 
-        yeuCauDatLich.huy(lyDo);
-        YeuCauDatLich daLuu = repository.save(yeuCauDatLich);
-        return chuyenSangResponseDto(daLuu);
+        if (yeuCauDatLich.getTrangThai() != TrangThaiYeuCau.CHO_PHAN_CONG) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Chỉ có thể hủy yêu cầu đặt lịch đang ở trạng thái chờ phân công"
+            );
+        }
+
+        try {
+            yeuCauDatLich.huy(lyDo);
+            YeuCauDatLich daLuu = repository.saveAndFlush(yeuCauDatLich);
+            return chuyenSangResponseDto(daLuu);
+        } catch (org.springframework.dao.OptimisticLockingFailureException | jakarta.persistence.OptimisticLockException ex) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Yêu cầu đặt lịch đang được xử lý hoặc phân công đồng thời. Vui lòng tải lại trang."
+            );
+        }
     }
 
     // --- CÁC PHƯƠNG THỨC CHO BÁC SĨ CHỦ / QUẢN LÝ (NGƯỜI 2 SẼ GỌI) ---

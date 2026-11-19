@@ -2,19 +2,28 @@
 package com.example.clinic.demo_phongkham_nhakhoa.service;
 
 import com.example.clinic.demo_phongkham_nhakhoa.dto.request.CapNhatHoSoBenhNhanRequest;
+import com.example.clinic.demo_phongkham_nhakhoa.dto.response.BuoiDieuTriResponse;
 import com.example.clinic.demo_phongkham_nhakhoa.dto.response.LichKhamBenhNhanResponse;
+import com.example.clinic.demo_phongkham_nhakhoa.dto.response.LoTrinhDieuTriResponse;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.BenhNhan;
+import com.example.clinic.demo_phongkham_nhakhoa.entity.BuoiDieuTri;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.LichKham;
+import com.example.clinic.demo_phongkham_nhakhoa.entity.LoTrinhDieuTri;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.TaiKhoan;
+import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiBuoiDieuTri;
 import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiDatLich;
 import com.example.clinic.demo_phongkham_nhakhoa.event.LichKhamTrangThaiThayDoiEvent;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.BenhNhanRepository;
+import com.example.clinic.demo_phongkham_nhakhoa.repository.BuoiDieuTriRepository;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.LichKhamRepository;
+import com.example.clinic.demo_phongkham_nhakhoa.repository.LoTrinhDieuTriRepository;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.TaiKhoanRepository;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -30,16 +39,25 @@ public class BenhNhanService {
     // GIAI DOAN 3 - Bo sung bo phat su kien
     private final ApplicationEventPublisher eventPublisher;
 
+    // GIAI DOAN 4 - Bo sung repositories lo trinh va buoi dieu tri
+    private final LoTrinhDieuTriRepository loTrinhDieuTriRepository;
+
+    private final BuoiDieuTriRepository buoiDieuTriRepository;
+
     public BenhNhanService(
             BenhNhanRepository benhNhanRepository,
             TaiKhoanRepository taiKhoanRepository,
             LichKhamRepository lichKhamRepository,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            LoTrinhDieuTriRepository loTrinhDieuTriRepository,
+            BuoiDieuTriRepository buoiDieuTriRepository) {
 
         this.repository = benhNhanRepository;
         this.taiKhoanRepository = taiKhoanRepository;
         this.lichKhamRepository = lichKhamRepository;
         this.eventPublisher = eventPublisher;
+        this.loTrinhDieuTriRepository = loTrinhDieuTriRepository;
+        this.buoiDieuTriRepository = buoiDieuTriRepository;
     }
 
     // Lay ho so benh nhan theo ten dang nhap
@@ -233,7 +251,23 @@ public class BenhNhanService {
     }
 
     // ==================================================
-    // 11. CHUYEN ENTITY SANG DTO
+    // 11. LAY DANH SACH LICH KHAM CUA BENH NHAN
+    // ==================================================
+
+    @Transactional(readOnly = true)
+    public List<LichKhamBenhNhanResponse> layDanhSachLichKham(String tenDangNhap) {
+        // Xac minh benh nhan ton tai theo ten dang nhap
+        timTheoTenDangNhap(tenDangNhap);
+
+        return lichKhamRepository
+                .findByBenhNhan_TaiKhoan_TenDangNhapOrderByNgayKhamDescGioBatDauDesc(tenDangNhap)
+                .stream()
+                .map(this::chuyenSangLichKhamResponse)
+                .toList();
+    }
+
+    // ==================================================
+    // 12. CHUYEN ENTITY SANG DTO
     // GIU NGUYEN
     // ==================================================
 
@@ -256,5 +290,111 @@ public class BenhNhanService {
                 lichKham.getTrangThai(),
                 lichKham.getLyDoHuyThayDoi(),
                 lichKham.getThoiGianTao());
+    }
+
+    // ==================================================
+    // 13. GIAI DOAN 4 - BENH NHAN XEM LO TRINH CUA MINH
+    // ==================================================
+
+    @Transactional(readOnly = true)
+    public List<LoTrinhDieuTriResponse> layDanhSachLoTrinhCuaToi(String tenDangNhap) {
+        BenhNhan benhNhan = timTheoTenDangNhap(tenDangNhap);
+
+        return loTrinhDieuTriRepository
+                .findByBenhNhan_MaBenhNhanOrderByThoiGianTaoDesc(benhNhan.getMaBenhNhan())
+                .stream()
+                .map(this::chuyenSangLoTrinhResponse)
+                .toList();
+    }
+
+    // ==================================================
+    // 14. GIAI DOAN 4 - BENH NHAN XEM BUOI CUA LO TRINH
+    // BAO VE IDOR: XAC MINH QUYEN SO HUU
+    // ==================================================
+
+    @Transactional(readOnly = true)
+    public List<BuoiDieuTriResponse> layDanhSachBuoiDieuTriCuaToi(String tenDangNhap, String maLoTrinh) {
+        if (maLoTrinh == null || maLoTrinh.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã lộ trình không được để trống");
+        }
+
+        BenhNhan benhNhan = timTheoTenDangNhap(tenDangNhap);
+
+        LoTrinhDieuTri loTrinh = loTrinhDieuTriRepository.findById(maLoTrinh.trim())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy lộ trình điều trị: " + maLoTrinh));
+
+        // Kiểm tra quyền sở hữu IDOR
+        if (loTrinh.getBenhNhan() == null
+                || !loTrinh.getBenhNhan().getMaBenhNhan().equals(benhNhan.getMaBenhNhan())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Bạn không có quyền truy cập lộ trình điều trị này");
+        }
+
+        return buoiDieuTriRepository
+                .findByLoTrinhDieuTri_MaLoTrinhDieuTriOrderBySoThuTuAsc(loTrinh.getMaLoTrinhDieuTri())
+                .stream()
+                .map(this::chuyenSangBuoiResponse)
+                .toList();
+    }
+
+    // ==================================================
+    // 15. CHUYEN LO TRINH SANG DTO RESPONSE
+    // ==================================================
+
+    private LoTrinhDieuTriResponse chuyenSangLoTrinhResponse(LoTrinhDieuTri loTrinh) {
+        String maLoTrinh = loTrinh.getMaLoTrinhDieuTri();
+
+        long tongBanGhi = buoiDieuTriRepository.countByLoTrinhDieuTri_MaLoTrinhDieuTri(maLoTrinh);
+        long soBuoiDaBo = buoiDieuTriRepository.countByLoTrinhDieuTri_MaLoTrinhDieuTriAndTrangThai(
+                maLoTrinh, TrangThaiBuoiDieuTri.DA_BO);
+        long soBuoiHoanThanh = buoiDieuTriRepository.countByLoTrinhDieuTri_MaLoTrinhDieuTriAndTrangThai(
+                maLoTrinh, TrangThaiBuoiDieuTri.HOAN_THANH);
+
+        long tongSoBuoi = tongBanGhi - soBuoiDaBo;
+
+        return new LoTrinhDieuTriResponse(
+                loTrinh.getMaLoTrinhDieuTri(),
+                loTrinh.getBenhNhan().getMaBenhNhan(),
+                loTrinh.getLoTrinhMau() != null ? loTrinh.getLoTrinhMau().getMaLoTrinh() : null,
+                loTrinh.getTenLoTrinh(),
+                loTrinh.getGhiChu(),
+                loTrinh.getTrangThai(),
+                tongSoBuoi,
+                soBuoiHoanThanh,
+                soBuoiDaBo,
+                loTrinh.getThoiGianTao(),
+                loTrinh.getThoiGianCapNhat(),
+                loTrinh.getVersion());
+    }
+
+    // ==================================================
+    // 16. CHUYEN BUOI DIEU TRI SANG DTO RESPONSE
+    // ==================================================
+
+    private BuoiDieuTriResponse chuyenSangBuoiResponse(BuoiDieuTri buoi) {
+        String maLichKham = null;
+        if (buoi.getLichKham() != null) {
+            maLichKham = buoi.getLichKham().getMaLich();
+        }
+
+        return new BuoiDieuTriResponse(
+                buoi.getMaBuoiDieuTri(),
+                buoi.getLoTrinhDieuTri().getMaLoTrinhDieuTri(),
+                buoi.getSoThuTu(),
+                buoi.getTenBuoi(),
+                buoi.getNoiDung(),
+                buoi.getKhoangCachMin(),
+                buoi.getKhoangCachMax(),
+                buoi.getGhiChu(),
+                buoi.getTrangThai(),
+                buoi.isBuoiBoSung(),
+                buoi.getLyDoBo(),
+                buoi.getThoiGianTao(),
+                buoi.getThoiGianCapNhat(),
+                buoi.getVersion(),
+                maLichKham);
     }
 }

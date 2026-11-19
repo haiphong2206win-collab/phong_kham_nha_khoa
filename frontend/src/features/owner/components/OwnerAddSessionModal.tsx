@@ -1,0 +1,243 @@
+import React, { useState, useEffect } from 'react';
+import { X, Plus, AlertCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import type { ThemBuoiDieuTriRequest } from '@/types/owner';
+import { ownerService } from '@/services/owner.service';
+
+interface OwnerAddSessionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: (message: string) => void;
+  maLoTrinh: string;
+  nextSoThuTu?: number;
+}
+
+export const OwnerAddSessionModal: React.FC<OwnerAddSessionModalProps> = ({
+  isOpen,
+  onClose,
+  onSuccess,
+  maLoTrinh,
+  nextSoThuTu = 1,
+}) => {
+  const [soThuTu, setSoThuTu] = useState<number>(nextSoThuTu);
+  const [tenBuoi, setTenBuoi] = useState<string>('');
+  const [noiDung, setNoiDung] = useState<string>('');
+  const [khoangCachMin, setKhoangCachMin] = useState<string>('3');
+  const [khoangCachMax, setKhoangCachMax] = useState<string>('7');
+  const [ghiChu, setGhiChu] = useState<string>('');
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setSoThuTu(nextSoThuTu);
+      setTenBuoi('');
+      setNoiDung('');
+      setKhoangCachMin('3');
+      setKhoangCachMax('7');
+      setGhiChu('');
+      setErrorMessage(null);
+    }
+  }, [isOpen, nextSoThuTu]);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const trimmedTen = tenBuoi.trim();
+    if (!trimmedTen) {
+      setErrorMessage('Tên buổi điều trị không được để trống.');
+      return;
+    }
+
+    const trimmedNoiDung = noiDung.trim();
+    if (!trimmedNoiDung) {
+      setErrorMessage('Nội dung điều trị không được để trống.');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const payload: ThemBuoiDieuTriRequest = {
+        soThuTu: Number(soThuTu) || 1,
+        tenBuoi: trimmedTen,
+        noiDung: trimmedNoiDung,
+        khoangCachMin: khoangCachMin ? Number(khoangCachMin) : null,
+        khoangCachMax: khoangCachMax ? Number(khoangCachMax) : null,
+        ghiChu: ghiChu.trim() || undefined,
+      };
+
+      const result = await ownerService.addTreatmentSession(maLoTrinh, payload);
+      onSuccess(`Đã thêm Buổi ${result.soThuTu}: "${result.tenBuoi}" vào lộ trình!`);
+      onClose();
+    } catch (err: unknown) {
+      let msg = 'Không thể thêm buổi điều trị.';
+      if (err && typeof err === 'object') {
+        const errorObj = err as {
+          response?: { data?: { message?: string } | string };
+          message?: string;
+        };
+        if (typeof errorObj.response?.data === 'string') {
+          msg = errorObj.response.data;
+        } else if (errorObj.response?.data?.message) {
+          msg = errorObj.response.data.message;
+        } else if (errorObj.message) {
+          msg = errorObj.message;
+        }
+      }
+      setErrorMessage(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 overflow-y-auto"
+      onClick={onClose}
+    >
+      <div
+        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-150 my-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-[#F8FAFC]">
+          <div className="flex items-center gap-2.5 text-gray-900">
+            <div className="p-2 rounded-xl bg-teal-50 text-[#169C89]">
+              <Plus className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">Thêm buổi điều trị bổ sung</h2>
+              <p className="text-xs text-gray-500">Bổ sung phiên điều trị vào lộ trình hiện tại</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            title="Đóng"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {errorMessage && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2.5 text-xs text-red-700">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-500" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                Số thứ tự <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                min={1}
+                value={soThuTu}
+                onChange={(e) => setSoThuTu(Number(e.target.value))}
+                required
+                className="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89]"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                Tên buổi điều trị <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={tenBuoi}
+                onChange={(e) => setTenBuoi(e.target.value)}
+                placeholder="Ví dụ: Tái khám định kỳ, điều chỉnh lực kéo..."
+                required
+                className="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+              Nội dung & Chỉ định điều trị <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={noiDung}
+              onChange={(e) => setNoiDung(e.target.value)}
+              placeholder="Mô tả kỹ thuật thực hiện, vật tư hoặc thao tác điều trị..."
+              rows={3}
+              required
+              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89] resize-none"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                Khoảng cách tối thiểu (ngày)
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={khoangCachMin}
+                onChange={(e) => setKhoangCachMin(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                Khoảng cách tối đa (ngày)
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={khoangCachMax}
+                onChange={(e) => setKhoangCachMax(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+              Ghi chú thêm
+            </label>
+            <input
+              type="text"
+              value={ghiChu}
+              onChange={(e) => setGhiChu(e.target.value)}
+              placeholder="Yêu cầu chuẩn bị hoặc theo dõi đặc biệt..."
+              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89]"
+            />
+          </div>
+
+          {/* Footer actions */}
+          <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="px-4 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors disabled:opacity-50"
+            >
+              Hủy
+            </button>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="bg-[#169C89] hover:bg-[#138575] text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-xs"
+            >
+              {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              {loading ? 'Đang thêm...' : 'Thêm buổi'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
