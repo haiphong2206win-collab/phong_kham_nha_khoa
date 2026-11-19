@@ -281,11 +281,18 @@ export const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
   const [rejectError, setRejectError] = useState<string | null>(null);
   const [isSubmittingReject, setIsSubmittingReject] = useState<boolean>(false);
 
+  // Cancel Request Modal States
+  const [cancelingRequest, setCancelingRequest] = useState<YeuCauDatLich | null>(null);
+  const [isSubmittingCancel, setIsSubmittingCancel] = useState<boolean>(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
   // Handle ESC key to close modals
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (rejectingAppointment) {
+        if (cancelingRequest && !isSubmittingCancel) {
+          setCancelingRequest(null);
+        } else if (rejectingAppointment) {
           setRejectingAppointment(null);
         } else if (selectedOfficialAppointment) {
           setSelectedOfficialAppointment(null);
@@ -296,7 +303,7 @@ export const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedAppointment, selectedOfficialAppointment, rejectingAppointment]);
+  }, [selectedAppointment, selectedOfficialAppointment, rejectingAppointment, cancelingRequest, isSubmittingCancel]);
 
   // Support openModal query parameter (e.g. ?tab=appointments&openModal=LK-xxx or ?openModal=YC-xxx)
   useEffect(() => {
@@ -564,6 +571,45 @@ export const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
       setRejectError(errMsg);
     } finally {
       setIsSubmittingReject(false);
+    }
+  };
+
+  // ==========================================
+  // CANCEL APPOINTMENT REQUEST HANDLERS
+  // ==========================================
+  const handleOpenCancelDialog = (req: YeuCauDatLich) => {
+    setCancelingRequest(req);
+    setCancelError(null);
+  };
+
+  const handleConfirmCancelRequest = async () => {
+    if (!cancelingRequest) return;
+    setIsSubmittingCancel(true);
+    setCancelError(null);
+    try {
+      await patientService.cancelAppointmentRequest(cancelingRequest.maYeuCau);
+      setActionToast({
+        type: 'success',
+        message: `Đã hủy yêu cầu đặt lịch ${cancelingRequest.maYeuCau} thành công.`,
+      });
+      const canceledId = cancelingRequest.maYeuCau;
+      setCancelingRequest(null);
+      if (selectedAppointment?.maYeuCau === canceledId) {
+        setSelectedAppointment(null);
+      }
+      await onReloadData();
+    } catch (err: unknown) {
+      console.error('Lỗi khi hủy yêu cầu đặt lịch:', err);
+      const msg = err instanceof Error ? err.message : 'Không thể hủy yêu cầu đặt lịch.';
+      setCancelError(msg);
+      setActionToast({
+        type: 'error',
+        message: msg,
+      });
+      // Tải lại dữ liệu nếu yêu cầu đã bị Owner phân công hoặc thay đổi trạng thái
+      await onReloadData();
+    } finally {
+      setIsSubmittingCancel(false);
     }
   };
 
@@ -1513,14 +1559,27 @@ export const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
                           </td>
 
                           <td className="py-4 px-6 text-right">
-                            <button
-                              type="button"
-                              onClick={() => handleOpenDetail(req)}
-                              className="px-3.5 py-1.5 rounded-xl border border-[#CEEDE4] text-[#169C89] hover:bg-[#E8F6F2] hover:border-[#169C89] font-bold text-xs transition-all shadow-2xs inline-flex items-center gap-1.5"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                              <span>Xem chi tiết</span>
-                            </button>
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenDetail(req)}
+                                className="px-3.5 py-1.5 rounded-xl border border-[#CEEDE4] text-[#169C89] hover:bg-[#E8F6F2] hover:border-[#169C89] font-bold text-xs transition-all shadow-2xs inline-flex items-center gap-1.5"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>Xem chi tiết</span>
+                              </button>
+                              {req.trangThai === 'CHO_PHAN_CONG' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenCancelDialog(req)}
+                                  className="px-3 py-1.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-bold text-xs transition-all shadow-2xs inline-flex items-center gap-1"
+                                  title="Hủy yêu cầu đặt lịch này"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                  <span>Hủy yêu cầu</span>
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -1561,15 +1620,25 @@ export const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
                         </div>
                       </div>
 
-                      <div className="pt-1">
+                      <div className="pt-1 flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => handleOpenDetail(req)}
-                          className="w-full py-2 rounded-xl border border-[#CEEDE4] text-[#169C89] hover:bg-[#E8F6F2] font-bold text-xs transition-colors text-center inline-flex items-center justify-center gap-1.5"
+                          className="flex-1 py-2 rounded-xl border border-[#CEEDE4] text-[#169C89] hover:bg-[#E8F6F2] font-bold text-xs transition-colors text-center inline-flex items-center justify-center gap-1.5"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           <span>Xem chi tiết</span>
                         </button>
+                        {req.trangThai === 'CHO_PHAN_CONG' && (
+                          <button
+                            type="button"
+                            onClick={() => handleOpenCancelDialog(req)}
+                            className="flex-1 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 font-bold text-xs transition-colors text-center inline-flex items-center justify-center gap-1"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                            <span>Hủy yêu cầu</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -1777,14 +1846,33 @@ export const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
               )}
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-[#E8F6F2]/70 border border-[#CEEDE4] flex items-start gap-2.5 text-xs text-[#1E384C]">
-              <Info className="w-4 h-4 text-[#169C89] mt-0.5 shrink-0" />
-              <p className="leading-relaxed">
-                Để điều chỉnh ngày giờ khám hoặc hủy yêu cầu, vui lòng thông báo trực tiếp với nhân viên khi phòng khám gọi xác nhận hoặc liên hệ tại quầy tiếp đón.
-              </p>
-            </div>
+            {selectedAppointment.trangThai === 'CHO_PHAN_CONG' ? (
+              <div className="p-3.5 rounded-2xl bg-[#FFFBEB] border border-[#FEF3C7] flex items-start gap-2.5 text-xs text-[#92400E]">
+                <Info className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                <p className="leading-relaxed">
+                  Yêu cầu đang chờ phòng khám phân công bác sĩ và phòng khám. Bạn có thể hủy yêu cầu này bất cứ lúc nào trước khi lịch được xếp.
+                </p>
+              </div>
+            ) : (
+              <div className="p-3.5 rounded-2xl bg-[#E8F6F2]/70 border border-[#CEEDE4] flex items-start gap-2.5 text-xs text-[#1E384C]">
+                <Info className="w-4 h-4 text-[#169C89] mt-0.5 shrink-0" />
+                <p className="leading-relaxed">
+                  Để điều chỉnh ngày giờ khám hoặc hủy yêu cầu, vui lòng thông báo trực tiếp với nhân viên khi phòng khám gọi xác nhận hoặc liên hệ tại quầy tiếp đón.
+                </p>
+              </div>
+            )}
 
             <div className="flex items-center justify-end gap-3 pt-2">
+              {selectedAppointment.trangThai === 'CHO_PHAN_CONG' && (
+                <button
+                  type="button"
+                  onClick={() => handleOpenCancelDialog(selectedAppointment)}
+                  className="px-4 py-2.5 rounded-2xl border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-bold text-xs sm:text-sm transition-colors inline-flex items-center gap-1.5"
+                >
+                  <X className="w-4 h-4" />
+                  <span>Hủy yêu cầu</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setSelectedAppointment(null)}
@@ -2055,6 +2143,89 @@ export const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
                   <X className="w-3.5 h-3.5" />
                 )}
                 <span>Xác nhận từ chối</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 9. MODAL XÁC NHẬN HỦY YÊU CẦU ĐẶT LỊCH (CANCEL REQUEST MODAL) */}
+      {cancelingRequest && (
+        <div
+          className="fixed inset-0 z-50 bg-[#1E384C]/50 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn"
+          onClick={() => !isSubmittingCancel && setCancelingRequest(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-3xl bg-white border border-[#E3ECE9] shadow-2xl overflow-hidden p-6 sm:p-7 space-y-4 animate-scaleUp"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[#F0F5F3]">
+              <div className="flex items-center gap-2 text-amber-600">
+                <AlertCircle className="w-5 h-5 shrink-0" />
+                <h3 className="text-base font-bold text-[#1E384C]">
+                  Hủy yêu cầu đặt lịch {cancelingRequest.maYeuCau}
+                </h3>
+              </div>
+              <button
+                type="button"
+                disabled={isSubmittingCancel}
+                onClick={() => setCancelingRequest(null)}
+                className="w-8 h-8 rounded-full bg-[#F0F5F3] hover:bg-[#E3ECE9] text-[#7A9A93] hover:text-[#1E384C] flex items-center justify-center transition-colors disabled:opacity-50"
+                title="Đóng"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-[#FFFBEB] border border-[#FEF3C7] text-xs space-y-1.5 text-[#92400E]">
+              <p className="font-semibold text-sm leading-relaxed">
+                Bạn có chắc muốn hủy yêu cầu đặt lịch này? Bạn có thể tạo yêu cầu mới sau khi hủy.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-[#F8FBFA] border border-[#E3ECE9] text-xs space-y-1">
+              <div className="flex justify-between">
+                <span className="text-[#7A9A93]">Dịch vụ khám:</span>
+                <span className="font-bold text-[#1E384C]">{cancelingRequest.lyDoKham}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#7A9A93]">Ngày &amp; ca mong muốn:</span>
+                <span className="font-bold text-[#1E384C]">
+                  {formatDateVN(cancelingRequest.ngayMongMuon)} ({CA_KHAM_LABEL[cancelingRequest.caKham] || cancelingRequest.caKham})
+                </span>
+              </div>
+            </div>
+
+            {cancelError && (
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-600">
+                {cancelError}
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                disabled={isSubmittingCancel}
+                onClick={() => setCancelingRequest(null)}
+                className="px-4 py-2.5 rounded-xl border border-[#E3ECE9] bg-[#F0F5F3] hover:bg-[#E3ECE9] text-[#5A777E] hover:text-[#1E384C] text-xs sm:text-sm font-bold transition-all disabled:opacity-50"
+              >
+                Quay lại
+              </button>
+
+              <button
+                type="button"
+                disabled={isSubmittingCancel}
+                onClick={handleConfirmCancelRequest}
+                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold shadow-soft transition-all inline-flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isSubmittingCancel ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  <span>Xác nhận hủy</span>
+                )}
               </button>
             </div>
           </div>

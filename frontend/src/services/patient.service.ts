@@ -64,6 +64,17 @@ export const patientService = {
   },
 
   /**
+   * Bệnh nhân tự hủy yêu cầu đặt lịch đang chờ phân công
+   * PATCH /api/v1/yeu-cau-dat-lich/{maYeuCau}/huy
+   */
+  async cancelAppointmentRequest(maYeuCau: string): Promise<YeuCauDatLich> {
+    const response = await apiClient.patch<YeuCauDatLich>(
+      `/yeu-cau-dat-lich/${encodeURIComponent(maYeuCau)}/huy`
+    );
+    return response.data;
+  },
+
+  /**
    * FE-2B.5: Kiểm tra và lấy danh sách lộ trình điều trị của bệnh nhân đang đăng nhập
    * Endpoint chuẩn bị: GET /api/v1/benh-nhan/lo-trinh-cua-toi
    * Phân biệt rõ:
