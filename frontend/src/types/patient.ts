@@ -95,6 +95,8 @@ export interface PatientDashboardSummary {
   nearestOfficialAppointment?: LichKhamBenhNhan | null;
   treatmentPlanAvailable: boolean;
   treatmentPlanNote: string;
+  treatmentPlans?: LoTrinhDieuTri[];
+  activeTreatmentPlan?: LoTrinhDieuTri | null;
 }
 
 // ============================================================================

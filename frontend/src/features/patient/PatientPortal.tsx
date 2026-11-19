@@ -18,6 +18,7 @@ import type {
   PatientDashboardSummary,
   LichKhamBenhNhan,
   ThongBaoItem,
+  LoTrinhDieuTri,
 } from '@/types/patient';
 import {
   ArrowLeft,
@@ -76,6 +77,8 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
   const [profile, setProfile] = useState<BenhNhanProfile | null>(null);
   const [appointments, setAppointments] = useState<YeuCauDatLich[]>([]);
   const [officialAppointments, setOfficialAppointments] = useState<LichKhamBenhNhan[]>([]);
+  const [treatmentPlans, setTreatmentPlans] = useState<LoTrinhDieuTri[]>([]);
+  const [treatmentPlansAvailable, setTreatmentPlansAvailable] = useState<boolean>(false);
   const [notifications, setNotifications] = useState<ThongBaoItem[]>([]);
   const [unreadNotifCount, setUnreadNotifCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -92,13 +95,14 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
     setError(null);
 
     try {
-      // Gọi song song hồ sơ, yêu cầu đặt lịch, lịch khám chính thức và thông báo từ MySQL thực
-      const [profileRes, appointmentsRes, officialRes, notifsRes, unreadRes] = await Promise.allSettled([
+      // Gọi song song hồ sơ, yêu cầu đặt lịch, lịch khám chính thức, thông báo và lộ trình điều trị từ MySQL thực
+      const [profileRes, appointmentsRes, officialRes, notifsRes, unreadRes, treatmentPlansRes] = await Promise.allSettled([
         patientService.getMyProfile(),
         patientService.getMyAppointmentRequests(),
         patientService.getMyOfficialAppointments(),
         patientService.getNotifications(),
         patientService.getUnreadNotificationCount(),
+        patientService.getMyTreatmentPlans(),
       ]);
 
       if (profileRes.status === 'fulfilled') {
@@ -120,6 +124,13 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
         setOfficialAppointments(officialRes.value || []);
       } else {
         console.warn('Lỗi khi tải lịch khám chính thức:', officialRes.reason);
+      }
+
+      if (treatmentPlansRes.status === 'fulfilled') {
+        setTreatmentPlans(treatmentPlansRes.value.plans || []);
+        setTreatmentPlansAvailable(treatmentPlansRes.value.available);
+      } else {
+        console.warn('Lỗi khi tải lộ trình điều trị:', treatmentPlansRes.reason);
       }
 
       if (notifsRes.status === 'fulfilled') {
@@ -207,14 +218,24 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
   // Chuẩn bị Summary Dashboard
   const nearestReq = appointments.length > 0 ? appointments[0] : null;
   const nearestOff = officialAppointments.length > 0 ? officialAppointments[0] : null;
+  const activePlan = treatmentPlans.length > 0
+    ? (treatmentPlans.find(p => p.trangThai === 'DANG_DIEU_TRI') ||
+       treatmentPlans.find(p => p.trangThai === 'CHUA_BAT_DAU') ||
+       treatmentPlans[0])
+    : null;
+
   const dashboardSummary: PatientDashboardSummary = {
     profile,
     appointmentRequests: appointments,
     officialAppointments,
     nearestAppointment: nearestReq,
     nearestOfficialAppointment: nearestOff,
-    treatmentPlanAvailable: false,
-    treatmentPlanNote: 'Phân quyền API hiện tại (/api/v1/lo-trinh-dieu-tri) chỉ mở cho Bác sĩ và Chủ phòng khám (hasAnyRole: BAC_SI, CHU_PHONG_KHAM). Bác sĩ sẽ trực tiếp cập nhật tiến độ lộ trình trong các buổi khám.',
+    treatmentPlanAvailable: treatmentPlansAvailable && treatmentPlans.length > 0,
+    treatmentPlanNote: treatmentPlans.length > 0
+      ? `Đang có ${treatmentPlans.length} lộ trình điều trị trong hồ sơ bệnh án.`
+      : 'Bệnh nhân chưa có lộ trình điều trị được khởi tạo.',
+    treatmentPlans,
+    activeTreatmentPlan: activePlan,
   };
 
   return (

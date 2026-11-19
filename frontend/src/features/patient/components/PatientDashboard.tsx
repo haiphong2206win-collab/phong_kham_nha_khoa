@@ -352,7 +352,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           </div>
         </div>
 
-        {/* Card 2: Tiến độ điều trị (Trung thực với phân quyền Backend) */}
+        {/* Card 2: Tiến độ điều trị (Dữ liệu thực từ MySQL) */}
         <div className="p-5 sm:p-6 rounded-3xl bg-white border border-[#E3ECE9] shadow-soft-card flex flex-col justify-between">
           <div>
             {/* Header */}
@@ -361,9 +361,19 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 <TrendingUp className="h-4 w-4 text-[#2563EB]" />
                 <h3 className="text-sm font-bold text-[#1E384C]">Tiến độ điều trị</h3>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#F0F5F3] text-[#7A9A93] border border-[#E3ECE9]">
-                Theo phác đồ
-              </span>
+              {summary.activeTreatmentPlan ? (
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
+                  {summary.activeTreatmentPlan.trangThai === 'HOAN_THANH'
+                    ? 'Hoàn thành'
+                    : summary.activeTreatmentPlan.trangThai === 'DANG_DIEU_TRI'
+                    ? 'Đang điều trị'
+                    : 'Đã lên phác đồ'}
+                </span>
+              ) : (
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#F0F5F3] text-[#7A9A93] border border-[#E3ECE9]">
+                  Chưa kích hoạt
+                </span>
+              )}
             </div>
 
             {/* Tooth Vector & Trạng thái phác đồ y khoa */}
@@ -373,26 +383,70 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 <ToothWithBraces className="w-16 h-16" />
               </div>
 
-              {/* Thông tin trung thực */}
-              <div className="space-y-1.5 flex-1 min-w-0">
-                <h4 className="text-xs font-bold text-[#1E384C] block truncate">
-                  Hồ sơ lộ trình điều trị
-                </h4>
-                <p className="text-[11px] text-[#7A9A93] leading-relaxed">
-                  Bác sĩ sẽ kiểm tra và lập lộ trình sau buổi thăm khám trực tiếp tại phòng khám.
-                </p>
-                <div className="pt-1">
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#F0F5F3] text-[#6B858D]">
-                    <span>Chưa kích hoạt phác đồ</span>
-                  </span>
+              {/* Thông tin thật nếu có lộ trình, hoặc Empty State nếu chưa có */}
+              {summary.activeTreatmentPlan ? (
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <h4 className="text-xs font-bold text-[#1E384C] block truncate" title={summary.activeTreatmentPlan.tenLoTrinh}>
+                    {summary.activeTreatmentPlan.tenLoTrinh}
+                  </h4>
+                  <p className="text-[11px] text-[#5A777E] leading-relaxed">
+                    Hoàn thành {summary.activeTreatmentPlan.soBuoiHoanThanh}/{summary.activeTreatmentPlan.tongSoBuoi} buổi điều trị (
+                    {summary.activeTreatmentPlan.tongSoBuoi > 0
+                      ? Math.round((summary.activeTreatmentPlan.soBuoiHoanThanh / summary.activeTreatmentPlan.tongSoBuoi) * 100)
+                      : 0}%)
+                  </p>
+                  <div className="pt-1 flex items-center gap-2">
+                    <div className="flex-1 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        className="bg-[#2563EB] h-full rounded-full transition-all"
+                        style={{
+                          width: `${
+                            summary.activeTreatmentPlan.tongSoBuoi > 0
+                              ? Math.min(100, Math.round((summary.activeTreatmentPlan.soBuoiHoanThanh / summary.activeTreatmentPlan.tongSoBuoi) * 100))
+                              : 0
+                          }%`,
+                        }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-bold text-[#2563EB]">
+                      {summary.activeTreatmentPlan.tongSoBuoi > 0
+                        ? Math.round((summary.activeTreatmentPlan.soBuoiHoanThanh / summary.activeTreatmentPlan.tongSoBuoi) * 100)
+                        : 0}%
+                    </span>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <h4 className="text-xs font-bold text-[#1E384C] block truncate">
+                    Hồ sơ lộ trình điều trị
+                  </h4>
+                  <p className="text-[11px] text-[#7A9A93] leading-relaxed">
+                    Bác sĩ sẽ kiểm tra và lập lộ trình sau buổi thăm khám trực tiếp tại phòng khám.
+                  </p>
+                  <div className="pt-1">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#F0F5F3] text-[#6B858D]">
+                      <span>Chưa có phác đồ điều trị</span>
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="pt-2 text-[11px] text-[#7A9A93] flex items-center gap-1.5 border-t border-[#F0F5F3]">
-            <ShieldCheck className="h-3.5 w-3.5 text-[#169C89] shrink-0" />
-            <span>Phân quyền Backend: Bác sĩ điều trị trực tiếp cập nhật</span>
+          <div className="pt-2 text-[11px] text-[#7A9A93] flex items-center justify-between border-t border-[#F0F5F3]">
+            <div className="flex items-center gap-1.5 truncate">
+              <ShieldCheck className="h-3.5 w-3.5 text-[#169C89] shrink-0" />
+              <span className="truncate">
+                {summary.activeTreatmentPlan ? 'Tiến độ đồng bộ từ Bác sĩ điều trị' : 'Bác sĩ điều trị trực tiếp lập phác đồ'}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigateTab('treatment-plan')}
+              className="text-[#2563EB] hover:text-[#1D4ED8] font-bold text-[11px] shrink-0 hover:underline cursor-pointer ml-2"
+            >
+              Xem chi tiết →
+            </button>
           </div>
         </div>
 
