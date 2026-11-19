@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, ClipboardList, Lock, AlertTriangle, BookOpen } from 'lucide-react';
-import type { LoTrinhMauResponse } from '@/types/doctor';
+import { X, ClipboardList, BookOpen, Loader2, Plus, AlertCircle } from 'lucide-react';
+import type { LoTrinhMauResponse, LoTrinhDieuTriResponse } from '@/types/doctor';
+import { doctorService } from '@/services/doctor.service';
 
 interface DoctorCreatePlanModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface DoctorCreatePlanModalProps {
     hoTenBenhNhan: string;
   } | null;
   templatePlans: LoTrinhMauResponse[];
+  onSuccess?: (created: LoTrinhDieuTriResponse) => void;
 }
 
 export const DoctorCreatePlanModal: React.FC<DoctorCreatePlanModalProps> = ({
@@ -17,10 +19,13 @@ export const DoctorCreatePlanModal: React.FC<DoctorCreatePlanModalProps> = ({
   onClose,
   patient,
   templatePlans,
+  onSuccess,
 }) => {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [planName, setPlanName] = useState<string>('');
   const [note, setNote] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -29,6 +34,7 @@ export const DoctorCreatePlanModal: React.FC<DoctorCreatePlanModalProps> = ({
         setPlanName(templatePlans[0].tenLoTrinh);
       }
       setNote('');
+      setSubmitError(null);
     }
   }, [isOpen, templatePlans, selectedTemplateId]);
 
@@ -41,6 +47,33 @@ export const DoctorCreatePlanModal: React.FC<DoctorCreatePlanModalProps> = ({
     const tmpl = templatePlans.find(t => t.maLoTrinh === id);
     if (tmpl) {
       setPlanName(tmpl.tenLoTrinh);
+    }
+  };
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!selectedTemplateId || !planName.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const created = await doctorService.createTreatmentPlan({
+        maBenhNhan: patient.maBenhNhan,
+        maLoTrinhMau: selectedTemplateId,
+        tenLoTrinh: planName.trim(),
+        ghiChu: note.trim() || undefined,
+      });
+
+      if (onSuccess) {
+        onSuccess(created);
+      }
+      onClose();
+    } catch (err: any) {
+      console.error('Lỗi khi tạo lộ trình điều trị:', err);
+      setSubmitError(err.message || 'Không thể tạo lộ trình điều trị. Vui lòng kiểm tra lại quyền phân công.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -70,23 +103,21 @@ export const DoctorCreatePlanModal: React.FC<DoctorCreatePlanModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            disabled={isSubmitting}
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-50"
             aria-label="Đóng"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Security Warning Notice */}
-        <div className="mx-5 mt-4 p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
-          <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-          <div className="space-y-0.5">
-            <p className="font-bold">Chức năng đang chờ hoàn thiện phân quyền hệ thống</p>
-            <p className="text-slate-600 text-[11px] leading-relaxed">
-              Backend hiện chưa có cơ chế kiểm tra phân công Bác sĩ - Bệnh nhân khi tạo lộ trình mới. Thao tác lưu tạm thời bị khóa nhằm tuân thủ bảo mật dữ liệu y tế.
-            </p>
+        {/* Error Alert */}
+        {submitError && (
+          <div className="mx-5 mt-4 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2.5">
+            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
+            <span className="font-medium">{submitError}</span>
           </div>
-        </div>
+        )}
 
         {/* Body Form */}
         <div className="p-6 overflow-y-auto space-y-4">
@@ -111,7 +142,8 @@ export const DoctorCreatePlanModal: React.FC<DoctorCreatePlanModalProps> = ({
               <select
                 value={selectedTemplateId}
                 onChange={(e) => handleSelectTemplate(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-hidden focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89] transition-all"
+                disabled={isSubmitting}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white focus:outline-hidden focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89] transition-all disabled:opacity-60"
               >
                 {templatePlans.map((tmpl) => (
                   <option key={tmpl.maLoTrinh} value={tmpl.maLoTrinh}>
@@ -139,7 +171,8 @@ export const DoctorCreatePlanModal: React.FC<DoctorCreatePlanModalProps> = ({
               onChange={(e) => setPlanName(e.target.value)}
               placeholder="Nhập tên lộ trình (ví dụ: Niềng răng thẩm mỹ)"
               maxLength={200}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89] transition-all"
+              disabled={isSubmitting}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89] transition-all disabled:opacity-60"
             />
           </div>
 
@@ -158,7 +191,8 @@ export const DoctorCreatePlanModal: React.FC<DoctorCreatePlanModalProps> = ({
               onChange={(e) => setNote(e.target.value.slice(0, 500))}
               rows={3}
               placeholder="Nhập ghi chú hoặc dặn dò đặc biệt cho bệnh nhân..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89] transition-all resize-none"
+              disabled={isSubmitting}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89] transition-all resize-none disabled:opacity-60"
             />
           </div>
         </div>
@@ -168,18 +202,28 @@ export const DoctorCreatePlanModal: React.FC<DoctorCreatePlanModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors"
+            disabled={isSubmitting}
+            className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-50"
           >
             Hủy
           </button>
           <button
             type="button"
-            disabled={true}
-            title="Chức năng tạm thời bị khóa do Backend chưa hoàn thiện phân quyền"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-200 text-slate-400 text-xs font-bold cursor-not-allowed transition-all shadow-none"
+            onClick={() => handleSubmit()}
+            disabled={!selectedTemplateId || !planName.trim() || isSubmitting}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#169C89] hover:bg-[#0F6F61] text-white text-xs font-bold transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            <Lock className="h-3.5 w-3.5 text-slate-400" />
-            <span>Tạo lộ trình (Tạm khóa)</span>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span>Đang tạo lộ trình...</span>
+              </>
+            ) : (
+              <>
+                <Plus className="h-3.5 w-3.5" />
+                <span>Tạo lộ trình điều trị</span>
+              </>
+            )}
           </button>
         </div>
       </div>

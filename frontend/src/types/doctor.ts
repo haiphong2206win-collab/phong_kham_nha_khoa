@@ -200,6 +200,29 @@ export interface CapNhatBuoiDieuTriRequest {
   ghiChu?: string | null;
 }
 
+export const TRANG_THAI_LO_TRINH_MAP: Record<TrangThaiLoTrinh, { label: string; badgeClass: string }> = {
+  CHUA_BAT_DAU: {
+    label: 'Chưa bắt đầu',
+    badgeClass: 'bg-slate-100 text-slate-600 border-slate-200',
+  },
+  DANG_DIEU_TRI: {
+    label: 'Đang điều trị',
+    badgeClass: 'bg-teal-50 text-teal-800 border-teal-300 font-semibold',
+  },
+  TAM_DUNG: {
+    label: 'Tạm dừng',
+    badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
+  },
+  HOAN_THANH: {
+    label: 'Hoàn thành',
+    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 font-semibold',
+  },
+  DA_HUY: {
+    label: 'Đã hủy',
+    badgeClass: 'bg-gray-100 text-gray-500 border-gray-200',
+  },
+};
+
 export const TRANG_THAI_BUOI_MAP: Record<TrangThaiBuoiDieuTri, { label: string; badgeClass: string }> = {
   CHUA_LEN_LICH: {
     label: 'Chưa lên lịch',

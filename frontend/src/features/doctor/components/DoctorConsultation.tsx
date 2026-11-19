@@ -17,8 +17,7 @@ import {
   Mail,
   ShieldCheck,
   Stethoscope,
-  Info,
-  Lock
+  Info
 } from 'lucide-react';
 import type {
   LichKhamBacSiResponse,
@@ -64,6 +63,7 @@ export const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
   // Buổi điều trị liên kết với ca khám hiện tại
   const [linkedSession, setLinkedSession] = useState<BuoiDieuTriResponse | null>(null);
   const [sessionLoading, setSessionLoading] = useState<boolean>(false);
+  const [unlinkError, setUnlinkError] = useState<string | null>(null);
 
   // Modals
   const [isLinkModalOpen, setIsLinkModalOpen] = useState<boolean>(false);
@@ -123,12 +123,38 @@ export const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
   }, []);
 
   // Load buổi điều trị liên kết (nếu có)
-  const loadLinkedSession = useCallback(async (_app: LichKhamBacSiResponse) => {
-    // Lưu ý bảo mật (Backend Ownership): Backend LoTrinhDieuTriService hiện chưa kiểm tra
-    // quyền sở hữu giữa Bác sĩ và Bệnh nhân trên API /api/v1/lo-trinh-dieu-tri/benh-nhan/{maBenhNhan}.
-    // Để tuân thủ nguyên tắc an toàn dữ liệu y tế, không thực hiện gọi API live chưa an toàn.
-    setSessionLoading(false);
-    setLinkedSession(null);
+  const loadLinkedSession = useCallback(async (app: LichKhamBacSiResponse) => {
+    if (!app || !app.maBenhNhan || !app.maLich) {
+      setLinkedSession(null);
+      setSessionLoading(false);
+      return;
+    }
+    setSessionLoading(true);
+    setUnlinkError(null);
+    try {
+      const plans = await doctorService.getPatientTreatmentPlans(app.maBenhNhan);
+      if (Array.isArray(plans) && plans.length > 0) {
+        let matched: BuoiDieuTriResponse | null = null;
+        for (const plan of plans) {
+          const sessions = await doctorService.getTreatmentPlanSessions(plan.maLoTrinhDieuTri);
+          if (Array.isArray(sessions)) {
+            const found = sessions.find((s) => s.maLichKham === app.maLich);
+            if (found) {
+              matched = found;
+              break;
+            }
+          }
+        }
+        setLinkedSession(matched);
+      } else {
+        setLinkedSession(null);
+      }
+    } catch (err) {
+      console.warn('Không thể nạp thông tin buổi điều trị liên kết:', err);
+      setLinkedSession(null);
+    } finally {
+      setSessionLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -172,6 +198,7 @@ export const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
 
   const handleUnlinkSession = async () => {
     if (!linkedSession || !linkedSession.maLoTrinhDieuTri || !linkedSession.maBuoiDieuTri) return;
+    setUnlinkError(null);
     try {
       setSessionLoading(true);
       await doctorService.unlinkSessionFromAppointment(
@@ -181,6 +208,7 @@ export const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
       setLinkedSession(null);
     } catch (e: any) {
       console.error('Lỗi khi hủy liên kết buổi điều trị:', e);
+      setUnlinkError(e.message || 'Không thể gỡ liên kết buổi điều trị. Lưu ý: Chỉ được gỡ khi ca khám bị hủy hoặc vắng mặt.');
     } finally {
       setSessionLoading(false);
     }
@@ -594,22 +622,10 @@ export const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
                         {TRANG_THAI_BUOI_MAP[linkedSession.trangThai]?.label || linkedSession.trangThai}
                       </span>
                     ) : (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
-                        <Lock className="h-3 w-3" />
-                        <span>Chờ phân quyền Backend</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                        Chưa liên kết
                       </span>
                     )}
-                  </div>
-
-                  {/* Security Notice Banner */}
-                  <div className="p-3 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
-                    <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-                    <div className="space-y-0.5">
-                      <p className="font-bold">Chức năng đang chờ hoàn thiện phân quyền hệ thống</p>
-                      <p className="text-slate-600 text-[11px] leading-relaxed">
-                        Backend hiện chưa hỗ trợ kiểm tra phân công Bác sĩ - Bệnh nhân trên API lộ trình điều trị. Thao tác liên kết và đồng bộ tạm khóa để đảm bảo an toàn dữ liệu lâm sàng.
-                      </p>
-                    </div>
                   </div>
 
                   {sessionLoading ? (
@@ -619,6 +635,12 @@ export const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
                     </div>
                   ) : linkedSession ? (
                     <div className="space-y-2 text-xs">
+                      {unlinkError && (
+                        <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+                          {unlinkError}
+                        </div>
+                      )}
+
                       <div>
                         <span className="text-slate-400 block text-[11px]">Bước điều trị:</span>
                         <p className="font-bold text-slate-800 mt-0.5">
@@ -642,28 +664,31 @@ export const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
                         </div>
                       )}
 
-                      {/* Nút thao tác đổi/hủy buổi liên kết (Tạm khóa vì Backend chưa phân quyền) */}
+                      {/* Nút thao tác đổi/hủy buổi liên kết */}
                       <div className="pt-2 flex items-center justify-between border-t border-slate-100">
                         <button
-                          disabled={true}
-                          className="text-slate-400 font-bold text-xs flex items-center gap-1.5 cursor-not-allowed opacity-60"
-                          title="Chức năng đang chờ hoàn thiện phân quyền hệ thống"
+                          onClick={() => setIsLinkModalOpen(true)}
+                          className="text-[#169C89] hover:text-[#0D6E60] font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                         >
-                          <Lock className="h-3 w-3" />
-                          <span>Đổi buổi liên kết (Tạm khóa)</span>
+                          <Link2 className="h-3.5 w-3.5" />
+                          <span>Đổi buổi liên kết</span>
                         </button>
                         <button
                           onClick={handleUnlinkSession}
-                          disabled={true}
-                          className="text-slate-400 text-xs font-medium cursor-not-allowed opacity-60"
-                          title="Chức năng đang chờ hoàn thiện phân quyền hệ thống"
+                          disabled={sessionLoading}
+                          className="text-rose-600 hover:text-rose-700 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
                         >
-                          Gỡ liên kết (Tạm khóa)
+                          Gỡ liên kết
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div className="py-4 text-center space-y-2">
+                      {unlinkError && (
+                        <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs text-left mb-2">
+                          {unlinkError}
+                        </div>
+                      )}
                       <p className="text-xs text-slate-600 font-medium">
                         Chưa có buổi điều trị được liên kết với ca khám này.
                       </p>
@@ -671,12 +696,11 @@ export const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
                         Liên kết ca khám với bước điều trị cụ thể trong lộ trình giúp hệ thống tự động đồng bộ tiến độ khi hoàn thành khám.
                       </p>
                       <button
-                        disabled={true}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-400 text-xs font-bold border border-slate-200 cursor-not-allowed opacity-75 shadow-none"
-                        title="Chức năng đang chờ hoàn thiện phân quyền hệ thống"
+                        onClick={() => setIsLinkModalOpen(true)}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-[#169C89] text-xs font-bold border border-teal-200 transition-all cursor-pointer shadow-xs"
                       >
-                        <Lock className="h-3.5 w-3.5" />
-                        <span>Liên kết buổi điều trị (Tạm khóa)</span>
+                        <Link2 className="h-3.5 w-3.5" />
+                        <span>Liên kết buổi điều trị</span>
                       </button>
                     </div>
                   )}

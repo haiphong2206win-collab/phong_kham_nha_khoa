@@ -3,12 +3,14 @@ package com.example.clinic.demo_phongkham_nhakhoa.exception;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -75,7 +77,18 @@ public class GlobalExceptionHandler {
         return response;
     }
 
-    // 5. Bắt tất cả các Exception còn lại
+    // 5. Bắt lỗi ResponseStatusException (400, 403, 404...) từ controller/service
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> xuLyResponseStatusException(ResponseStatusException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("thoiGian", LocalDateTime.now().toString());
+        response.put("trangThai", ex.getStatusCode().value());
+        response.put("loi", ex.getReason() != null ? ex.getReason() : ex.getMessage());
+
+        return ResponseEntity.status(ex.getStatusCode()).body(response);
+    }
+
+    // 6. Bắt tất cả các Exception còn lại
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, Object> xuLyLoiHeThong(Exception ex) {

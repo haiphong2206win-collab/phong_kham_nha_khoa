@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ClipboardList, Loader2, AlertCircle, Link2, Info, Lock, AlertTriangle } from 'lucide-react';
+import { X, ClipboardList, Loader2, AlertCircle, Link2, Info } from 'lucide-react';
 import type {
   LichKhamBacSiResponse,
   LoTrinhDieuTriResponse,
@@ -167,16 +167,6 @@ export const DoctorLinkSessionModal: React.FC<DoctorLinkSessionModalProps> = ({
           </button>
         </div>
 
-        {/* Security Warning Notice */}
-        <div className="mx-5 mt-4 p-3 rounded-2xl bg-amber-50/90 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
-          <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-          <div className="space-y-0.5">
-            <p className="font-bold">Chức năng đang chờ hoàn thiện phân quyền hệ thống</p>
-            <p className="text-slate-600 text-[11px] leading-relaxed">
-              Backend hiện chưa có cơ chế kiểm tra phân công Bác sĩ - Bệnh nhân đối với dữ liệu lộ trình điều trị. Thao tác liên kết tạm thời bị khóa nhằm tuân thủ bảo mật dữ liệu y tế.
-            </p>
-          </div>
-        </div>
 
         {/* Body */}
         <div className="p-6 overflow-y-auto space-y-4">
@@ -292,13 +282,24 @@ export const DoctorLinkSessionModal: React.FC<DoctorLinkSessionModalProps> = ({
 
           <button
             onClick={handleConfirmLink}
-            disabled={true}
-            className={`inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-none cursor-not-allowed opacity-60 ${isLinkable ? 'bg-slate-200 text-slate-500' : 'bg-slate-100 text-slate-400'
-              }`}
-            title="Chức năng đang chờ hoàn thiện phân quyền hệ thống"
+            disabled={!selectedPlanId || !selectedSessionId || !isLinkable || isSubmitting}
+            className={`inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold transition-all ${
+              isLinkable && !isSubmitting
+                ? 'bg-gradient-to-r from-[#169C89] to-[#0D6E60] text-white hover:opacity-95 shadow-md shadow-[#169C89]/20 cursor-pointer'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+            }`}
           >
-            <Lock className="h-3.5 w-3.5" />
-            <span>Xác nhận liên kết (Tạm khóa)</span>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span>Đang liên kết...</span>
+              </>
+            ) : (
+              <>
+                <Link2 className="h-3.5 w-3.5" />
+                <span>Xác nhận liên kết</span>
+              </>
+            )}
           </button>
         </div>
       </div>

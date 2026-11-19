@@ -6,8 +6,6 @@ import {
   Search,
   RefreshCw,
   Plus,
-  Lock,
-  AlertTriangle,
   ChevronRight,
   ChevronLeft,
   Clock,
@@ -21,8 +19,11 @@ import type {
   LichKhamBacSiResponse,
   LoTrinhMauResponse,
   BuoiMauResponse,
+  LoTrinhDieuTriResponse,
+  BuoiDieuTriResponse,
   TreatmentPlanTab
 } from '@/types/doctor';
+import { TRANG_THAI_LO_TRINH_MAP, TRANG_THAI_BUOI_MAP } from '@/types/doctor';
 import { doctorService } from '@/services/doctor.service';
 import { DoctorCreatePlanModal } from './DoctorCreatePlanModal';
 
@@ -56,6 +57,16 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
 
   // Patient plans state
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [patientPlans, setPatientPlans] = useState<LoTrinhDieuTriResponse[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<LoTrinhDieuTriResponse | null>(null);
+  const [patientPlansLoading, setPatientPlansLoading] = useState<boolean>(false);
+  const [patientPlansError, setPatientPlansError] = useState<string | null>(null);
+
+  // Patient sessions state
+  const [patientSessions, setPatientSessions] = useState<BuoiDieuTriResponse[]>([]);
+  const [patientSessionsLoading, setPatientSessionsLoading] = useState<boolean>(false);
+  const [patientSessionsError, setPatientSessionsError] = useState<string | null>(null);
+
   const [page, setPage] = useState<number>(1);
   const pageSize = 5;
 
@@ -120,7 +131,69 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
     };
   }, [selectedTemplate]);
 
-  // 3. Unique patients derived safely from Doctor's assigned schedule
+  // 3. Fetch Patient Treatment Plans (GET /api/v1/lo-trinh-dieu-tri/benh-nhan/{maBenhNhan})
+  const loadPatientPlans = useCallback(async (patientId: string) => {
+    setPatientPlansLoading(true);
+    setPatientPlansError(null);
+    try {
+      const data = await doctorService.getPatientTreatmentPlans(patientId);
+      const valid = Array.isArray(data) ? data : [];
+      setPatientPlans(valid);
+      setSelectedPlan((prev) => {
+        if (prev && valid.some(p => p.maLoTrinhDieuTri === prev.maLoTrinhDieuTri)) {
+          return valid.find(p => p.maLoTrinhDieuTri === prev.maLoTrinhDieuTri) || null;
+        }
+        return valid.length > 0 ? valid[0] : null;
+      });
+    } catch (err: any) {
+      console.error('Lỗi khi tải lộ trình bệnh nhân:', err);
+      const isForbidden = err?.response?.status === 403 || err?.message?.includes('403');
+      setPatientPlansError(
+        isForbidden
+          ? 'Bác sĩ không có quyền truy cập lộ trình của bệnh nhân này.'
+          : (err.message || 'Không thể tải danh sách lộ trình điều trị của bệnh nhân.')
+      );
+      setPatientPlans([]);
+      setSelectedPlan(null);
+    } finally {
+      setPatientPlansLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedPatientId) {
+      loadPatientPlans(selectedPatientId);
+    } else {
+      setPatientPlans([]);
+      setSelectedPlan(null);
+    }
+  }, [selectedPatientId, loadPatientPlans]);
+
+  // 4. Fetch Sessions for Selected Plan (GET /api/v1/lo-trinh-dieu-tri/{maLoTrinhDieuTri}/buoi)
+  const loadPatientSessions = useCallback(async (planId: string) => {
+    setPatientSessionsLoading(true);
+    setPatientSessionsError(null);
+    try {
+      const data = await doctorService.getTreatmentPlanSessions(planId);
+      setPatientSessions(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      console.error('Lỗi khi tải buổi điều trị của lộ trình:', err);
+      setPatientSessionsError(err.message || 'Không thể tải danh sách buổi điều trị.');
+      setPatientSessions([]);
+    } finally {
+      setPatientSessionsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedPlan) {
+      loadPatientSessions(selectedPlan.maLoTrinhDieuTri);
+    } else {
+      setPatientSessions([]);
+    }
+  }, [selectedPlan, loadPatientSessions]);
+
+  // 5. Unique patients derived safely from Doctor's assigned schedule
   const assignedPatients = useMemo(() => {
     const map = new Map<string, {
       maBenhNhan: string;
@@ -178,6 +251,12 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
       (t.moTa && t.moTa.toLowerCase().includes(q))
     );
   }, [templatePlans, searchQuery]);
+
+  // Filter patient plans by status
+  const filteredPatientPlans = useMemo(() => {
+    if (statusFilter === 'all') return patientPlans;
+    return patientPlans.filter(p => p.trangThai === statusFilter);
+  }, [patientPlans, statusFilter]);
 
   // Helper age calculator
   const calculateAge = (dobStr?: string | null) => {
@@ -292,8 +371,13 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
             onClick={() => {
               if (activeTab === 'template-plans') {
                 loadTemplatePlans();
-              } else if (onRefreshSchedule) {
-                onRefreshSchedule();
+              } else {
+                if (selectedPatientId) {
+                  loadPatientPlans(selectedPatientId);
+                }
+                if (onRefreshSchedule) {
+                  onRefreshSchedule();
+                }
               }
             }}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-[#169C89] text-xs font-bold transition-all border border-teal-200"
@@ -611,51 +695,88 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
                   </button>
                 </div>
 
-                {/* Security Warning Notice (Amber) */}
-                <div className="p-4 rounded-2xl bg-amber-50/90 border border-amber-200 text-amber-900 text-xs flex items-start gap-3 shadow-xs">
-                  <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <p className="font-bold">Chức năng đang chờ hoàn thiện phân quyền hệ thống</p>
-                    <p className="text-slate-600 text-[11px] leading-relaxed">
-                      Backend hiện chưa có cơ chế kiểm tra phân công Bác sĩ - Bệnh nhân đối với dữ liệu lộ trình điều trị. Thao tác đọc/sửa tạm thời bị khóa nhằm tuân thủ bảo mật dữ liệu y tế.
-                    </p>
-                  </div>
-                </div>
-
                 {/* Treatment Plans Section Header */}
                 <div className="flex items-center justify-between px-1">
                   <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    CÁC LỘ TRÌNH ĐIỀU TRỊ
+                    CÁC LỘ TRÌNH ĐIỀU TRỊ ({filteredPatientPlans.length})
                   </h3>
-                  <span className="text-[11px] text-slate-400">Trạng thái an toàn: Khóa xem dữ liệu</span>
+                  <span className="text-[11px] text-slate-400">
+                    {patientPlans.length} lộ trình tổng cộng
+                  </span>
                 </div>
 
-                {/* Placeholder Treatment Card showing structure without leaking data */}
-                <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-3 opacity-90">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
-                        <Lock className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-xs text-slate-800">
-                          Hồ sơ lộ trình điều trị bệnh nhân
-                        </h4>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                          Được bảo vệ bởi cơ chế kiểm soát bảo mật Spring Security
-                        </p>
-                      </div>
+                {patientPlansLoading ? (
+                  <div className="py-12 text-center bg-white rounded-3xl border border-slate-100">
+                    <Loader2 className="h-6 w-6 text-[#169C89] animate-spin mx-auto mb-2" />
+                    <p className="text-xs text-slate-400">Đang tải lộ trình của bệnh nhân...</p>
+                  </div>
+                ) : patientPlansError ? (
+                  <div className="p-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
+                    <ShieldAlert className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold">Không thể tải lộ trình</p>
+                      <p className="text-rose-700 mt-0.5">{patientPlansError}</p>
                     </div>
-                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-                      Tạm khóa an toàn
-                    </span>
                   </div>
-
-                  <div className="pt-2 border-t border-slate-100 text-slate-500 text-[11px] leading-relaxed flex items-center gap-2">
-                    <Info className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                    <span>Dữ liệu lộ trình sẽ hiển thị đầy đủ ngay sau khi Backend kích hoạt kiểm tra quyền Bác sĩ.</span>
+                ) : filteredPatientPlans.length === 0 ? (
+                  <div className="p-8 text-center bg-white rounded-3xl border border-slate-200 shadow-xs space-y-2">
+                    <ClipboardList className="h-8 w-8 text-slate-300 mx-auto" />
+                    <p className="text-xs font-bold text-slate-700">Chưa có lộ trình điều trị nào</p>
+                    <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
+                      Bệnh nhân chưa có phác đồ điều trị. Nhấn nút <strong>Tạo lộ trình</strong> phía trên để khởi tạo từ phác đồ mẫu.
+                    </p>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredPatientPlans.map((plan) => {
+                      const isSelected = selectedPlan?.maLoTrinhDieuTri === plan.maLoTrinhDieuTri;
+                      const statusInfo = TRANG_THAI_LO_TRINH_MAP[plan.trangThai];
+                      return (
+                        <div
+                          key={plan.maLoTrinhDieuTri}
+                          onClick={() => setSelectedPlan(plan)}
+                          className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#F7FCFA] border-[#169C89] shadow-md ring-2 ring-[#169C89]/20'
+                              : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 shadow-xs'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2">
+                                <h4 className="font-bold text-xs sm:text-sm text-slate-900 truncate">
+                                  {plan.tenLoTrinh}
+                                </h4>
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full border shrink-0 ${statusInfo?.badgeClass || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                                  {statusInfo?.label || plan.trangThai}
+                                </span>
+                              </div>
+                              <div className="mt-2 flex items-center gap-3 text-[11px] text-slate-500">
+                                <span className="font-semibold text-[#169C89]">
+                                  Tiến độ: {plan.soBuoiHoanThanh}/{plan.tongSoBuoi} buổi
+                                </span>
+                                {plan.thoiGianTao && (
+                                  <>
+                                    <span className="text-slate-300">•</span>
+                                    <span>Tạo ngày: {plan.thoiGianTao.slice(0, 10)}</span>
+                                  </>
+                                )}
+                              </div>
+                              {plan.ghiChu && (
+                                <p className="text-[11px] text-slate-500 italic mt-1.5 truncate">
+                                  {plan.ghiChu}
+                                </p>
+                              )}
+                            </div>
+                            <ChevronRight className={`h-4 w-4 shrink-0 transition-transform ${
+                              isSelected ? 'text-[#169C89] translate-x-0.5' : 'text-slate-300'
+                            }`} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </>
             ) : (
               <div className="p-12 text-center bg-white rounded-3xl border border-slate-100 text-slate-400 text-xs">
@@ -670,20 +791,72 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
               <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
                 CHI TIẾT LỘ TRÌNH
               </span>
-              <span className="text-[10px] font-bold text-slate-400">Phân hệ lâm sàng</span>
+              <span className="text-[10px] font-bold text-slate-400">
+                {selectedPlan ? `${patientSessions.length} buổi` : 'Phân hệ lâm sàng'}
+              </span>
             </div>
 
-            <div className="p-6 rounded-2xl bg-slate-50/70 border border-slate-100 text-center space-y-3">
-              <div className="h-12 w-12 rounded-2xl bg-white shadow-xs border border-slate-200 text-slate-400 flex items-center justify-center mx-auto">
-                <Lock className="h-6 w-6 text-slate-400" />
+            {!selectedPlan ? (
+              <div className="p-8 text-center text-slate-400 text-xs">
+                Chọn một lộ trình điều trị từ danh sách để xem chi tiết các buổi khám
               </div>
-              <h4 className="font-bold text-xs text-slate-700">
-                Chi tiết tiến độ buổi điều trị
-              </h4>
-              <p className="text-[11px] text-slate-500 leading-relaxed max-w-xs mx-auto">
-                Khi Backend hoàn tất phân quyền, danh sách từng buổi điều trị, trạng thái liên kết với lịch khám và tiến độ thực tế sẽ xuất hiện tại đây.
-              </p>
-            </div>
+            ) : patientSessionsLoading ? (
+              <div className="py-12 text-center">
+                <Loader2 className="h-6 w-6 text-[#169C89] animate-spin mx-auto mb-2" />
+                <p className="text-xs text-slate-400">Đang tải các buổi điều trị...</p>
+              </div>
+            ) : patientSessionsError ? (
+              <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs">
+                <p className="font-bold">Lỗi tải danh sách buổi</p>
+                <p className="text-[11px] mt-0.5">{patientSessionsError}</p>
+              </div>
+            ) : patientSessions.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-400">
+                Lộ trình này chưa có buổi điều trị nào được lập.
+              </div>
+            ) : (
+              <div className="relative pl-6 space-y-3 before:absolute before:left-2.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-200 max-h-[600px] overflow-y-auto pr-1">
+                {patientSessions.map((session) => {
+                  const statusInfo = TRANG_THAI_BUOI_MAP[session.trangThai];
+                  return (
+                    <div key={session.maBuoiDieuTri} className="relative group">
+                      <div className="absolute -left-6 top-1.5 h-5 w-5 rounded-full bg-teal-50 border-2 border-[#169C89] flex items-center justify-center text-[10px] font-bold text-[#169C89]">
+                        {session.soThuTu}
+                      </div>
+                      <div className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-200/80 group-hover:border-teal-300 group-hover:bg-[#F9FCFB] transition-all">
+                        <div className="flex items-center justify-between gap-2">
+                          <h4 className="font-bold text-xs text-slate-800">
+                            Buổi {session.soThuTu}: {session.tenBuoi}
+                          </h4>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full border shrink-0 ${statusInfo?.badgeClass || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                            {statusInfo?.label || session.trangThai}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                          {session.noiDung}
+                        </p>
+                        {session.maLichKham && (
+                          <div className="mt-2 text-[10px] font-mono text-[#0D6E60] bg-teal-50 px-2 py-0.5 rounded border border-teal-200 inline-block">
+                            Đã liên kết lịch: {session.maLichKham.slice(0, 8)}...
+                          </div>
+                        )}
+                        {(session.khoangCachMin != null || session.khoangCachMax != null) && (
+                          <div className="mt-1.5 text-[10px] text-slate-400">
+                            Khoảng cách khuyến nghị: {session.khoangCachMin ?? 0} - {session.khoangCachMax ?? 'N/A'} ngày
+                          </div>
+                        )}
+                        {session.ghiChu && (
+                          <div className="mt-1.5 text-[11px] text-amber-700 bg-amber-50/60 p-2 rounded-lg border border-amber-200/60 flex items-start gap-1.5">
+                            <Info className="h-3.5 w-3.5 shrink-0 mt-0.5 text-amber-600" />
+                            <span>{session.ghiChu}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             <div className="p-3.5 rounded-xl bg-teal-50/50 border border-teal-100 text-[11px] text-teal-800 flex items-start gap-2">
               <Info className="h-4 w-4 text-[#169C89] shrink-0 mt-0.5" />
@@ -701,6 +874,11 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
         onClose={() => setIsCreateModalOpen(false)}
         patient={activePatient}
         templatePlans={templatePlans}
+        onSuccess={() => {
+          if (selectedPatientId) {
+            loadPatientPlans(selectedPatientId);
+          }
+        }}
       />
     </div>
   );
