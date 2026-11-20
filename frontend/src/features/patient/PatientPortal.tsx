@@ -146,7 +146,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
       }
 
       if (profileRes.status === 'rejected' && appointmentsRes.status === 'rejected' && officialRes.status === 'rejected') {
-        setError('Không thể kết nối đến máy chủ. Vui lòng kiểm tra dịch vụ Backend.');
+        setError('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.');
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Lỗi không xác định khi tải dữ liệu.';

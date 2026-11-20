@@ -7,7 +7,6 @@ import {
   ShieldCheck,
   ClipboardList,
   DoorOpen,
-  BarChart3,
   X,
   LogOut,
 } from 'lucide-react';
@@ -74,16 +73,6 @@ const NAV_ITEMS: NavItemConfig[] = [
     number: '07',
     label: 'Phòng & Ca trực',
     icon: DoorOpen,
-    disabled: true,
-    badge: 'Chờ BE',
-  },
-  {
-    id: 'reports',
-    number: '08',
-    label: 'Báo cáo',
-    icon: BarChart3,
-    disabled: true,
-    badge: 'Chờ BE',
   },
 ];
 

@@ -579,7 +579,7 @@ export const DoctorAppointments: React.FC<DoctorAppointmentsProps> = ({
                             className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white hover:bg-teal-50 text-[#169C89] text-xs font-bold border border-[#169C89]/30 transition-all"
                           >
                             <Stethoscope className="h-3.5 w-3.5" />
-                            <span>Mở bàn khám & Điều trị (FE-3.3)</span>
+                            <span>Mở bàn khám & Điều trị</span>
                           </button>
                         )}
                       </div>
@@ -596,7 +596,7 @@ export const DoctorAppointments: React.FC<DoctorAppointmentsProps> = ({
                             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#169C89] hover:bg-[#0F6F61] text-white text-xs font-bold transition-all shadow-xs"
                           >
                             <Stethoscope className="h-4 w-4" />
-                            <span>Vào bàn khám & Điều trị (FE-3.3)</span>
+                            <span>Vào bàn khám & Điều trị</span>
                           </button>
                         )}
                         <button

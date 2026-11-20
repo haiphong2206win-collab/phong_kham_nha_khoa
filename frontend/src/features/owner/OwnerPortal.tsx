@@ -29,6 +29,7 @@ import { OwnerAccountEditModal } from './components/OwnerAccountEditModal';
 import { OwnerAccountLockModal } from './components/OwnerAccountLockModal';
 import { OwnerAccountDeleteModal } from './components/OwnerAccountDeleteModal';
 import { OwnerTreatmentSupervision } from './components/OwnerTreatmentSupervision';
+import { OwnerRoomsShifts } from './components/OwnerRoomsShifts';
 import { Toast } from '@/components/ui/Toast';
 
 interface OwnerPortalProps {
@@ -269,26 +270,12 @@ export const OwnerPortal: React.FC<OwnerPortalProps> = ({
             <OwnerTreatmentSupervision />
           )}
 
-          {/* Các tab tiếp theo đang chờ Backend */}
-          {(currentTab === 'rooms-shifts' ||
-            currentTab === 'reports') && (
-            <div className="max-w-2xl mx-auto py-16 text-center space-y-4">
-              <div className="h-16 w-16 mx-auto rounded-3xl bg-[#E8F8F5] border border-[#BDE8E0] flex items-center justify-center text-[#169C89] font-bold text-xl">
-                FE
-              </div>
-              <h2 className="text-xl font-bold text-gray-800">
-                Tính năng đang phát triển ở các giai đoạn tiếp theo
-              </h2>
-              <p className="text-sm text-gray-500 max-w-md mx-auto">
-                Màn hình này nằm trong kế hoạch FE-4.4 hoặc đang chờ Backend bổ sung API phòng khám & ca trực.
-              </p>
-              <button
-                onClick={() => setCurrentTab('overview')}
-                className="px-4 py-2 rounded-xl bg-[#169C89] text-white text-xs font-bold shadow-xs hover:bg-[#138575] transition-colors"
-              >
-                Quay về Tổng quan
-              </button>
-            </div>
+          {currentTab === 'rooms-shifts' && (
+            <OwnerRoomsShifts
+              doctors={doctors}
+              rooms={rooms}
+              onRefreshRooms={fetchAllData}
+            />
           )}
         </main>
       </div>

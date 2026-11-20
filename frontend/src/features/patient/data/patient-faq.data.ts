@@ -107,7 +107,7 @@ export const PATIENT_FAQS: FAQItem[] = [
     id: 'faq-treatment-2',
     category: 'TREATMENT',
     question: 'Vì sao tôi chưa xem được lộ trình điều trị trực tuyến trên tài khoản?',
-    answer: 'Hệ thống máy chủ hiện tại bảo mật quyền thiết lập và quản lý lộ trình cho vai trò Bác sĩ và Chủ phòng khám để đảm bảo tính an toàn chuyên môn y tế. Tính năng đồng bộ trực tuyến hai chiều dành riêng cho tài khoản Bệnh nhân đang được chuẩn bị và sẽ sớm khả dụng khi có API đồng bộ.',
+    answer: 'Lộ trình điều trị được Bác sĩ chuyên khoa thiết lập sau khi bạn đến thăm khám và có chỉ định phác đồ điều trị cụ thể tại phòng khám. Khi Bác sĩ tạo lộ trình cho hồ sơ của bạn, thông tin lộ trình và các buổi khám sẽ tự động hiển thị tại mục Lộ trình điều trị.',
     actionTab: 'treatment-plan',
     actionLabel: 'Xem màn hình lộ trình',
   },

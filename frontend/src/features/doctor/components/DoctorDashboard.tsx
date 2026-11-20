@@ -271,7 +271,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
           {/* Bottom hint */}
           <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-            <span>Dữ liệu thời gian thực từ Spring Boot Backend</span>
+            <span>Dữ liệu thời gian thực từ hệ thống</span>
             <button
               onClick={onRetry}
               className="text-[#169C89] hover:underline flex items-center gap-1"
@@ -290,7 +290,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                 Quy trình khám
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Trạng thái theo Backend
+                Các bước quy trình chuẩn
               </p>
             </div>
 

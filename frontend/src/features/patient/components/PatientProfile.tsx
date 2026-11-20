@@ -790,7 +790,7 @@ export const PatientProfile: React.FC<PatientProfileProps> = ({
                       <p className="text-[11px] text-[#7A9A93]">
                         {hasTienSuBenhFromBackend
                           ? 'Thông tin tiền sử bệnh lý đã đồng bộ từ hồ sơ bệnh nhân.'
-                          : 'Thông tin tiền sử bệnh lý toàn thân (tim mạch, huyết áp, tiểu đường...) đang được lưu trữ tại hồ sơ bệnh án phòng khám và chưa mở đồng bộ qua API bệnh nhân.'}
+                          : 'Thông tin tiền sử bệnh lý toàn thân (tim mạch, huyết áp, tiểu đường...) được lưu trữ bảo mật tại hồ sơ bệnh án phòng khám.'}
                       </p>
                     </div>
                   </div>

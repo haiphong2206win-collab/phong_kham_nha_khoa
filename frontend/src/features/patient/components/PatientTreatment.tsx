@@ -406,9 +406,9 @@ export const PatientTreatment: React.FC<PatientTreatmentProps> = ({
             </div>
 
             <div className="p-4 rounded-2xl bg-[#F8FBFA] border border-[#E3ECE9] text-xs text-[#527771] space-y-1.5">
-              <span className="font-bold text-[#1E384C] block">Phân quyền bảo mật hệ thống:</span>
+              <span className="font-bold text-[#1E384C] block">Quy định y khoa phòng khám:</span>
               <p className="leading-relaxed">
-                Máy chủ Backend hiện tại bảo mật quyền thiết lập và chỉnh sửa lộ trình cho vai trò <strong>Bác sĩ</strong> và <strong>Chủ phòng khám</strong>. Tính năng đồng bộ trực tuyến hai chiều dành riêng cho tài khoản Bệnh nhân đang được chuẩn bị và sẽ sớm khả dụng.
+                Hồ sơ lộ trình điều trị được Bác sĩ phụ trách thiết lập sau ca thăm khám lâm sàng. Quý khách vui lòng liên hệ phòng khám hoặc Bác sĩ điều trị để được tư vấn chi tiết về phác đồ.
               </p>
             </div>
 

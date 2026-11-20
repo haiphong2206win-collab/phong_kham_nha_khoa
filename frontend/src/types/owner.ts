@@ -10,8 +10,7 @@ export type OwnerNavTab =
   | 'patients'
   | 'accounts'
   | 'treatments'
-  | 'rooms-shifts'
-  | 'reports';
+  | 'rooms-shifts';
 
 export type TrangThaiYeuCau = 'CHO_PHAN_CONG' | 'DA_PHAN_CONG' | 'TU_CHOI' | 'DA_TU_CHOI' | 'DA_HUY';
 export type CaKham = 'CA_SANG' | 'CA_CHIEU';
@@ -377,3 +376,37 @@ export const TRANG_THAI_LO_TRINH_MAP: Record<TrangThaiLoTrinh, { label: string; 
     badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
   },
 };
+
+/**
+ * DTO CaLamViecResponse từ GET /api/v1/quan-ly/ca-lam-viec
+ */
+export interface CaLamViecResponse {
+  maCa: string;
+  maBacSi: string;
+  tenBacSi: string;
+  soChungChi?: string | null;
+  ngayLamViec: string; // YYYY-MM-DD
+  caKham: CaKham; // CA_SANG | CA_CHIEU
+  gioBatDau: string; // HH:mm:ss
+  gioKetThuc: string; // HH:mm:ss
+  soBenhNhanToiDa: number;
+  dangHoatDong: boolean;
+  soLichDaXep: number;
+}
+
+export interface TaoCaLamViecRequest {
+  maBacSi: string;
+  ngayLamViec: string; // YYYY-MM-DD
+  caKham: CaKham;
+  gioBatDau?: string; // HH:mm
+  gioKetThuc?: string; // HH:mm
+  soBenhNhanToiDa?: number;
+  dangHoatDong?: boolean;
+}
+
+export interface CapNhatCaLamViecRequest {
+  gioBatDau?: string;
+  gioKetThuc?: string;
+  soBenhNhanToiDa?: number;
+  dangHoatDong?: boolean;
+}

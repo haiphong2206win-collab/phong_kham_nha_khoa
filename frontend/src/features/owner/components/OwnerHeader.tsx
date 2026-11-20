@@ -32,17 +32,19 @@ export const OwnerHeader: React.FC<OwnerHeaderProps> = ({
   const getBreadcrumbTitle = () => {
     switch (currentTab) {
       case 'overview':
-        return 'FE-4.1 / Tổng quan Chủ phòng khám';
+        return 'Tổng quan';
       case 'appointment-requests':
-        return 'FE-4.1 / Yêu cầu đặt lịch';
+        return 'Yêu cầu đặt lịch';
       case 'doctors':
-        return 'FE-4.2 / Quản lý Bác sĩ';
+        return 'Quản lý Bác sĩ';
       case 'patients':
-        return 'FE-4.3 / Quản lý Bệnh nhân';
+        return 'Quản lý Bệnh nhân';
       case 'accounts':
-        return 'FE-4.3 / Quản trị Tài khoản';
+        return 'Quản trị Tài khoản';
       case 'treatments':
-        return 'FE-4.4 / Giám sát Điều trị';
+        return 'Giám sát Điều trị';
+      case 'rooms-shifts':
+        return 'Phòng & Ca trực';
       default:
         return 'Cổng Chủ phòng khám';
     }

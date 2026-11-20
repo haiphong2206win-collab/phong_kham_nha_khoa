@@ -23,7 +23,10 @@ import type {
   ThemBuoiDieuTriRequest,
   CapNhatBuoiDieuTriRequest,
   BoBuoiDieuTriRequest,
-  LienKetBuoiVoiLichRequest
+  LienKetBuoiVoiLichRequest,
+  CaLamViecResponse,
+  TaoCaLamViecRequest,
+  CapNhatCaLamViecRequest
 } from '@/types/owner';
 
 export const ownerService = {
@@ -374,5 +377,52 @@ export const ownerService = {
     await apiClient.delete(
       `/lo-trinh-dieu-tri/${encodeURIComponent(maLoTrinh)}/buoi/${encodeURIComponent(maBuoi)}/lich-kham`
     );
+  },
+
+  /**
+   * Lấy danh sách ca làm việc của bác sĩ
+   * Endpoint: GET /api/v1/quan-ly/ca-lam-viec
+   */
+  async getShifts(params?: { tuNgay?: string; denNgay?: string; maBacSi?: string }): Promise<CaLamViecResponse[]> {
+    const response = await apiClient.get<CaLamViecResponse[]>('/quan-ly/ca-lam-viec', { params });
+    return response.data || [];
+  },
+
+  /**
+   * Xem chi tiết một ca làm việc
+   * Endpoint: GET /api/v1/quan-ly/ca-lam-viec/{maCa}
+   */
+  async getShiftDetail(maCa: string): Promise<CaLamViecResponse> {
+    const response = await apiClient.get<CaLamViecResponse>(`/quan-ly/ca-lam-viec/${encodeURIComponent(maCa)}`);
+    return response.data;
+  },
+
+  /**
+   * Tạo ca làm việc mới cho bác sĩ
+   * Endpoint: POST /api/v1/quan-ly/ca-lam-viec
+   */
+  async createShift(payload: TaoCaLamViecRequest): Promise<CaLamViecResponse> {
+    const response = await apiClient.post<CaLamViecResponse>('/quan-ly/ca-lam-viec', payload);
+    return response.data;
+  },
+
+  /**
+   * Cập nhật thông tin ca làm việc
+   * Endpoint: PUT /api/v1/quan-ly/ca-lam-viec/{maCa}
+   */
+  async updateShift(maCa: string, payload: CapNhatCaLamViecRequest): Promise<CaLamViecResponse> {
+    const response = await apiClient.put<CaLamViecResponse>(
+      `/quan-ly/ca-lam-viec/${encodeURIComponent(maCa)}`,
+      payload
+    );
+    return response.data;
+  },
+
+  /**
+   * Xóa một ca làm việc
+   * Endpoint: DELETE /api/v1/quan-ly/ca-lam-viec/{maCa}
+   */
+  async deleteShift(maCa: string): Promise<void> {
+    await apiClient.delete(`/quan-ly/ca-lam-viec/${encodeURIComponent(maCa)}`);
   },
 };

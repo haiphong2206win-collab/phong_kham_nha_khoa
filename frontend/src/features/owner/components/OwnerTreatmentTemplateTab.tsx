@@ -195,7 +195,7 @@ export const OwnerTreatmentTemplateTab: React.FC<OwnerTreatmentTemplateTabProps>
                 </span>
                 <span className="text-lg font-bold text-purple-700 mt-0.5 block flex items-center gap-1.5">
                   <Database className="w-4 h-4 text-purple-600" />
-                  Backend API
+                  Hệ thống phòng khám
                 </span>
               </div>
             </div>

@@ -261,42 +261,37 @@ export const OwnerDashboard: React.FC<OwnerDashboardProps> = ({
           </div>
         </div>
 
-        {/* Right (1 Col): Lưu ý vận hành */}
+        {/* Right (1 Col): Hướng dẫn vận hành */}
         <div className="rounded-3xl bg-white border border-dental-border p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4">
           <div>
             <h2 className="text-lg font-bold text-gray-900 tracking-tight pb-3 border-b border-gray-100 mb-4">
-              Lưu ý vận hành
+              Hướng dẫn vận hành
             </h2>
 
-            {/* Neutral Operational Notice */}
-            <div className="p-4 rounded-2xl bg-blue-50/80 border border-blue-200/90 text-xs text-blue-900 space-y-2 mb-4">
-              <div className="flex items-center gap-2 font-bold text-blue-900 text-sm">
-                <Info className="h-4 w-4 text-blue-600" />
-                <span>Quy tắc phân công ca trực</span>
+            {/* Operational Guideline Notice */}
+            <div className="p-4 rounded-2xl bg-teal-50/80 border border-teal-200/90 text-xs text-teal-900 space-y-2 mb-4">
+              <div className="flex items-center gap-2 font-bold text-teal-900 text-sm">
+                <Info className="h-4 w-4 text-[#169C89]" />
+                <span>Quy định phân công lịch hẹn</span>
               </div>
-              <div className="space-y-1.5 text-xs text-blue-800 leading-relaxed">
-                <p>
-                  • Backend yêu cầu Bác sĩ phải có ca làm việc đăng ký trên hệ thống vào đúng ngày bệnh nhân mong muốn khám.
-                </p>
-                <p>
-                  • Hiện hệ thống chưa có API truy vấn danh sách ca trực theo ngày. Nếu Bác sĩ chưa được xếp ca vào ngày yêu cầu, Backend sẽ từ chối tạo lịch (HTTP 400).
-                </p>
-              </div>
+              <p className="text-xs text-teal-800 leading-relaxed">
+                Chỉ phân công bác sĩ có ca làm việc phù hợp vào ngày và buổi khám của bệnh nhân.
+              </p>
             </div>
 
             {/* Bullets */}
             <ul className="space-y-2.5 text-xs text-gray-600">
               <li className="flex items-start gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#169C89] mt-1.5 shrink-0" />
-                <span>Phân công thật cần ca trực phù hợp.</span>
+                <span>Kiểm tra ca trực trước khi phân công lịch hẹn.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#169C89] mt-1.5 shrink-0" />
-                <span>Chưa có API danh sách phòng/ca.</span>
+                <span>Đảm bảo phòng khám ở trạng thái sẵn sàng đón tiếp.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#169C89] mt-1.5 shrink-0" />
-                <span>Không hiển thị doanh thu khi chưa có API.</span>
+                <span>Theo dõi và xử lý kịp thời các yêu cầu đặt lịch mới.</span>
               </li>
             </ul>
           </div>
@@ -312,7 +307,7 @@ export const OwnerDashboard: React.FC<OwnerDashboardProps> = ({
       {/* Footer note */}
       <div className="pt-4 text-center">
         <span className="text-xs text-gray-400 font-medium">
-          Hệ thống Quản trị Phòng khám Nha Khoa Nụ Cười Xanh • Phiên bản FE-4.1 & FE-4.2
+          Hệ thống Quản trị Phòng khám Nha Khoa Nụ Cười Xanh
         </span>
       </div>
     </div>

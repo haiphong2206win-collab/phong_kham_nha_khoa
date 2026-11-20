@@ -716,7 +716,7 @@ export const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
           {/* Footer note */}
           <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] text-slate-400">
             <Info className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-            <span>Trạng thái ca khám và buổi điều trị đồng bộ tự động qua Spring Boot events.</span>
+            <span>Trạng thái ca khám và buổi điều trị được đồng bộ tự động trên toàn hệ thống.</span>
           </div>
         </div>
       </div>

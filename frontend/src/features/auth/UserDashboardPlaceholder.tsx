@@ -25,7 +25,7 @@ export const UserDashboardPlaceholder: React.FC<UserDashboardPlaceholderProps> =
       badgeColor: 'bg-dental-accent/15 text-dental-accent border-dental-accent/30',
       icon: <Stethoscope className="h-6 w-6 text-dental-accent" />,
       description: 'Quyền hạn: Xem lộ trình mẫu, tạo và hiệu chỉnh lộ trình điều trị riêng cho bệnh nhân, gán lịch khám và cập nhật trạng thái buổi điều trị.',
-      scope: 'Truy cập các API: /api/v1/lo-trinh-dieu-tri/**, /api/v1/bac-si/**'
+      scope: 'Phạm vi: Quản lý lịch khám, bàn khám và phác đồ điều trị.'
     },
     BENH_NHAN: {
       title: 'Cổng thông tin Bệnh nhân',
@@ -33,7 +33,7 @@ export const UserDashboardPlaceholder: React.FC<UserDashboardPlaceholderProps> =
       badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
       icon: <User className="h-6 w-6 text-emerald-600" />,
       description: 'Quyền hạn: Theo dõi tiến độ lộ trình điều trị cá nhân, gửi yêu cầu đặt lịch hẹn, xem lịch sử khám và thông báo.',
-      scope: 'Truy cập các API: /api/v1/benh-nhan/**, /api/v1/yeu-cau-dat-lich/**'
+      scope: 'Phạm vi: Đặt lịch hẹn, theo dõi phác đồ và hồ sơ nha khoa.'
     },
     CHU_PHONG_KHAM: {
       title: 'Khu vực Quản trị Chủ phòng khám',
@@ -41,7 +41,7 @@ export const UserDashboardPlaceholder: React.FC<UserDashboardPlaceholderProps> =
       badgeColor: 'bg-purple-50 text-purple-700 border-purple-200',
       icon: <Building2 className="h-6 w-6 text-purple-600" />,
       description: 'Quyền hạn: Phân công bác sĩ, quản lý tài khoản, xem toàn bộ yêu cầu đặt lịch và giám sát hoạt động phòng khám.',
-      scope: 'Giao diện quản trị riêng chưa triển khai; hiển thị trạng thái phân quyền đúng chuẩn Backend.'
+      scope: 'Phạm vi: Toàn quyền quản trị nhân sự, bệnh nhân, lịch hẹn và phòng khám.'
     },
   };
 

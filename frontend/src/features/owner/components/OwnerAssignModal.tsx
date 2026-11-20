@@ -94,7 +94,10 @@ export const OwnerAssignModal: React.FC<OwnerAssignModalProps> = ({
       onSuccess(`Phân công thành công cho Bác sĩ ${result.tenBacSi} tại ${result.tenPhong}!`);
       onClose();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Lỗi khi phân công ca khám.';
+      let msg = err instanceof Error ? err.message : 'Lỗi khi phân công ca khám.';
+      if (msg.includes('status code') || msg.includes('Request failed')) {
+        msg = 'Không thể phân công. Vui lòng kiểm tra lại ca trực của bác sĩ hoặc phòng khám.';
+      }
       setErrorMessage(msg);
     } finally {
       setLoading(false);
@@ -145,13 +148,13 @@ export const OwnerAssignModal: React.FC<OwnerAssignModalProps> = ({
           )}
         </div>
 
-        {/* Cảnh báo quy tắc ca làm việc (Trung tính) */}
-        <div className="p-3.5 rounded-2xl bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-start gap-2.5">
-          <Info className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+        {/* Hướng dẫn phân công ca làm việc */}
+        <div className="p-3.5 rounded-2xl bg-teal-50 border border-teal-200 text-xs text-teal-900 flex items-start gap-2.5">
+          <Info className="h-4 w-4 text-[#169C89] shrink-0 mt-0.5" />
           <div className="space-y-1 leading-relaxed">
-            <p className="font-bold">Quy tắc phân công ca trực:</p>
-            <p className="text-[11px] text-blue-800">
-              Backend yêu cầu Bác sĩ được chọn phải có ca làm việc đăng ký trên hệ thống vào ngày {request.ngayMongMuon} ({request.caKham === 'CA_SANG' ? 'Ca sáng' : 'Ca chiều'}).
+            <p className="font-bold">Lưu ý phân công:</p>
+            <p className="text-[11px] text-teal-800">
+              Bác sĩ phụ trách cần có ca làm việc vào ngày {request.ngayMongMuon} ({request.caKham === 'CA_SANG' ? 'Ca sáng' : 'Ca chiều'}).
             </p>
           </div>
         </div>
@@ -200,7 +203,7 @@ export const OwnerAssignModal: React.FC<OwnerAssignModalProps> = ({
               })}
             </select>
             <p className="mt-1 text-[11px] text-gray-400">
-              Lưu ý: Trạng thái phòng sẵn sàng/đang sử dụng; Backend sẽ xác minh xung đột giờ khám thực tế.
+              Chọn phòng khám điều trị phù hợp cho ca hẹn.
             </p>
           </div>
 
