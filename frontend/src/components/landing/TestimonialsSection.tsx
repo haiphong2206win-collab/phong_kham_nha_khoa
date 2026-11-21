@@ -93,7 +93,7 @@ export const TestimonialsSection: React.FC = () => {
         <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-dental-bg border border-dental-border text-[11px] font-bold text-dental-accent">
             <Info className="h-3.5 w-3.5" />
-            <span>Nội dung minh họa giao diện demo</span>
+            <span>Chia sẻ từ khách hàng</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-dental-text tracking-tight">
             Cảm nhận và chia sẻ sau điều trị

@@ -26,7 +26,7 @@ export const OwnerUpdateAccountModal: React.FC<OwnerUpdateAccountModalProps> = (
 
   if (!isOpen || !doctor || !doctor.maTaiKhoan) return null;
 
-  const isOwnerAccount = doctor.maBacSi.includes('CHU') || doctor.tenDangNhap === 'chu_demo';
+  const isOwnerAccount = doctor.maBacSi.includes('CHU');
   const isCurrentlyActive = doctor.trangThaiTaiKhoan === 'DANG_HOAT_DONG';
 
   const handleToggleStatus = async () => {

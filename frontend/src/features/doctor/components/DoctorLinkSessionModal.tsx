@@ -65,7 +65,7 @@ export const DoctorLinkSessionModal: React.FC<DoctorLinkSessionModalProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, appointment]);
+  }, [isOpen, appointment?.maBenhNhan]);
 
   // Load sessions when plan changes
   useEffect(() => {

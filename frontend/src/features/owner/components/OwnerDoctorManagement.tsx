@@ -181,8 +181,7 @@ export const OwnerDoctorManagement: React.FC<OwnerDoctorManagementProps> = ({
                 </tr>
               ) : (
                 filteredDoctors.map((doc) => {
-                  const isOwner =
-                    doc.maBacSi.includes('CHU') || doc.tenDangNhap === 'chu_demo';
+                  const isOwner = doc.maBacSi.includes('CHU');
                   const isLocked = doc.trangThaiTaiKhoan === 'BI_KHOA';
 
                   return (

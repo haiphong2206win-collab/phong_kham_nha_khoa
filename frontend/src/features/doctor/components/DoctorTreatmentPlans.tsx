@@ -88,16 +88,18 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
       const data = await doctorService.getTemplatePlans();
       const valid = Array.isArray(data) ? data : [];
       setTemplatePlans(valid);
-      if (valid.length > 0 && !selectedTemplate) {
-        setSelectedTemplate(valid[0]);
-      }
+      setSelectedTemplate((current) => {
+        if (valid.length === 0) return null;
+        if (!current) return valid[0];
+        return valid.find(item => item.maLoTrinh === current.maLoTrinh) ?? valid[0];
+      });
     } catch (err: any) {
       console.error('Lỗi khi tải phác đồ mẫu:', err);
       setTemplatesError(err.message || 'Không thể tải danh sách phác đồ mẫu.');
     } finally {
       setTemplatesLoading(false);
     }
-  }, [selectedTemplate]);
+  }, []);
 
   useEffect(() => {
     loadTemplatePlans();

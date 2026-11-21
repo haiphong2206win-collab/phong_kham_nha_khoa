@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { AuthSession } from '@/types/auth';
 import type {
   DoctorNavTab,
@@ -47,6 +47,8 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
     message: string;
     type: 'success' | 'error' | 'info';
   } | null>(null);
+  const hasLoadedScheduleRef = useRef(false);
+  const scheduleRequestIdRef = useRef(0);
 
   // 1. Role Guard
   const isDoctor = session.user?.vaiTro === 'BAC_SI';
@@ -65,21 +67,24 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
   const loadSchedule = useCallback(async () => {
     if (!session.isAuthenticated || !session.token) return;
 
-    setLoading(true);
+    const requestId = ++scheduleRequestIdRef.current;
+    if (!hasLoadedScheduleRef.current) {
+      setLoading(true);
+    }
     setError(null);
 
     try {
       const data = await doctorService.getMySchedule();
+      if (requestId !== scheduleRequestIdRef.current) return;
       setSchedule(data);
 
       // Đồng bộ lại selectedAppointment nếu có
-      if (selectedAppointment) {
-        const updated = data.find(item => item.maLich === selectedAppointment.maLich);
-        if (updated) {
-          setSelectedAppointment(updated);
-        }
-      }
+      setSelectedAppointment((current) => {
+        if (!current) return null;
+        return data.find(item => item.maLich === current.maLich) ?? null;
+      });
     } catch (err: any) {
+      if (requestId !== scheduleRequestIdRef.current) return;
       console.error('Lỗi khi tải lịch khám Bác sĩ:', err);
       setError(err.message || 'Không thể tải lịch khám từ máy chủ.');
       setToast({
@@ -87,9 +92,12 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
         type: 'error',
       });
     } finally {
-      setLoading(false);
+      if (requestId === scheduleRequestIdRef.current) {
+        hasLoadedScheduleRef.current = true;
+        setLoading(false);
+      }
     }
-  }, [session.isAuthenticated, session.token, selectedAppointment]);
+  }, [session.isAuthenticated, session.token]);
 
   useEffect(() => {
     if (isDoctor) {

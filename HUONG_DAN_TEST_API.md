@@ -20,19 +20,21 @@ Tài liệu này dành cho **test thủ công bằng extension Talend API Tester
 
 > Lưu ý: URL trong tài liệu dựa theo mapping của các Controller trong project ZIP mới nhất. Nếu bạn đã sửa mapping sau khi gửi ZIP, hãy ưu tiên URL đang có trong code hiện tại.
 
-## 2. Tài khoản dữ liệu demo
+## 2. Tài khoản dữ liệu khởi tạo
 
 Theo `data.sql` trong project:
 
-| Vai trò        | Tên đăng nhập   | Mật khẩu   | Mã hồ sơ      |
-|----------------|-----------------|------------|---------------|
-| Chủ phòng khám | `chu_demo`      | `password` | `BS_CHU_DEMO` |
-| Bác sĩ         | `bacsi_demo`    | `password` | `BS_DEMO`     |
-| Bác sĩ 2       | `bacsi_demo2`   | `password` | `BS_DEMO2`    |
-| Bác sĩ 3       | `bacsi_demo3`   | `password` | `BS_DEMO3`    |
-| Bệnh nhân      | `benhnhan_demo` | `password` | `BN_DEMO`     |
+| Vai trò                           | Tên đăng nhập             | Mật khẩu      | Mã hồ sơ       |
+|-----------------------------------|---------------------------|---------------|----------------|
+| Chủ phòng khám – Nguyễn Hoàng Nam | `quanly.nguyenhoangnam`   | `NhaKhoa@123` | `BS_CHU_001`   |
+| Bác sĩ – Nguyễn Minh Khang        | `bs.nguyenminhkhang`      | `NhaKhoa@123` | `BS_001`       |
+| Bác sĩ – Trần Thu Hằng            | `bs.tranthuhang`          | `NhaKhoa@123` | `BS_002`       |
+| Bác sĩ – Lê Quốc Bảo              | `bs.lequocbao`            | `NhaKhoa@123` | `BS_003`       |
+| Bệnh nhân – Phạm Gia Hân          | `bn.phamgiahan`           | `NhaKhoa@123` | `BN_001`       |
 
-Nếu đăng nhập bằng một tài khoản báo sai mật khẩu, hãy kiểm tra lại dữ liệu `data.sql` và BCrypt hash đang dùng. Không cần tạo lại tài khoản nếu dữ liệu demo đã tồn tại.
+Nếu đăng nhập báo sai mật khẩu, hãy kiểm tra dữ liệu `data.sql` và bảo đảm đã chạy bước nạp dữ liệu ban đầu. `DataInitializer` sẽ tự mã hóa mật khẩu bằng BCrypt sau khi các bản ghi được tạo.
+
+Nếu database được tạo từ phiên bản cũ và vẫn còn tài khoản có hậu tố `DEMO`, hãy sao lưu dữ liệu cần giữ, tạo lại `clinic_db`, rồi chạy backend một lần với `spring.sql.init.mode=always` theo README. Việc tạo lại database sẽ xóa dữ liệu cũ.
 
 ## 3. Bước đầu tiên: đăng nhập lấy JWT
 
@@ -45,8 +47,8 @@ Nếu đăng nhập bằng một tài khoản báo sai mật khẩu, hãy kiểm
 
 ```json
 {
-  "tenDangNhap": "benhnhan_demo",
-  "matKhau": "password"
+  "tenDangNhap": "bn.phamgiahan",
+  "matKhau": "NhaKhoa@123"
 }
 ```
 
@@ -58,8 +60,8 @@ Gửi request đăng nhập tương tự nhưng đổi body thành:
 
 ```json
 {
-  "tenDangNhap": "chu_demo",
-  "matKhau": "password"
+  "tenDangNhap": "quanly.nguyenhoangnam",
+  "matKhau": "NhaKhoa@123"
 }
 ```
 
@@ -69,8 +71,8 @@ Sao chép `token` riêng cho chủ phòng khám.
 
 ```json
 {
-  "tenDangNhap": "bacsi_demo",
-  "matKhau": "password"
+  "tenDangNhap": "bs.nguyenminhkhang",
+  "matKhau": "NhaKhoa@123"
 }
 ```
 
@@ -82,8 +84,8 @@ Response đăng nhập dự kiến có các trường tương tự:
 {
   "token": "<JWT_THUC_TE_TRA_VE>",
   "loaiToken": "Bearer",
-  "maTaiKhoan": "TK_BN_DEMO",
-  "tenDangNhap": "benhnhan_demo",
+  "maTaiKhoan": "TK_BN_001",
+  "tenDangNhap": "bn.phamgiahan",
   "vaiTro": "BENH_NHAN"
 }
 ```
@@ -99,7 +101,7 @@ Token là chuỗi thực tế do server sinh ra; ví dụ trên chỉ minh họa
 - **Authorization:** token bệnh nhân
 - **Body:** không cần
 
-Kiểm tra response là hồ sơ của `BN_DEMO` và không trả về mật khẩu hay JWT của tài khoản.
+Kiểm tra response là hồ sơ của `BN_001` và không trả về mật khẩu hay JWT của tài khoản.
 
 ### Bước 2 — Bệnh nhân cập nhật hồ sơ
 
@@ -111,14 +113,14 @@ Kiểm tra response là hồ sơ của `BN_DEMO` và không trả về mật kh�
 
 ```json
 {
-  "hoTen": "Le Minh Duc",
-  "ngaySinh": "2004-05-15",
-  "gioiTinh": "NAM",
-  "soDienThoai": "0900000005",
-  "email": "benhnhan.demo@example.com",
-  "diaChi": "Ha Noi",
-  "tienSuBenh": "Chua ghi nhan",
-  "diUngThuoc": "Chua ghi nhan"
+  "hoTen": "Phạm Gia Hân",
+  "ngaySinh": "2001-08-18",
+  "gioiTinh": "NU",
+  "soDienThoai": "0902000001",
+  "email": "pham.gia.han@example.com",
+  "diaChi": "Quận Bình Thạnh, Thành phố Hồ Chí Minh",
+  "tienSuBenh": "Không ghi nhận bệnh nền",
+  "diUngThuoc": "Không ghi nhận dị ứng thuốc"
 }
 ```
 
@@ -134,14 +136,14 @@ Ngày sinh phải là ngày trong quá khứ; số điện thoại phải có 10
 
 ```json
 {
-  "ngayMongMuon": "2026-10-24",
+  "ngayMongMuon": "THAY_BANG_NGAY_MAI_YYYY-MM-DD",
   "caKham": "CA_SANG",
   "lyDoKham": "Kiem tra rang dau",
   "ghiChu": "Day la yeu cau dat lich de test"
 }
 ```
 
-`data.sql` tạo ca làm việc vào **ngày hôm sau**. Ví dụ trên dùng ngày `2026-10-24` vì bộ dữ liệu được chuẩn bị ngày `2026-10-23`. Nếu chạy vào ngày khác, hãy thay `ngayMongMuon` thành ngày mai theo máy của bạn, hoặc kiểm tra ngày thực tế trong dữ liệu.
+`data.sql` tạo ca làm việc vào **ngày hôm sau**. Trước khi gửi request, thay `THAY_BANG_NGAY_MAI_YYYY-MM-DD` bằng ngày mai theo máy của bạn, ví dụ `2026-11-22` nếu chạy ngày `2026-11-21`.
 
 Sau khi gửi thành công, sao chép trường `maYeuCau` trong response. Gọi bước tiếp theo bằng mã này. Trạng thái ban đầu thường là `CHO_PHAN_CONG`.
 
@@ -164,16 +166,16 @@ Tìm yêu cầu vừa tạo và ghi lại `maYeuCau`. Nếu không thấy, kiể
 
 ```json
 {
-  "maChuPhongKham": "BS_CHU_DEMO",
+  "maChuPhongKham": "BS_CHU_001",
   "maYeuCau": "THAY_BANG_MA_YEU_CAU_THUC_TE",
-  "maBacSi": "BS_DEMO2",
-  "maPhong": "P_DEMO2",
+  "maBacSi": "BS_002",
+  "maPhong": "PK_02",
   "gioBatDau": "08:30:00",
   "thoiLuongPhut": 30
 }
 ```
 
-Trước khi gửi, thay `THAY_BANG_MA_YEU_CAU_THUC_TE` bằng mã ở bước 3/4. Các mã demo trong `data.sql` là `BS_CHU_DEMO`, `BS_DEMO2`, `P_DEMO2`. Giờ bắt đầu phải nằm trong ca làm việc của bác sĩ vào đúng ngày yêu cầu; ví dụ `08:30:00` nằm trong ca sáng `08:00–12:00`. Nếu chọn ngày hoặc ca khác, cần có ca làm việc tương ứng.
+Trước khi gửi, thay `THAY_BANG_MA_YEU_CAU_THUC_TE` bằng mã ở bước 3/4. Các mã khởi tạo tương ứng là `BS_CHU_001`, `BS_002`, `PK_02`. Giờ bắt đầu phải nằm trong ca làm việc của bác sĩ vào đúng ngày yêu cầu; ví dụ `08:30:00` nằm trong ca sáng `08:00–12:00`. Nếu chọn ngày hoặc ca khác, cần có ca làm việc tương ứng.
 
 Nếu phân công thành công, ghi lại `maLich` từ response. Nếu response không chứa `maLich`, xem nội dung response để xác định mã lịch được tạo.
 
@@ -229,7 +231,7 @@ Nên tạo một yêu cầu mới nếu muốn test cả xác nhận và từ ch
 
 - **Method:** `GET`
 - **URL:** `http://localhost:8080/api/v1/bac-si/lich-kham`
-- **Authorization:** token của bác sĩ được phân công, ví dụ `bacsi_demo2`
+- **Authorization:** token của bác sĩ được phân công, ví dụ `bs.tranthuhang`
 - **Body:** không cần
 
 Tìm lịch vừa phân công và sao chép `maLich` nếu cần.
@@ -277,12 +279,12 @@ Hãy cập nhật theo đúng quy trình nghiệp vụ và trạng thái hiện 
 | Method | URL | Mục đích |
 |---|---|---|
 | GET | `/api/v1/quan-ly/bac-si` | Danh sách bác sĩ |
-| GET | `/api/v1/quan-ly/bac-si/BS_DEMO2` | Chi tiết bác sĩ |
+| GET | `/api/v1/quan-ly/bac-si/BS_002` | Chi tiết bác sĩ |
 | GET | `/api/v1/quan-ly/benh-nhan` | Danh sách bệnh nhân |
-| GET | `/api/v1/quan-ly/benh-nhan/BN_DEMO` | Chi tiết bệnh nhân |
+| GET | `/api/v1/quan-ly/benh-nhan/BN_001` | Chi tiết bệnh nhân |
 | GET | `/api/v1/tai-khoan` | Danh sách tài khoản |
 | GET | `/api/v1/tai-khoan?vaiTro=BAC_SI` | Lọc theo vai trò |
-| GET | `/api/v1/tai-khoan/TK_BS_DEMO` | Chi tiết tài khoản |
+| GET | `/api/v1/tai-khoan/TK_BS_001` | Chi tiết tài khoản |
 
 Tất cả các URL trên dùng `http://localhost:8080` làm gốc và cần token chủ phòng khám.
 
@@ -349,7 +351,7 @@ Dùng `true` để kích hoạt lại. Không thử khóa tài khoản chủ ph�
 
 ```json
 {
-  "maChuPhongKham": "BS_CHU_DEMO",
+  "maChuPhongKham": "BS_CHU_001",
   "maYeuCau": "THAY_BANG_MA_YEU_CAU_THUC_TE",
   "lyDo": "Khong con khung gio phu hop"
 }
@@ -367,7 +369,7 @@ Sau khi các matcher trong `CauHinhBaoMat` đã được sửa khớp với URL 
 | Token sai/hết hạn        | Gửi token không hợp lệ                                                          | Thường là `401 Unauthorized`                                 |
 | Sai vai trò              | Dùng token bác sĩ gọi `/api/v1/quan-ly/bac-si`                                  | `403 Forbidden`                                              |
 | Đúng vai trò             | Dùng token chủ phòng khám gọi `/api/v1/quan-ly/bac-si`                          | Thành công nếu dữ liệu và ứng dụng hợp lệ                    |
-| Tài khoản bị khóa        | Khóa một tài khoản demo không dùng để đăng nhập hiện tại, rồi thử đăng nhập lại | Đăng nhập bị từ chối                                         |
+| Tài khoản bị khóa        | Khóa một tài khoản khởi tạo không dùng để đăng nhập hiện tại, rồi thử đăng nhập lại | Đăng nhập bị từ chối                                      |
 | Sai quyền sở hữu dữ liệu | Bác sĩ khác thử xem lịch không được phân công cho mình                          | Bị từ chối nếu kiểm tra quyền sở hữu đã được triển khai đúng |
 
 Nếu request sai vai trò vẫn thành công, kiểm tra lại matcher trong `CauHinhBaoMat` và thứ tự các quy tắc `requestMatchers`. Nếu không có token mà API vẫn trả dữ liệu, cần sửa cấu hình trước khi tiếp tục test nghiệp vụ.
@@ -377,7 +379,7 @@ Nếu request sai vai trò vẫn thành công, kiểm tra lại matcher trong `C
 - Đăng nhập mỗi vai trò riêng và giữ riêng từng JWT.
 - Luôn gửi `Authorization: Bearer ...` cho API cần đăng nhập.
 - Khi tạo yêu cầu, lấy `maYeuCau` từ response, không tự đoán mã.
-- Khi phân công, dùng đúng mã hồ sơ chủ phòng khám `BS_CHU_DEMO`, mã bác sĩ, mã phòng và mã yêu cầu tồn tại.
+- Khi phân công, dùng đúng mã hồ sơ chủ phòng khám `BS_CHU_001`, mã bác sĩ, mã phòng và mã yêu cầu tồn tại.
 - Ngày yêu cầu phải khớp ngày ca làm việc; giờ phân công phải nằm trong ca làm việc và không bị trùng lịch.
 - Project hiện có endpoint gửi yêu cầu, xem danh sách và xem chi tiết yêu cầu đặt lịch; trong Controller được kiểm tra ở ZIP này **chưa thấy endpoint hủy yêu cầu đặt lịch được ánh xạ**. Không test URL hủy cho tới khi bạn bổ sung mapping.
 - Nếu dùng H2 `mem`, dữ liệu thường được tạo lại khi khởi động ứng dụng. Nếu dùng database lưu bền, tránh chạy lại script insert trên dữ liệu đã có vì có thể trùng khóa.

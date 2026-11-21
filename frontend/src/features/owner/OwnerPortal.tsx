@@ -140,7 +140,7 @@ export const OwnerPortal: React.FC<OwnerPortalProps> = ({
   // Tìm mã Bác sĩ của Chủ phòng khám đang đăng nhập
   const ownerDoc =
     doctors.find((d) => d.tenDangNhap === session.user?.tenDangNhap) ||
-    doctors.find((d) => d.maBacSi.includes('CHU')) || { maBacSi: 'BS_CHU_DEMO' };
+    doctors.find((d) => d.maBacSi.includes('CHU')) || { maBacSi: 'BS_CHU_001' };
 
   const handleActionSuccess = (msg: string) => {
     setToast({ message: msg, type: 'success' });

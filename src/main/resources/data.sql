@@ -1,108 +1,38 @@
--- =========================================
--- 1. TAI KHOAN CHU PHONG KHAM
--- Username: chu_demo
--- Password: password
--- =========================================
+-- =========================================================
+-- DU LIEU KHOI TAO PHONG KHAM NHA KHOA NU CUOI XANH
+-- Mat khau ban dau cua tat ca tai khoan: NhaKhoa@123
+-- DataInitializer se ma hoa BCrypt ngay sau khi nap du lieu.
+-- =========================================================
 
+-- 1. Tai khoan khoi tao
 INSERT INTO tai_khoan (
-    ma_tai_khoan,
-    ten_dang_nhap,
-    mat_khau,
-    vai_tro,
-    trang_thai,
-    ngay_tao
-) VALUES (
-             'TK_CHU_DEMO',
-             'chu_demo',
-             'password',
-             'CHU_PHONG_KHAM',
-             'DANG_HOAT_DONG',
-             CURRENT_TIMESTAMP
-         );
+    ma_tai_khoan, ten_dang_nhap, mat_khau, vai_tro, trang_thai, ngay_tao
+) VALUES
+    ('TK_CHU_001', 'quanly.nguyenhoangnam', 'NhaKhoa@123', 'CHU_PHONG_KHAM', 'DANG_HOAT_DONG', CURRENT_TIMESTAMP),
+    ('TK_BS_001', 'bs.nguyenminhkhang', 'NhaKhoa@123', 'BAC_SI', 'DANG_HOAT_DONG', CURRENT_TIMESTAMP),
+    ('TK_BS_002', 'bs.tranthuhang', 'NhaKhoa@123', 'BAC_SI', 'DANG_HOAT_DONG', CURRENT_TIMESTAMP),
+    ('TK_BS_003', 'bs.lequocbao', 'NhaKhoa@123', 'BAC_SI', 'DANG_HOAT_DONG', CURRENT_TIMESTAMP),
+    ('TK_BN_001', 'bn.phamgiahan', 'NhaKhoa@123', 'BENH_NHAN', 'DANG_HOAT_DONG', CURRENT_TIMESTAMP);
 
--- =========================================
--- 2. TAI KHOAN BAC SI
--- Username: bacsi_demo
--- Password: password
--- =========================================
-
-INSERT INTO tai_khoan (
-    ma_tai_khoan,
-    ten_dang_nhap,
-    mat_khau,
-    vai_tro,
-    trang_thai,
-    ngay_tao
-) VALUES (
-             'TK_BS_DEMO',
-             'bacsi_demo',
-             'password',
-             'BAC_SI',
-             'DANG_HOAT_DONG',
-             CURRENT_TIMESTAMP
-         );
-
--- =========================================
--- 3. HO SO CHU PHONG KHAM
--- =========================================
-
+-- 2. Ho so chu phong kham va bac si
+-- He thong hien tai dung bang bac_si cho ca chu phong kham de phuc vu luong phan cong.
 INSERT INTO bac_si (
-    ma_bac_si,
-    ma_tai_khoan,
-    ho_ten,
-    so_dien_thoai,
-    so_chung_chi,
-    dang_lam_viec
-) VALUES (
-             'BS_CHU_DEMO',
-             'TK_CHU_DEMO',
-             'Chu phong kham demo',
-             '0900000001',
-             'CC-CHU-DEMO',
-             TRUE
-         );
+    ma_bac_si, ma_tai_khoan, ho_ten, so_dien_thoai, so_chung_chi, dang_lam_viec
+) VALUES
+    ('BS_CHU_001', 'TK_CHU_001', 'Nguyễn Hoàng Nam', '0901000001', 'CCHN-RHM-0001', TRUE),
+    ('BS_001', 'TK_BS_001', 'Nguyễn Minh Khang', '0901000002', 'CCHN-RHM-0101', TRUE),
+    ('BS_002', 'TK_BS_002', 'Trần Thu Hằng', '0901000003', 'CCHN-RHM-0102', TRUE),
+    ('BS_003', 'TK_BS_003', 'Lê Quốc Bảo', '0901000004', 'CCHN-RHM-0103', TRUE);
 
--- =========================================
--- 4. HO SO BAC SI
--- =========================================
-
-INSERT INTO bac_si (
-    ma_bac_si,
-    ma_tai_khoan,
-    ho_ten,
-    so_dien_thoai,
-    so_chung_chi,
-    dang_lam_viec
-) VALUES (
-             'BS_DEMO',
-             'TK_BS_DEMO',
-             'Bac si demo',
-             '0900000002',
-             'CC-BS-DEMO',
-             TRUE
-         );
-
--- =========================================
--- 5. PHONG KHAM
--- =========================================
-
+-- 3. Phong kham
 INSERT INTO phong_kham (
-    ma_phong,
-    ten_phong,
-    trang_thai,
-    ghi_chu
-) VALUES (
-             'P_DEMO',
-             'Phong kham demo',
-             'TRONG',
-             'Phong dung de test phan cong'
-         );
+    ma_phong, ten_phong, trang_thai, ghi_chu
+) VALUES
+    ('PK_01', 'Phòng khám tổng quát 01', 'TRONG', 'Khám tổng quát và tư vấn điều trị'),
+    ('PK_02', 'Phòng điều trị 02', 'TRONG', 'Điều trị nội nha và phục hình'),
+    ('PK_03', 'Phòng tiểu phẫu 03', 'TRONG', 'Tiểu phẫu và cấy ghép Implant');
 
--- =========================================
--- 6. CA LAM VIEC BUOI SANG
--- Ngay mai, 08:00 - 12:00
--- =========================================
-
+-- 4. Ca lam viec cua bac si vao ngay mai
 INSERT INTO ca_lam_viec (
     ma_ca,
     ma_bac_si,
@@ -112,284 +42,15 @@ INSERT INTO ca_lam_viec (
     gio_ket_thuc,
     so_benh_nhan_toi_da,
     dang_hoat_dong
-) VALUES (
-             'CA_SANG_DEMO',
-             'BS_DEMO',
-             DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY),
-             'CA_SANG',
-             '08:00:00',
-             '12:00:00',
-             10,
-             TRUE
-         );
+) VALUES
+    ('CA_BS001_SANG', 'BS_001', DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY), 'CA_SANG', '08:00:00', '12:00:00', 10, TRUE),
+    ('CA_BS001_CHIEU', 'BS_001', DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY), 'CA_CHIEU', '13:00:00', '17:00:00', 10, TRUE),
+    ('CA_BS002_SANG', 'BS_002', DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY), 'CA_SANG', '08:00:00', '12:00:00', 10, TRUE),
+    ('CA_BS002_CHIEU', 'BS_002', DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY), 'CA_CHIEU', '13:00:00', '17:00:00', 10, TRUE),
+    ('CA_BS003_SANG', 'BS_003', DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY), 'CA_SANG', '08:00:00', '12:00:00', 10, TRUE),
+    ('CA_BS003_CHIEU', 'BS_003', DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY), 'CA_CHIEU', '13:00:00', '17:00:00', 10, TRUE);
 
--- =========================================
--- 7. CA LAM VIEC BUOI CHIEU
--- Ngay mai, 13:00 - 17:00
--- =========================================
-
-INSERT INTO ca_lam_viec (
-    ma_ca,
-    ma_bac_si,
-    ngay_lam_viec,
-    ca_kham,
-    gio_bat_dau,
-    gio_ket_thuc,
-    so_benh_nhan_toi_da,
-    dang_hoat_dong
-) VALUES (
-             'CA_CHIEU_DEMO',
-             'BS_DEMO',
-             DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY),
-             'CA_CHIEU',
-             '13:00:00',
-             '17:00:00',
-             10,
-             TRUE
-         );
-
--- =========================================
--- 8. TAI KHOAN BAC SI THU HAI
--- Username: bacsi_demo2
--- Password: password
--- =========================================
-
-INSERT INTO tai_khoan (
-    ma_tai_khoan,
-    ten_dang_nhap,
-    mat_khau,
-    vai_tro,
-    trang_thai,
-    ngay_tao
-) VALUES (
-             'TK_BS_DEMO2',
-             'bacsi_demo2',
-             'password',
-             'BAC_SI',
-             'DANG_HOAT_DONG',
-             CURRENT_TIMESTAMP
-         );
-
--- =========================================
--- 9. TAI KHOAN BAC SI THU BA
--- Username: bacsi_demo3
--- Password: password
--- =========================================
-
-INSERT INTO tai_khoan (
-    ma_tai_khoan,
-    ten_dang_nhap,
-    mat_khau,
-    vai_tro,
-    trang_thai,
-    ngay_tao
-) VALUES (
-             'TK_BS_DEMO3',
-             'bacsi_demo3',
-             'password',
-             'BAC_SI',
-             'DANG_HOAT_DONG',
-             CURRENT_TIMESTAMP
-         );
-
--- =========================================
--- 10. HO SO BAC SI THU HAI
--- =========================================
-
-INSERT INTO bac_si (
-    ma_bac_si,
-    ma_tai_khoan,
-    ho_ten,
-    so_dien_thoai,
-    so_chung_chi,
-    dang_lam_viec
-) VALUES (
-             'BS_DEMO2',
-             'TK_BS_DEMO2',
-             'Nguyen Van An',
-             '0900000003',
-             'CC-BS-DEMO2',
-             TRUE
-         );
-
--- =========================================
--- 11. HO SO BAC SI THU BA
--- =========================================
-
-INSERT INTO bac_si (
-    ma_bac_si,
-    ma_tai_khoan,
-    ho_ten,
-    so_dien_thoai,
-    so_chung_chi,
-    dang_lam_viec
-) VALUES (
-             'BS_DEMO3',
-             'TK_BS_DEMO3',
-             'Tran Thi Binh',
-             '0900000004',
-             'CC-BS-DEMO3',
-             TRUE
-         );
-
--- =========================================
--- 12. PHONG KHAM THU HAI
--- =========================================
-
-INSERT INTO phong_kham (
-    ma_phong,
-    ten_phong,
-    trang_thai,
-    ghi_chu
-) VALUES (
-             'P_DEMO2',
-             'Phong kham so 2',
-             'TRONG',
-             'Phong dung de test phan cong lich'
-         );
-
--- =========================================
--- 13. PHONG KHAM THU BA
--- =========================================
-
-INSERT INTO phong_kham (
-    ma_phong,
-    ten_phong,
-    trang_thai,
-    ghi_chu
-) VALUES (
-             'P_DEMO3',
-             'Phong kham so 3',
-             'TRONG',
-             'Phong dung de test phan cong lich'
-         );
-
--- =========================================
--- 14. CA SANG CUA BAC SI DEMO2
--- Ngay mai, 08:00 - 12:00
--- =========================================
-
-INSERT INTO ca_lam_viec (
-    ma_ca,
-    ma_bac_si,
-    ngay_lam_viec,
-    ca_kham,
-    gio_bat_dau,
-    gio_ket_thuc,
-    so_benh_nhan_toi_da,
-    dang_hoat_dong
-) VALUES (
-             'CA_SANG_BS2',
-             'BS_DEMO2',
-             DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY),
-             'CA_SANG',
-             '08:00:00',
-             '12:00:00',
-             10,
-             TRUE
-         );
-
--- =========================================
--- 15. CA CHIEU CUA BAC SI DEMO2
--- Ngay mai, 13:00 - 17:00
--- =========================================
-
-INSERT INTO ca_lam_viec (
-    ma_ca,
-    ma_bac_si,
-    ngay_lam_viec,
-    ca_kham,
-    gio_bat_dau,
-    gio_ket_thuc,
-    so_benh_nhan_toi_da,
-    dang_hoat_dong
-) VALUES (
-             'CA_CHIEU_BS2',
-             'BS_DEMO2',
-             DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY),
-             'CA_CHIEU',
-             '13:00:00',
-             '17:00:00',
-             10,
-             TRUE
-         );
-
--- =========================================
--- 16. CA SANG CUA BAC SI DEMO3
--- Ngay mai, 08:00 - 12:00
--- =========================================
-
-INSERT INTO ca_lam_viec (
-    ma_ca,
-    ma_bac_si,
-    ngay_lam_viec,
-    ca_kham,
-    gio_bat_dau,
-    gio_ket_thuc,
-    so_benh_nhan_toi_da,
-    dang_hoat_dong
-) VALUES (
-             'CA_SANG_BS3',
-             'BS_DEMO3',
-             DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY),
-             'CA_SANG',
-             '08:00:00',
-             '12:00:00',
-             10,
-             TRUE
-         );
-
--- =========================================
--- 17. CA CHIEU CUA BAC SI DEMO3
--- Ngay mai, 13:00 - 17:00
--- =========================================
-
-INSERT INTO ca_lam_viec (
-    ma_ca,
-    ma_bac_si,
-    ngay_lam_viec,
-    ca_kham,
-    gio_bat_dau,
-    gio_ket_thuc,
-    so_benh_nhan_toi_da,
-    dang_hoat_dong
-) VALUES (
-             'CA_CHIEU_BS3',
-             'BS_DEMO3',
-             DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY),
-             'CA_CHIEU',
-             '13:00:00',
-             '17:00:00',
-             10,
-             TRUE
-         );
-
--- =========================================
--- 18. TAI KHOAN BENH NHAN DEMO
--- Username: benhnhan_demo
--- Password: password
--- =========================================
-
-INSERT INTO tai_khoan (
-    ma_tai_khoan,
-    ten_dang_nhap,
-    mat_khau,
-    vai_tro,
-    trang_thai,
-    ngay_tao
-) VALUES (
-             'TK_BN_DEMO',
-             'benhnhan_demo',
-             'password',
-             'BENH_NHAN',
-             'DANG_HOAT_DONG',
-             CURRENT_TIMESTAMP
-         );
-
--- =========================================
--- 19. HO SO BENH NHAN DEMO
--- =========================================
-
+-- 5. Ho so benh nhan khoi tao
 INSERT INTO benh_nhan (
     ma_benh_nhan,
     ma_tai_khoan,
@@ -402,14 +63,14 @@ INSERT INTO benh_nhan (
     tien_su_benh,
     di_ung_thuoc
 ) VALUES (
-             'BN_DEMO',
-             'TK_BN_DEMO',
-             'Le Minh Duc',
-             '2004-05-15',
-             'NAM',
-             '0900000005',
-             'benhnhan.demo@example.com',
-             'Ha Noi',
-             'Chua ghi nhan',
-             'Chua ghi nhan'
-         );
+    'BN_001',
+    'TK_BN_001',
+    'Phạm Gia Hân',
+    '2001-08-18',
+    'NU',
+    '0902000001',
+    'pham.gia.han@example.com',
+    'Quận Bình Thạnh, Thành phố Hồ Chí Minh',
+    'Không ghi nhận bệnh nền',
+    'Không ghi nhận dị ứng thuốc'
+);

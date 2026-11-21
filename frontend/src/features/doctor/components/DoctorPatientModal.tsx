@@ -60,7 +60,7 @@ export const DoctorPatientModal: React.FC<DoctorPatientModalProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, appointment]);
+  }, [isOpen, appointment?.maLich]);
 
   if (!isOpen || !appointment) return null;
 

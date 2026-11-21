@@ -110,7 +110,7 @@ spring.sql.init.mode=never
 
 ---
 
-## 7. KHỞI TẠO BẢNG VÀ DỮ LIỆU DEMO
+## 7. KHỞI TẠO BẢNG VÀ DỮ LIỆU BAN ĐẦU
 
 Hệ thống được thiết kế với cơ chế khởi tạo thông minh để tránh lỗi `Duplicate entry`:
 
@@ -119,14 +119,23 @@ Chạy lệnh khởi động Spring Boot kèm cờ kích hoạt nạp dữ liệ
 
 ```powershell
 # Chạy trên Windows PowerShell:
-.\mvnw.cmd spring-boot:run -Dspring-boot.run.arguments="--spring.sql.init.mode=always"
+.\mvnw.cmd --% spring-boot:run -Dspring-boot.run.arguments=--spring.sql.init.mode=always
 ```
+
+Nếu database `clinic_db` của bản cũ đã chứa các tài khoản có hậu tố `DEMO`, hãy sao lưu dữ liệu cần giữ rồi tạo lại database trước khi chạy lệnh trên. Thao tác sau sẽ xóa toàn bộ dữ liệu hiện có trong `clinic_db`:
+
+```sql
+DROP DATABASE clinic_db;
+CREATE DATABASE clinic_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+Không cần xóa database nếu đây là lần cài đặt đầu tiên.
 
 **Quá trình diễn ra tự động:**
 1. Hibernate (`ddl-auto=update`) tự tạo toàn bộ 12 bảng trong MySQL.
 2. `data.sql` nạp tài khoản mẫu, phòng khám, bác sĩ và ca làm việc.
-3. `DataInitializer` tự động quét và mã hóa BCrypt cho toàn bộ mật khẩu tài khoản mẫu.
-4. `LoTrinhMauDataInitializer` tự nạp 3 lộ trình điều trị nha khoa chuẩn (Niềng răng, Cấy ghép Implant, Tẩy trắng răng).
+3. `DataInitializer` tự động quét và mã hóa BCrypt cho toàn bộ mật khẩu tài khoản ban đầu.
+4. `LoTrinhMauDataInitializer` tự nạp 3 lộ trình điều trị nha khoa chuẩn (Niềng răng, Cấy ghép Implant, Điều trị tủy).
 
 Sau khi thấy dòng chữ `Started DemoPhongkhamNhakhoaApplication in ... seconds`, bạn có thể dừng server bằng `Ctrl + C`.
 
@@ -171,15 +180,17 @@ Frontend sẵn sàng tại: `http://localhost:5173`
 
 ---
 
-## 10. TÀI KHOẢN TRẢI NGHIỆM DEMO (3 VAI TRÒ)
+## 10. TÀI KHOẢN KHỞI TẠO
 
 Sau khi khởi tạo dữ liệu mẫu, hệ thống cung cấp sẵn các tài khoản sau:
 
-| Vai trò | Tên đăng nhập | Mật khẩu mặc định | Mô tả chức năng |
-|:---|:---|:---:|:---|
-| **Chủ phòng khám (Owner)** | `chu_demo` | `password` | Xem dashboard, duyệt & phân công lịch, quản lý bác sĩ, xem bệnh nhân, giám sát lộ trình |
-| **Bác sĩ (Doctor)** | `bacsi_demo` | `password` | Xem lịch khám được giao, cập nhật tiến trình khám, tạo lộ trình và liên kết buổi điều trị |
-| **Bệnh nhân (Patient)** | `benhnhan_demo` | `password` | Đặt lịch khám, xác nhận/từ chối lịch, hủy yêu cầu chờ xử lý, theo dõi lộ trình điều trị |
+| Vai trò                               | Tên đăng nhập           | Mật khẩu mặc định | Mô tả chức năng                                                              |
+|:--------------------------------------|:------------------------|:-----------------:|:-----------------------------------------------------------------------------|
+| **Chủ phòng khám – Nguyễn Hoàng Nam** | `quanly.nguyenhoangnam` |   `NhaKhoa@123`   | Xem dashboard, duyệt và phân công lịch, quản lý nhân sự và giám sát lộ trình |
+| **Bác sĩ – Nguyễn Minh Khang**        | `bs.nguyenminhkhang`    |   `NhaKhoa@123`   | Xem lịch khám, cập nhật tiến trình và lập lộ trình điều trị                  |
+| **Bác sĩ – Trần Thu Hằng**            | `bs.tranthuhang`        |   `NhaKhoa@123`   | Tài khoản bác sĩ dùng cho phân công lịch                                     |
+| **Bác sĩ – Lê Quốc Bảo**              | `bs.lequocbao`          |   `NhaKhoa@123`   | Tài khoản bác sĩ dùng cho phân công lịch                                     |
+| **Bệnh nhân – Phạm Gia Hân**          | `bn.phamgiahan`         |   `NhaKhoa@123`   | Đặt lịch, xác nhận lịch và theo dõi điều trị                                 |
 
 *(Lưu ý: Bệnh nhân cũng có thể tự đăng ký tài khoản mới bằng nút **"Đăng ký"** ngay trên giao diện web).*
 
@@ -187,7 +198,7 @@ Sau khi khởi tạo dữ liệu mẫu, hệ thống cung cấp sẵn các tài 
 
 ## 11. HƯỚNG DẪN OWNER TẠO TÀI KHOẢN BÁC SĨ MỚI
 
-1. Đăng nhập với tài khoản Chủ phòng khám: `chu_demo` / `password`.
+1. Đăng nhập với tài khoản Chủ phòng khám: `quanly.nguyenhoangnam` / `NhaKhoa@123`.
 2. Trên thanh điều hướng bên trái, chọn tab **"Quản lý Bác sĩ"**.
 3. Bấm nút **"Thêm bác sĩ mới"**.
 4. Điền đầy đủ thông tin:
@@ -202,16 +213,16 @@ Sau khi khởi tạo dữ liệu mẫu, hệ thống cung cấp sẵn các tài 
 ## 12. CHECKLIST KIỂM THỬ THỦ CÔNG (4 LUỒNG NGHIỆP VỤ KHÉP KÍN)
 
 ### Luồng 1: Bệnh nhân đặt lịch → Chủ phòng khám phân công
-1. Đăng nhập Bệnh nhân (`benhnhan_demo`).
+1. Đăng nhập Bệnh nhân (`bn.phamgiahan`).
 2. Vào mục **"Đặt lịch khám mới"**, chọn ngày mong muốn, ca khám (Sáng/Chiều) và nhập lý do khám.
 3. Bấm **"Gửi yêu cầu"**. Trạng thái yêu cầu hiển thị: `Chờ phân công`.
-4. Đăng xuất, đăng nhập Chủ phòng khám (`chu_demo`).
+4. Đăng xuất, đăng nhập Chủ phòng khám (`quanly.nguyenhoangnam`).
 5. Vào tab **"Phân công lịch"** → Danh sách yêu cầu chờ xử lý.
 6. Bấm **"Phân công"**, chọn Bác sĩ phụ trách, Phòng khám và Giờ khám cụ thể.
 7. Bấm **"Xác nhận phân công"**. Yêu cầu chuyển sang trạng thái: `Đã phân công`.
 
 ### Luồng 2: Bệnh nhân nhận thông báo & Xác nhận lịch
-1. Đăng nhập lại Bệnh nhân (`benhnhan_demo`).
+1. Đăng nhập lại Bệnh nhân (`bn.phamgiahan`).
 2. Vào tab **"Cuộc hẹn & Lịch khám"** → Mục **"Lịch khám chính thức"**.
 3. Lịch khám vừa được xếp hiển thị trạng thái `Chờ xác nhận`.
 4. Bệnh nhân có 2 lựa chọn:
@@ -219,7 +230,7 @@ Sau khi khởi tạo dữ liệu mẫu, hệ thống cung cấp sẵn các tài 
    - Bấm **"Từ chối lịch"**: Nhập lý do từ chối → Trạng thái chuyển sang `Đã hủy`.
 
 ### Luồng 3: Bác sĩ tiếp đón, khám bệnh & Lập lộ trình điều trị
-1. Đăng nhập Bác sĩ (`bacsi_demo`).
+1. Đăng nhập Bác sĩ (`bs.nguyenminhkhang`).
 2. Vào tab **"Lịch khám"**, kiểm tra danh sách bệnh nhân trong ngày.
 3. Cập nhật trạng thái từng bước:
    - Bấm **"Bệnh nhân đã đến"** (Trạng thái: `Đã đến`).
@@ -231,7 +242,7 @@ Sau khi khởi tạo dữ liệu mẫu, hệ thống cung cấp sẵn các tài 
    - Bấm lưu lộ trình.
 
 ### Luồng 4: Bệnh nhân theo dõi tiến độ lộ trình điều trị
-1. Đăng nhập Bệnh nhân (`benhnhan_demo`).
+1. Đăng nhập Bệnh nhân (`bn.phamgiahan`).
 2. Vào tab **"Lộ trình điều trị"**.
 3. Xem thẻ tóm tắt: Tên lộ trình, Bác sĩ điều trị chính, thanh % tiến độ hoàn thành.
 4. Xem danh sách chi tiết các buổi điều trị (Buổi đã hoàn thành, buổi đã lên lịch, buổi tiếp theo).
@@ -281,11 +292,11 @@ Hệ thống cung cấp tính năng hủy yêu cầu an toàn dành riêng cho B
 - **Hiện tượng:** Backend không kết nối được MySQL.
 - **Khắc phục:** Mở `src/main/resources/application.properties`, kiểm tra và sửa đúng `spring.datasource.password` theo mật khẩu tài khoản MySQL máy của bạn.
 
-### 3. Lỗi `Table 'clinic_db.tai_khoan' doesn't exist` hoặc đăng nhập demo báo tài khoản không tồn tại
+### 3. Lỗi `Table 'clinic_db.tai_khoan' doesn't exist` hoặc tài khoản khởi tạo không tồn tại
 - **Hiện tượng:** Database vừa tạo chưa có bảng hoặc chưa có dữ liệu mẫu.
 - **Khắc phục:** Chạy backend một lần với tham số nạp dữ liệu:
   ```powershell
-  .\mvnw.cmd spring-boot:run -Dspring-boot.run.arguments="--spring.sql.init.mode=always"
+  .\mvnw.cmd --% spring-boot:run -Dspring-boot.run.arguments=--spring.sql.init.mode=always
   ```
 
 ### 4. Lỗi `Duplicate entry ... for key 'PRIMARY'`
