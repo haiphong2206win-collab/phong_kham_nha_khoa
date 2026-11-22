@@ -3,9 +3,11 @@ package com.example.clinic.demo_phongkham_nhakhoa.repository;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.BacSi;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.LichKham;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.PhongKham;
+import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiDatLich;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +21,11 @@ public interface LichKhamRepository extends JpaRepository<LichKham, String> {
             String maBacSi
     );
 
+    // Lấy danh sách lịch của một bệnh nhân theo tên đăng nhập tài khoản
+    List<LichKham> findByBenhNhan_TaiKhoan_TenDangNhapOrderByNgayKhamDescGioBatDauDesc(
+            String tenDangNhap
+    );
+
     // Chỉ tìm lịch nếu nó thuộc đúng bác sĩ đang đăng nhập
     Optional<LichKham> findByMaLichAndBacSi_TaiKhoan_TenDangNhap(
             String maLich,
@@ -29,5 +36,12 @@ public interface LichKhamRepository extends JpaRepository<LichKham, String> {
     findByMaLichAndBenhNhan_TaiKhoan_TenDangNhap(
             String maLich,
             String tenDangNhap
+    );
+
+    // Kiem tra bac si co lich hen dang hoat dong voi benh nhan khong
+    boolean existsByBacSi_TaiKhoan_TenDangNhapAndBenhNhan_MaBenhNhanAndTrangThaiIn(
+            String tenDangNhap,
+            String maBenhNhan,
+            Collection<TrangThaiDatLich> trangThais
     );
 }

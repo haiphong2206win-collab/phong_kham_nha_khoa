@@ -45,4 +45,21 @@ public class YeuCauDatLichController {
                 principal.getName()
         );
     }
+
+    // PATCH /api/v1/yeu-cau-dat-lich/{maYeuCau}/huy - Bệnh nhân hủy yêu cầu đang chờ phân công
+    @PatchMapping("/{maYeuCau}/huy")
+    public YeuCauDatLichResponse huyYeuCau(
+            @PathVariable String maYeuCau,
+            @RequestBody(required = false) java.util.Map<String, String> body,
+            Principal principal
+    ) {
+        if (principal == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.UNAUTHORIZED,
+                    "Bạn cần đăng nhập để thực hiện thao tác này"
+            );
+        }
+        String lyDo = (body != null) ? body.get("lyDo") : null;
+        return yeuCauDatLichService.huyYeuCau(maYeuCau, principal.getName(), lyDo);
+    }
 }

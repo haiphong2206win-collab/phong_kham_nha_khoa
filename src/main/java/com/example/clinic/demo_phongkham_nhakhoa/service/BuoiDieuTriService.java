@@ -29,13 +29,16 @@ public class BuoiDieuTriService {
 
         private final BuoiDieuTriRepository buoiDieuTriRepository;
         private final LoTrinhDieuTriRepository loTrinhDieuTriRepository;
+        private final LoTrinhDieuTriService loTrinhDieuTriService;
 
         public BuoiDieuTriService(
                         BuoiDieuTriRepository buoiDieuTriRepository,
-                        LoTrinhDieuTriRepository loTrinhDieuTriRepository) {
+                        LoTrinhDieuTriRepository loTrinhDieuTriRepository,
+                        LoTrinhDieuTriService loTrinhDieuTriService) {
 
                 this.buoiDieuTriRepository = buoiDieuTriRepository;
                 this.loTrinhDieuTriRepository = loTrinhDieuTriRepository;
+                this.loTrinhDieuTriService = loTrinhDieuTriService;
         }
 
         // ==================================================
@@ -48,6 +51,9 @@ public class BuoiDieuTriService {
                         ThemBuoiDieuTriRequest request) {
 
                 LoTrinhDieuTri loTrinh = timLoTrinh(maLoTrinhDieuTri);
+
+                loTrinhDieuTriService.kiemTraQuyenTruyCapBenhNhan(
+                                loTrinh.getBenhNhan().getMaBenhNhan());
 
                 kiemTraLoTrinhChoPhepChinhSua(loTrinh);
 
@@ -156,6 +162,9 @@ public class BuoiDieuTriService {
 
                 LoTrinhDieuTri loTrinh = timLoTrinh(maLoTrinhDieuTri);
 
+                loTrinhDieuTriService.kiemTraQuyenTruyCapBenhNhan(
+                                loTrinh.getBenhNhan().getMaBenhNhan());
+
                 kiemTraLoTrinhChoPhepChinhSua(loTrinh);
 
                 BuoiDieuTri buoi = timBuoiThuocLoTrinh(
@@ -208,6 +217,9 @@ public class BuoiDieuTriService {
 
                 LoTrinhDieuTri loTrinh = timLoTrinh(maLoTrinhDieuTri);
 
+                loTrinhDieuTriService.kiemTraQuyenTruyCapBenhNhan(
+                                loTrinh.getBenhNhan().getMaBenhNhan());
+
                 kiemTraLoTrinhChoPhepChinhSua(loTrinh);
 
                 BuoiDieuTri buoi = timBuoiThuocLoTrinh(
@@ -252,6 +264,9 @@ public class BuoiDieuTriService {
                         String maBuoiDieuTri) {
 
                 LoTrinhDieuTri loTrinh = timLoTrinh(maLoTrinhDieuTri);
+
+                loTrinhDieuTriService.kiemTraQuyenTruyCapBenhNhan(
+                                loTrinh.getBenhNhan().getMaBenhNhan());
 
                 BuoiDieuTri buoi = timBuoiThuocLoTrinh(
                                 loTrinh,

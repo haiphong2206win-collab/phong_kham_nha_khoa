@@ -2,6 +2,7 @@ package com.example.clinic.demo_phongkham_nhakhoa.controller;
 
 import com.example.clinic.demo_phongkham_nhakhoa.dto.response.BacSiQuanLyResponse;
 import com.example.clinic.demo_phongkham_nhakhoa.dto.response.BenhNhanQuanLyResponse;
+import com.example.clinic.demo_phongkham_nhakhoa.dto.response.PhongKhamResponse;
 import com.example.clinic.demo_phongkham_nhakhoa.service.QuanLyHoSoService;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,5 +46,11 @@ public class QuanLyHoSoController {
             @PathVariable String maBenhNhan
     ) {
         return quanLyHoSoService.xemChiTietBenhNhan(maBenhNhan);
+    }
+
+    // GET /api/v1/quan-ly/phong-kham
+    @GetMapping("/phong-kham")
+    public List<PhongKhamResponse> layDanhSachPhongKham() {
+        return quanLyHoSoService.layDanhSachPhongKham();
     }
 }
