@@ -150,4 +150,9 @@ export interface BuoiDieuTri {
   thoiGianCapNhat?: string | null;
   version?: number;
   maLichKham?: string | null;
+  ngayKham?: string | null;
+  gioBatDau?: string | null;
+  gioKetThuc?: string | null;
+  tenBacSi?: string | null;
+  tenPhong?: string | null;
 }

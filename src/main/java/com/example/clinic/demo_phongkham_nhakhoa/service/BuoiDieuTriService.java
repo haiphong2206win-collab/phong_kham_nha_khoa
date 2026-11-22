@@ -444,6 +444,11 @@ public class BuoiDieuTriService {
                                 buoi.getThoiGianTao(),
                                 buoi.getThoiGianCapNhat(),
                                 buoi.getVersion(),
-                                maLichKham);
+                                maLichKham,
+                                buoi.getLichKham() != null ? buoi.getLichKham().getNgayKham() : null,
+                                buoi.getLichKham() != null ? buoi.getLichKham().getGioBatDau() : null,
+                                buoi.getLichKham() != null ? buoi.getLichKham().getGioKetThuc() : null,
+                                buoi.getLichKham() != null ? buoi.getLichKham().getBacSi().getHoTen() : null,
+                                buoi.getLichKham() != null ? buoi.getLichKham().getPhongKham().getTenPhong() : null);
         }
 }

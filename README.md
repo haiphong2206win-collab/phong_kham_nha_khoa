@@ -9,7 +9,7 @@
 
 Phòng khám Nha Khoa Nụ Cười Xanh số hóa toàn bộ quy trình chăm sóc răng miệng khép kín:
 - **Bệnh nhân (Patient):** Gửi yêu cầu đặt lịch, nhận phản hồi phân công, xác nhận/từ chối lịch khám, theo dõi lộ trình điều trị nhiều buổi, cập nhật hồ sơ sức khỏe và tiền sử bệnh.
-- **Bác sĩ (Doctor):** Theo dõi lịch khám trong ngày, cập nhật tiến trình tiếp đón (Đã đến → Đang khám → Hoàn thành / Vắng mặt), tạo và theo dõi phác đồ điều trị, liên kết từng buổi điều trị với ca khám thực tế.
+- **Bác sĩ (Doctor):** Theo dõi lịch khám trong ngày, cập nhật tiến trình tiếp đón (Đã đến → Đang khám → Hoàn thành / Vắng mặt), sau buổi khám đầu tiên sẽ tạo lộ trình với ngày giờ chính xác cho toàn bộ các buổi tiếp theo và gửi thông báo cho bệnh nhân. Bác sĩ phụ trách tiếp tục theo dõi lộ trình sau khi ca đầu đã hoàn thành.
 - **Chủ phòng khám (Owner):** Giám sát toàn bộ hoạt động phòng khám, duyệt và phân công bác sĩ/phòng/giờ khám cho yêu cầu của bệnh nhân, quản lý nhân sự bác sĩ, quản lý hồ sơ bệnh nhân và giám sát lộ trình điều trị.
 
 ---
@@ -133,8 +133,8 @@ Không cần xóa database nếu đây là lần cài đặt đầu tiên.
 
 **Quá trình diễn ra tự động:**
 1. Hibernate (`ddl-auto=update`) tự tạo toàn bộ 12 bảng trong MySQL.
-2. `data.sql` nạp tài khoản mẫu, phòng khám, bác sĩ và ca làm việc.
-3. `DataInitializer` tự động quét và mã hóa BCrypt cho toàn bộ mật khẩu tài khoản ban đầu.
+2. `data.sql` nạp tài khoản mẫu, phòng khám, 5 bác sĩ và 2 ca/ngày trong 7 ngày liên tiếp cho từng bác sĩ.
+3. `DataInitializer` bổ sung idempotent các bác sĩ/ca mẫu còn thiếu trên database đang có, duy trì ca sáng và chiều cho 7 ngày tính từ ngày khởi động, sau đó mã hóa BCrypt cho mật khẩu ban đầu chưa được mã hóa.
 4. `LoTrinhMauDataInitializer` tự nạp 3 lộ trình điều trị nha khoa chuẩn (Niềng răng, Cấy ghép Implant, Điều trị tủy).
 
 Sau khi thấy dòng chữ `Started DemoPhongkhamNhakhoaApplication in ... seconds`, bạn có thể dừng server bằng `Ctrl + C`.
@@ -146,7 +146,7 @@ Chỉ cần chạy lệnh thông thường:
 .\mvnw.cmd spring-boot:run
 ```
 
-Do file `application.properties` đã cấu hình sẵn `spring.sql.init.mode=never`, Spring Boot sẽ không nạp lại `data.sql`, giúp bảo toàn dữ liệu thao tác và hoàn toàn không bao giờ bị lỗi `Duplicate entry`!
+Do file `application.properties` đã cấu hình sẵn `spring.sql.init.mode=never`, Spring Boot sẽ không nạp lại `data.sql`, giúp bảo toàn dữ liệu thao tác và tránh lỗi `Duplicate entry`. `DataInitializer` vẫn tự kiểm tra và chỉ bổ sung bác sĩ/ca mẫu còn thiếu.
 
 ---
 
@@ -172,11 +172,11 @@ Frontend sẵn sàng tại: `http://localhost:5173`
 
 ## 9. ĐỊA CHỈ TRUY CẬP VÀ CỔNG SỬ DỤNG
 
-| Ứng dụng | Địa chỉ URL | Ghi chú |
-|:---|:---|:---|
-| **Giao diện Web (Frontend)** | `http://localhost:5173` | Giao diện tương tác người dùng |
-| **Backend REST API** | `http://localhost:8080/api/v1` | Cung cấp toàn bộ API nghiệp vụ |
-| **Tài liệu API Auth** | `http://localhost:8080/api/v1/xac-thuc` | Endpoint xác thực JWT |
+| Ứng dụng                     | Địa chỉ URL                             | Ghi chú                        |
+|:-----------------------------|:----------------------------------------|:-------------------------------|
+| **Giao diện Web (Frontend)** | `http://localhost:5173`                 | Giao diện tương tác người dùng |
+| **Backend REST API**         | `http://localhost:8080/api/v1`          | Cung cấp toàn bộ API nghiệp vụ |
+| **Tài liệu API Auth**        | `http://localhost:8080/api/v1/xac-thuc` | Endpoint xác thực JWT          |
 
 ---
 
@@ -190,9 +190,17 @@ Sau khi khởi tạo dữ liệu mẫu, hệ thống cung cấp sẵn các tài 
 | **Bác sĩ – Nguyễn Minh Khang**        | `bs.nguyenminhkhang`    |   `NhaKhoa@123`   | Xem lịch khám, cập nhật tiến trình và lập lộ trình điều trị                  |
 | **Bác sĩ – Trần Thu Hằng**            | `bs.tranthuhang`        |   `NhaKhoa@123`   | Tài khoản bác sĩ dùng cho phân công lịch                                     |
 | **Bác sĩ – Lê Quốc Bảo**              | `bs.lequocbao`          |   `NhaKhoa@123`   | Tài khoản bác sĩ dùng cho phân công lịch                                     |
+| **Bác sĩ – Phạm Thị Lan**             | `bs.phamthilan`         |   `NhaKhoa@123`   | Tài khoản bác sĩ dùng cho phân công lịch và quản lý lộ trình                 |
+| **Bác sĩ – Võ Hoàng Long**            | `bs.vohoanglong`        |   `NhaKhoa@123`   | Tài khoản bác sĩ dùng cho phân công lịch và quản lý lộ trình                 |
 | **Bệnh nhân – Phạm Gia Hân**          | `bn.phamgiahan`         |   `NhaKhoa@123`   | Đặt lịch, xác nhận lịch và theo dõi điều trị                                 |
 
 *(Lưu ý: Bệnh nhân cũng có thể tự đăng ký tài khoản mới bằng nút **"Đăng ký"** ngay trên giao diện web).*
+
+### Ca làm việc mẫu
+
+- Mỗi bác sĩ `BS_001` đến `BS_005` có 2 ca/ngày: `CA_SANG` từ `08:00–12:00` và `CA_CHIEU` từ `13:00–17:00`.
+- Ca mẫu được bảo đảm cho 7 ngày liên tiếp, từ ngày backend khởi động đến 6 ngày tiếp theo.
+- Mỗi ca nhận tối đa 10 bệnh nhân. Chủ phòng khám `BS_CHU_001` không nằm trong 5 bác sĩ điều trị mẫu này.
 
 ---
 
@@ -236,17 +244,20 @@ Sau khi khởi tạo dữ liệu mẫu, hệ thống cung cấp sẵn các tài 
    - Bấm **"Bệnh nhân đã đến"** (Trạng thái: `Đã đến`).
    - Bấm **"Bắt đầu khám"** (Trạng thái: `Đang khám`).
    - Bấm **"Hoàn thành khám"** (Trạng thái: `Hoàn thành`).
-4. Tại ca khám đã hoàn thành, bấm **"Tạo lộ trình điều trị"**:
-   - Chọn lộ trình mẫu (ví dụ: *Niềng răng* hoặc *Cấy ghép Implant*) hoặc tự tạo mới.
-   - Nhập tên lộ trình, mô tả, chọn buổi điều trị và liên kết với ca khám hiện tại.
-   - Bấm lưu lộ trình.
+4. Vào tab **"Lộ trình điều trị"**, chọn bệnh nhân vừa khám và bấm **"Tạo lộ trình điều trị"**:
+   - Chọn đúng ca khám đầu tiên đã hoàn thành và chọn lộ trình mẫu.
+   - Nhập tên, ghi chú và ngày, giờ, thời lượng chính xác cho từng buổi tiếp theo.
+   - Bấm **"Tạo lộ trình và gửi thông báo"**. Buổi đầu được đánh dấu hoàn thành; các buổi tiếp theo được tạo thành lịch chính thức với trạng thái `DA_XAC_NHAN` cho cùng bác sĩ và phòng khám.
+5. Hệ thống từ chối nếu thiếu lịch của một buổi, ngày giờ không tăng dần, nằm trong quá khứ hoặc trùng lịch của bác sĩ, phòng hay bệnh nhân. Một ca khám đầu tiên cũng không thể dùng cho hai lộ trình.
+6. Sau khi tạo thành công, bác sĩ được phân công vẫn xem và quản lý lộ trình. Bác sĩ khác không được phân công sẽ nhận `403 Forbidden`; chủ phòng khám vẫn có toàn quyền xem và chỉnh sửa các phần đủ điều kiện.
 
 ### Luồng 4: Bệnh nhân theo dõi tiến độ lộ trình điều trị
 1. Đăng nhập Bệnh nhân (`bn.phamgiahan`).
 2. Vào tab **"Lộ trình điều trị"**.
 3. Xem thẻ tóm tắt: Tên lộ trình, Bác sĩ điều trị chính, thanh % tiến độ hoàn thành.
-4. Xem danh sách chi tiết các buổi điều trị (Buổi đã hoàn thành, buổi đã lên lịch, buổi tiếp theo).
-5. Dữ liệu đồng bộ trực tiếp từ kết quả thao tác của Bác sĩ ở Luồng 3.
+4. Xem ngày, giờ, bác sĩ và phòng khám chính xác của từng buổi trong danh sách chi tiết.
+5. Vào **"Cuộc hẹn & Lịch khám"** để thấy các buổi tiếp theo trong **"Lịch khám của tôi"**. Các lịch do bác sĩ tạo từ lộ trình đã được xác nhận sẵn; bệnh nhân chỉ cần theo dõi và đến khám đúng hẹn.
+6. Kiểm tra thông báo **"Bác sĩ đã lập lộ trình điều trị"** vừa được hệ thống gửi tự động.
 
 ---
 
@@ -271,6 +282,7 @@ Hệ thống cung cấp tính năng hủy yêu cầu an toàn dành riêng cho B
 - **Quản lý Bác sĩ:** Xem danh sách đội ngũ, trạng thái hoạt động, tạo tài khoản bác sĩ mới.
 - **Quản lý Bệnh nhân:** Tra cứu hồ sơ bệnh nhân, xem thông tin liên hệ, tiền sử bệnh án và dị ứng thuốc.
 - **Giám sát lộ trình điều trị:** Theo dõi tiến độ điều trị của tất cả bệnh nhân tại phòng khám.
+- **Chỉnh sửa lộ trình điều trị:** Thêm, sửa hoặc bỏ các buổi đủ điều kiện trong mọi lộ trình; quyền này tồn tại song song với quyền của bác sĩ được phân công.
 
 *(Lưu ý minh bạch: Các module Doanh thu, Hóa đơn và Thanh toán online đang ở giai đoạn thiết kế, chưa nằm trong phạm vi phiên bản này).*
 

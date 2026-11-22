@@ -4,6 +4,8 @@ package com.example.clinic.demo_phongkham_nhakhoa.dto.response;
 import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiBuoiDieuTri;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class BuoiDieuTriResponse {
 
@@ -47,6 +49,12 @@ public class BuoiDieuTriResponse {
     // Null neu buoi chua duoc len lich
     private String maLichKham;
 
+    private LocalDate ngayKham;
+    private LocalTime gioBatDau;
+    private LocalTime gioKetThuc;
+    private String tenBacSi;
+    private String tenPhong;
+
     // ==================================================
     // CONSTRUCTOR CU - GIU NGUYEN 14 THAM SO
     // ==================================================
@@ -82,6 +90,11 @@ public class BuoiDieuTriResponse {
                 thoiGianTao,
                 thoiGianCapNhat,
                 version,
+                null,
+                null,
+                null,
+                null,
+                null,
                 null);
     }
 
@@ -107,6 +120,35 @@ public class BuoiDieuTriResponse {
             Long version,
             String maLichKham) {
 
+        this(
+                maBuoiDieuTri, maLoTrinhDieuTri, soThuTu, tenBuoi, noiDung,
+                khoangCachMin, khoangCachMax, ghiChu, trangThai, buoiBoSung,
+                lyDoBo, thoiGianTao, thoiGianCapNhat, version, maLichKham,
+                null, null, null, null, null);
+    }
+
+    public BuoiDieuTriResponse(
+            String maBuoiDieuTri,
+            String maLoTrinhDieuTri,
+            int soThuTu,
+            String tenBuoi,
+            String noiDung,
+            Integer khoangCachMin,
+            Integer khoangCachMax,
+            String ghiChu,
+            TrangThaiBuoiDieuTri trangThai,
+            boolean buoiBoSung,
+            String lyDoBo,
+            LocalDateTime thoiGianTao,
+            LocalDateTime thoiGianCapNhat,
+            Long version,
+            String maLichKham,
+            LocalDate ngayKham,
+            LocalTime gioBatDau,
+            LocalTime gioKetThuc,
+            String tenBacSi,
+            String tenPhong) {
+
         this.maBuoiDieuTri = maBuoiDieuTri;
         this.maLoTrinhDieuTri = maLoTrinhDieuTri;
         this.soThuTu = soThuTu;
@@ -122,6 +164,11 @@ public class BuoiDieuTriResponse {
         this.thoiGianCapNhat = thoiGianCapNhat;
         this.version = version;
         this.maLichKham = maLichKham;
+        this.ngayKham = ngayKham;
+        this.gioBatDau = gioBatDau;
+        this.gioKetThuc = gioKetThuc;
+        this.tenBacSi = tenBacSi;
+        this.tenPhong = tenPhong;
     }
 
     // ==================================================
@@ -191,4 +238,10 @@ public class BuoiDieuTriResponse {
     public String getMaLichKham() {
         return maLichKham;
     }
+
+    public LocalDate getNgayKham() { return ngayKham; }
+    public LocalTime getGioBatDau() { return gioBatDau; }
+    public LocalTime getGioKetThuc() { return gioKetThuc; }
+    public String getTenBacSi() { return tenBacSi; }
+    public String getTenPhong() { return tenPhong; }
 }

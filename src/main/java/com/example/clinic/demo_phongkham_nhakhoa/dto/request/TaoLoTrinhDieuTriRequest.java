@@ -3,6 +3,9 @@ package com.example.clinic.demo_phongkham_nhakhoa.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
+
+import java.util.List;
 
 public class TaoLoTrinhDieuTriRequest {
 
@@ -21,6 +24,11 @@ public class TaoLoTrinhDieuTriRequest {
     // Ghi chu theo tinh trang benh nhan
     @Size(max = 2000, message = "Ghi chu khong duoc qua 2000 ky tu")
     private String ghiChu;
+
+    private String maLichKhamBanDau;
+
+    @Valid
+    private List<LichBuoiDieuTriRequest> lichCacBuoiTiepTheo;
 
     // Constructor cho Jackson
     public TaoLoTrinhDieuTriRequest() {
@@ -44,6 +52,14 @@ public class TaoLoTrinhDieuTriRequest {
         return ghiChu;
     }
 
+    public String getMaLichKhamBanDau() {
+        return maLichKhamBanDau;
+    }
+
+    public List<LichBuoiDieuTriRequest> getLichCacBuoiTiepTheo() {
+        return lichCacBuoiTiepTheo;
+    }
+
     // SETTERS
 
     public void setMaBenhNhan(String maBenhNhan) {
@@ -60,5 +76,13 @@ public class TaoLoTrinhDieuTriRequest {
 
     public void setGhiChu(String ghiChu) {
         this.ghiChu = ghiChu;
+    }
+
+    public void setMaLichKhamBanDau(String maLichKhamBanDau) {
+        this.maLichKhamBanDau = maLichKhamBanDau;
+    }
+
+    public void setLichCacBuoiTiepTheo(List<LichBuoiDieuTriRequest> lichCacBuoiTiepTheo) {
+        this.lichCacBuoiTiepTheo = lichCacBuoiTiepTheo;
     }
 }
