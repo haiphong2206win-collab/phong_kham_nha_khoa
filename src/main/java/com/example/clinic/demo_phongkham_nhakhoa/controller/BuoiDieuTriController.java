@@ -48,7 +48,7 @@ public class BuoiDieuTriController {
                 .body(response);
     }
 
-    // 2. CAP NHAT NOI DUNG BUOI DIEU TRI
+    // 2. CAP NHAT NOI DUNG VA LICH CUA BUOI DIEU TRI SAP TOI
 
     @PutMapping("/{maLoTrinhDieuTri}/buoi/{maBuoiDieuTri}")
     @PreAuthorize("hasAnyRole('BAC_SI', 'CHU_PHONG_KHAM')")

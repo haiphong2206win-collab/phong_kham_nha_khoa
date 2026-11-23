@@ -851,6 +851,12 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
               <div className="relative pl-6 space-y-3 before:absolute before:left-2.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-200 max-h-[600px] overflow-y-auto pr-1">
                 {patientSessions.map((session) => {
                   const statusInfo = TRANG_THAI_BUOI_MAP[session.trangThai];
+                  const isUpcomingScheduledSession = session.trangThai === 'DA_LEN_LICH'
+                    && !!session.ngayKham
+                    && !!session.gioBatDau
+                    && new Date(`${session.ngayKham}T${session.gioBatDau}`).getTime() > Date.now();
+                  const canEditSession = session.trangThai === 'CHUA_LEN_LICH'
+                    || isUpcomingScheduledSession;
                   return (
                     <div key={session.maBuoiDieuTri} className="relative group">
                       <div className="absolute -left-6 top-1.5 h-5 w-5 rounded-full bg-teal-50 border-2 border-[#169C89] flex items-center justify-center text-[10px] font-bold text-[#169C89]">
@@ -887,7 +893,7 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
                             <span>{session.ghiChu}</span>
                           </div>
                         )}
-                        {session.trangThai === 'CHUA_LEN_LICH' && (
+                        {canEditSession && (
                           <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-end gap-2">
                             <button
                               type="button"
@@ -901,18 +907,20 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
                               <Pencil className="h-3 w-3" />
                               Chỉnh sửa
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setActionMessage(null);
-                                setActionSession(session);
-                                setIsSkipSessionOpen(true);
-                              }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-rose-200 text-rose-600 text-[10px] font-bold hover:bg-rose-50 transition-colors"
-                            >
-                              <Ban className="h-3 w-3" />
-                              Bỏ buổi
-                            </button>
+                            {session.trangThai === 'CHUA_LEN_LICH' && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActionMessage(null);
+                                  setActionSession(session);
+                                  setIsSkipSessionOpen(true);
+                                }}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-rose-200 text-rose-600 text-[10px] font-bold hover:bg-rose-50 transition-colors"
+                              >
+                                <Ban className="h-3 w-3" />
+                                Bỏ buổi
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
@@ -975,6 +983,7 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
           onSuccess={(message) => {
             setActionMessage(message);
             loadPatientSessions(selectedPlan.maLoTrinhDieuTri);
+            onRefreshSchedule?.();
           }}
           maLoTrinh={selectedPlan.maLoTrinhDieuTri}
           session={actionSession}
