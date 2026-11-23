@@ -186,6 +186,11 @@ export interface BuoiDieuTriResponse {
   thoiGianCapNhat?: string;
   version?: number;
   maLichKham?: string | null;
+  ngayKham?: string | null;
+  gioBatDau?: string | null;
+  gioKetThuc?: string | null;
+  tenBacSi?: string | null;
+  tenPhong?: string | null;
 }
 
 export interface LienKetBuoiVoiLichRequest {
@@ -278,6 +283,15 @@ export interface TaoLoTrinhDieuTriRequest {
   maLoTrinhMau: string;
   tenLoTrinh?: string;
   ghiChu?: string;
+  maLichKhamBanDau: string;
+  lichCacBuoiTiepTheo: LichBuoiDieuTriRequest[];
+}
+
+export interface LichBuoiDieuTriRequest {
+  soThuTu: number;
+  ngayKham: string;
+  gioBatDau: string;
+  thoiLuongPhut: number;
 }
 
 export type TreatmentPlanTab = 'patient-plans' | 'template-plans';

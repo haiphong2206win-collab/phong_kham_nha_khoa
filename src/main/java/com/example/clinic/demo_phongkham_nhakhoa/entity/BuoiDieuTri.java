@@ -281,6 +281,29 @@ public class BuoiDieuTri {
         this.trangThai = TrangThaiBuoiDieuTri.DA_LEN_LICH;
     }
 
+    // Gắn ca khám đã hoàn thành làm buổi đầu tiên của lộ trình mới.
+    public void ganLichKhamBanDauDaHoanThanh(LichKham lichKhamBanDau) {
+        if (lichKhamBanDau == null
+                || lichKhamBanDau.getTrangThai() != TrangThaiDatLich.HOAN_THANH) {
+            throw new IllegalArgumentException("Lịch khám ban đầu phải ở trạng thái hoàn thành");
+        }
+
+        if (this.lichKham != null || this.soThuTu != 1) {
+            throw new IllegalStateException("Chỉ buổi đầu tiên chưa liên kết mới được gắn lịch khám ban đầu");
+        }
+
+        if (loTrinhDieuTri == null
+                || loTrinhDieuTri.getBenhNhan() == null
+                || lichKhamBanDau.getBenhNhan() == null
+                || !loTrinhDieuTri.getBenhNhan().getMaBenhNhan()
+                        .equals(lichKhamBanDau.getBenhNhan().getMaBenhNhan())) {
+            throw new IllegalArgumentException("Bệnh nhân của lịch khám không trùng với lộ trình");
+        }
+
+        this.lichKham = lichKhamBanDau;
+        this.trangThai = TrangThaiBuoiDieuTri.HOAN_THANH;
+    }
+
     // ==================================================
     // GO LIEN KET LICH KHAM
     // CAP NHAT: PHAN BIET HUY LICH VA VANG MAT

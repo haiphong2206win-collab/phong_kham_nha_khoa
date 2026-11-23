@@ -88,7 +88,7 @@ export const OwnerHeader: React.FC<OwnerHeaderProps> = ({
             <div className="px-4 py-2 border-b border-gray-100">
               <p className="text-xs text-gray-500">Tài khoản quản trị</p>
               <p className="text-sm font-bold text-gray-800 truncate">
-                {session.user?.tenDangNhap || 'chu_demo'}
+                {session.user?.tenDangNhap || 'Chủ phòng khám'}
               </p>
               <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E8F8F5] text-[#169C89] border border-[#BDE8E0]">
                 CHU_PHONG_KHAM

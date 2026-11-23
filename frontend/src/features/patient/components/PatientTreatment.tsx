@@ -683,6 +683,22 @@ export const PatientTreatment: React.FC<PatientTreatmentProps> = ({
                           </p>
                         )}
 
+                        {session.ngayKham && session.gioBatDau && (
+                          <div className="mt-2 p-2.5 rounded-xl bg-white border border-teal-200 text-[11px] text-[#0D6E60]">
+                            <div className="flex items-center gap-1.5 font-bold">
+                              <CalendarCheck className="h-3.5 w-3.5" />
+                              <span>
+                                Ngày khám: {session.ngayKham.split('-').reverse().join('/')} •{' '}
+                                {session.gioBatDau.slice(0, 5)}–{session.gioKetThuc?.slice(0, 5)}
+                              </span>
+                            </div>
+                            <div className="mt-1 text-[#527771]">
+                              {session.tenBacSi ? `Bác sĩ ${session.tenBacSi}` : ''}
+                              {session.tenPhong ? ` • ${session.tenPhong}` : ''}
+                            </div>
+                          </div>
+                        )}
+
                         {session.khoangCachMin != null && session.khoangCachMax != null && (
                           <p className="text-[11px] text-[#7A9A93] flex items-center gap-1 pt-0.5">
                             <Clock className="h-3 w-3 shrink-0" />
@@ -713,7 +729,7 @@ export const PatientTreatment: React.FC<PatientTreatmentProps> = ({
                 <div className="flex items-start gap-2">
                   <Info className="h-4 w-4 text-[#169C89] shrink-0 mt-0.5" />
                   <p className="text-[#527771] leading-relaxed">
-                    Lịch hẹn và thời gian thực tế do phòng khám xác nhận.
+                    Ngày giờ trong lộ trình đã được bác sĩ lập thành lịch khám chính thức. Bạn có thể xem lại đồng thời tại mục Lịch khám của tôi.
                   </p>
                 </div>
               </div>

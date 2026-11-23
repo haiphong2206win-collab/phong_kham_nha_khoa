@@ -37,7 +37,7 @@ export const OwnerRejectModal: React.FC<OwnerRejectModalProps> = ({
 
     try {
       const payload: TuChoiRequest = {
-        maChuPhongKham: currentOwnerDoctorId || 'BS_CHU_DEMO',
+        maChuPhongKham: currentOwnerDoctorId || 'BS_CHU_001',
         maYeuCau: request.maYeuCau,
         lyDo: reason.trim(),
       };

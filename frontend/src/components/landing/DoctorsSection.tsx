@@ -15,8 +15,8 @@ interface DoctorItem {
 
 const DOCTORS: DoctorItem[] = [
   {
-    id: 'dr-an',
-    name: 'BS. Nguyễn Văn An',
+    id: 'bs-001',
+    name: 'BS. Nguyễn Minh Khang',
     title: 'Bác sĩ Chuyên khoa Răng Hàm Mặt',
     specialty: 'Chuyên khoa Chỉnh nha & Niềng răng',
     bio: 'Định hướng nghiên cứu chuyên sâu về các kỹ thuật nắn chỉnh răng lệch lạc, kiểm soát lực kéo sinh lý an toàn và ứng dụng khay niềng trong suốt.',
@@ -24,8 +24,8 @@ const DOCTORS: DoctorItem[] = [
     focusAreas: ['Chỉnh nha mắc cài tự buộc', 'Khay niềng trong suốt', 'Chỉnh hình can thiệp sớm'],
   },
   {
-    id: 'dr-chi',
-    name: 'BS. Trần Mai Chi',
+    id: 'bs-002',
+    name: 'BS. Trần Thu Hằng',
     title: 'Bác sĩ Chuyên khoa Răng Hàm Mặt',
     specialty: 'Chuyên khoa Cấy ghép Implant & Nha chu',
     bio: 'Tập trung vào phẫu thuật phục hồi răng mất bằng trụ Titanium sinh học, kỹ thuật ghép xương định vị 3D và điều trị các bệnh lý mô quanh răng.',
@@ -33,22 +33,13 @@ const DOCTORS: DoctorItem[] = [
     focusAreas: ['Cấy ghép Implant kỹ thuật số', 'Phẫu thuật nha chu', 'Phục hình All-on-X'],
   },
   {
-    id: 'dr-long',
-    name: 'BS. Lê Hoàng Long',
+    id: 'bs-003',
+    name: 'BS. Lê Quốc Bảo',
     title: 'Bác sĩ Chuyên khoa Răng Hàm Mặt',
     specialty: 'Chuyên khoa Phục hình Răng sứ Thẩm mỹ',
     bio: 'Có kinh nghiệm lâm sàng trong thiết kế nụ cười, phục hình răng sứ bảo tồn tối đa tủy răng thật và phục hình khớp cắn chức năng.',
     avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80',
     focusAreas: ['Dán sứ Veneer thẩm mỹ', 'Mão toàn sứ cao cấp', 'Tái tạo thẩm mỹ nụ cười'],
-  },
-  {
-    id: 'dr-hang',
-    name: 'BS. Phạm Thúy Hằng',
-    title: 'Bác sĩ Chuyên khoa Răng Hàm Mặt',
-    specialty: 'Chuyên khoa Nha khoa Bảo tồn & Tủy răng',
-    bio: 'Chuyên tâm vào các thủ thuật nội nha dưới kính phóng đại, xử lý các ca tủy phức tạp, nhổ răng khôn Piezotome và chăm sóc răng trẻ em.',
-    avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=600&q=80',
-    focusAreas: ['Điều trị tủy vi phẫu', 'Nhổ răng khôn siêu âm', 'Nha khoa dự phòng tổng quát'],
   },
 ];
 
@@ -117,7 +108,7 @@ export const DoctorsSection: React.FC<DoctorsSectionProps> = ({
         <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-dental-border text-[11px] font-bold text-dental-accent shadow-xs">
             <Info className="h-3.5 w-3.5" />
-            <span>Dữ liệu minh họa phục vụ demo giao diện</span>
+            <span>Đội ngũ chuyên môn của phòng khám</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-dental-text tracking-tight">
             Đội ngũ bác sĩ răng hàm mặt tận tâm
@@ -189,13 +180,6 @@ export const DoctorsSection: React.FC<DoctorsSectionProps> = ({
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Demo Disclaimer notice banner */}
-        <div className="mt-10 p-3.5 rounded-2xl bg-white border border-dental-border text-center max-w-xl mx-auto">
-          <p className="text-[11px] text-dental-muted">
-            * Danh sách bác sĩ trên hiện là cấu hình minh họa theo yêu cầu kiến trúc. Thông tin chính thức của đội ngũ bác sĩ phòng khám sẽ được cập nhật đồng bộ từ hệ thống quản trị sau.
-          </p>
         </div>
 
       </div>

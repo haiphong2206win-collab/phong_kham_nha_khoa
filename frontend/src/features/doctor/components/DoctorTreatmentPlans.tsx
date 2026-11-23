@@ -13,7 +13,9 @@ import {
   Info,
   Loader2,
   Sparkles,
-  ShieldAlert
+  ShieldAlert,
+  Pencil,
+  Ban
 } from 'lucide-react';
 import type {
   LichKhamBacSiResponse,
@@ -26,6 +28,9 @@ import type {
 import { TRANG_THAI_LO_TRINH_MAP, TRANG_THAI_BUOI_MAP } from '@/types/doctor';
 import { doctorService } from '@/services/doctor.service';
 import { DoctorCreatePlanModal } from './DoctorCreatePlanModal';
+import { OwnerAddSessionModal } from '@/features/owner/components/OwnerAddSessionModal';
+import { OwnerEditSessionModal } from '@/features/owner/components/OwnerEditSessionModal';
+import { OwnerSkipSessionModal } from '@/features/owner/components/OwnerSkipSessionModal';
 
 interface DoctorTreatmentPlansProps {
   schedule: LichKhamBacSiResponse[];
@@ -72,6 +77,11 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
 
   // Create plan modal state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
+  const [isAddSessionOpen, setIsAddSessionOpen] = useState<boolean>(false);
+  const [isEditSessionOpen, setIsEditSessionOpen] = useState<boolean>(false);
+  const [isSkipSessionOpen, setIsSkipSessionOpen] = useState<boolean>(false);
+  const [actionSession, setActionSession] = useState<BuoiDieuTriResponse | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   // Test hook to allow QA verification of locked create plan modal
   useEffect(() => {
@@ -88,16 +98,18 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
       const data = await doctorService.getTemplatePlans();
       const valid = Array.isArray(data) ? data : [];
       setTemplatePlans(valid);
-      if (valid.length > 0 && !selectedTemplate) {
-        setSelectedTemplate(valid[0]);
-      }
+      setSelectedTemplate((current) => {
+        if (valid.length === 0) return null;
+        if (!current) return valid[0];
+        return valid.find(item => item.maLoTrinh === current.maLoTrinh) ?? valid[0];
+      });
     } catch (err: any) {
       console.error('Lỗi khi tải phác đồ mẫu:', err);
       setTemplatesError(err.message || 'Không thể tải danh sách phác đồ mẫu.');
     } finally {
       setTemplatesLoading(false);
     }
-  }, [selectedTemplate]);
+  }, []);
 
   useEffect(() => {
     loadTemplatePlans();
@@ -791,10 +803,31 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
               <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
                 CHI TIẾT LỘ TRÌNH
               </span>
-              <span className="text-[10px] font-bold text-slate-400">
-                {selectedPlan ? `${patientSessions.length} buổi` : 'Phân hệ lâm sàng'}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-slate-400">
+                  {selectedPlan ? `${patientSessions.length} buổi` : 'Phân hệ lâm sàng'}
+                </span>
+                {selectedPlan && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActionMessage(null);
+                      setIsAddSessionOpen(true);
+                    }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#169C89] hover:bg-[#0F6F61] text-white text-[10px] font-bold transition-colors"
+                  >
+                    <Plus className="h-3 w-3" />
+                    Thêm buổi
+                  </button>
+                )}
+              </div>
             </div>
+
+            {actionMessage && (
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] font-medium text-emerald-800">
+                {actionMessage}
+              </div>
+            )}
 
             {!selectedPlan ? (
               <div className="p-8 text-center text-slate-400 text-xs">
@@ -836,8 +869,11 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
                           {session.noiDung}
                         </p>
                         {session.maLichKham && (
-                          <div className="mt-2 text-[10px] font-mono text-[#0D6E60] bg-teal-50 px-2 py-0.5 rounded border border-teal-200 inline-block">
-                            Đã liên kết lịch: {session.maLichKham.slice(0, 8)}...
+                          <div className="mt-2 text-[10px] text-[#0D6E60] bg-teal-50 px-2 py-1 rounded border border-teal-200 inline-block">
+                            {session.ngayKham && session.gioBatDau
+                              ? `Lịch khám: ${session.ngayKham} • ${session.gioBatDau.slice(0, 5)}–${session.gioKetThuc?.slice(0, 5)}`
+                              : `Đã liên kết lịch: ${session.maLichKham.slice(0, 8)}...`}
+                            {session.tenPhong ? ` • ${session.tenPhong}` : ''}
                           </div>
                         )}
                         {(session.khoangCachMin != null || session.khoangCachMax != null) && (
@@ -849,6 +885,34 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
                           <div className="mt-1.5 text-[11px] text-amber-700 bg-amber-50/60 p-2 rounded-lg border border-amber-200/60 flex items-start gap-1.5">
                             <Info className="h-3.5 w-3.5 shrink-0 mt-0.5 text-amber-600" />
                             <span>{session.ghiChu}</span>
+                          </div>
+                        )}
+                        {session.trangThai === 'CHUA_LEN_LICH' && (
+                          <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActionMessage(null);
+                                setActionSession(session);
+                                setIsEditSessionOpen(true);
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-teal-200 text-[#0F6F61] text-[10px] font-bold hover:bg-teal-50 transition-colors"
+                            >
+                              <Pencil className="h-3 w-3" />
+                              Chỉnh sửa
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActionMessage(null);
+                                setActionSession(session);
+                                setIsSkipSessionOpen(true);
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-rose-200 text-rose-600 text-[10px] font-bold hover:bg-rose-50 transition-colors"
+                            >
+                              <Ban className="h-3 w-3" />
+                              Bỏ buổi
+                            </button>
                           </div>
                         )}
                       </div>
@@ -874,12 +938,65 @@ export const DoctorTreatmentPlans: React.FC<DoctorTreatmentPlansProps> = ({
         onClose={() => setIsCreateModalOpen(false)}
         patient={activePatient}
         templatePlans={templatePlans}
+        schedule={schedule}
         onSuccess={() => {
           if (selectedPatientId) {
             loadPatientPlans(selectedPatientId);
           }
+          onRefreshSchedule?.();
         }}
       />
+
+      {selectedPlan && (
+        <OwnerAddSessionModal
+          isOpen={isAddSessionOpen}
+          onClose={() => setIsAddSessionOpen(false)}
+          onSuccess={(message) => {
+            setActionMessage(message);
+            loadPatientSessions(selectedPlan.maLoTrinhDieuTri);
+            loadPatientPlans(selectedPlan.maBenhNhan);
+          }}
+          maLoTrinh={selectedPlan.maLoTrinhDieuTri}
+          nextSoThuTu={
+            (patientSessions.length > 0
+              ? Math.max(...patientSessions.map((session) => session.soThuTu))
+              : 0) + 1
+          }
+        />
+      )}
+
+      {selectedPlan && actionSession && (
+        <OwnerEditSessionModal
+          isOpen={isEditSessionOpen}
+          onClose={() => {
+            setIsEditSessionOpen(false);
+            setActionSession(null);
+          }}
+          onSuccess={(message) => {
+            setActionMessage(message);
+            loadPatientSessions(selectedPlan.maLoTrinhDieuTri);
+          }}
+          maLoTrinh={selectedPlan.maLoTrinhDieuTri}
+          session={actionSession}
+        />
+      )}
+
+      {selectedPlan && actionSession && (
+        <OwnerSkipSessionModal
+          isOpen={isSkipSessionOpen}
+          onClose={() => {
+            setIsSkipSessionOpen(false);
+            setActionSession(null);
+          }}
+          onSuccess={(message) => {
+            setActionMessage(message);
+            loadPatientSessions(selectedPlan.maLoTrinhDieuTri);
+            loadPatientPlans(selectedPlan.maBenhNhan);
+          }}
+          maLoTrinh={selectedPlan.maLoTrinhDieuTri}
+          session={actionSession}
+        />
+      )}
     </div>
   );
 };

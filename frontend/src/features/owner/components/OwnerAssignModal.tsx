@@ -82,7 +82,7 @@ export const OwnerAssignModal: React.FC<OwnerAssignModalProps> = ({
 
     try {
       const payload: PhanCongRequest = {
-        maChuPhongKham: currentOwnerDoctorId || 'BS_CHU_DEMO',
+        maChuPhongKham: currentOwnerDoctorId || 'BS_CHU_001',
         maYeuCau: request.maYeuCau,
         maBacSi: selectedDoctorId,
         maPhong: selectedRoomId,

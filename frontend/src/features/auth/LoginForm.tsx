@@ -60,8 +60,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     }
   };
 
-  // Quick fill helper for QA/Reviewers in DEV mode (username only, no hardcoded password)
-  const fillDemoAccount = (username: string) => {
+  // Quick fill helper for local development (username only, no hardcoded password)
+  const fillSeedAccount = (username: string) => {
     setTenDangNhap(username);
     setMatKhau('');
     setErrorMessage(null);
@@ -128,7 +128,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         </div>
       </form>
 
-      {/* Demo Account Presets for Reviewers & Testing - DEV ONLY */}
+      {/* Initial account presets for local development */}
       {import.meta.env.DEV && (
         <div className="pt-4 border-t border-dental-border/60">
           <p className="text-[11px] font-semibold text-dental-muted mb-2 uppercase tracking-wider">
@@ -137,7 +137,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
-              onClick={() => fillDemoAccount('bs_demo')}
+              onClick={() => fillSeedAccount('bs.nguyenminhkhang')}
               className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-dental-border bg-dental-bg hover:bg-dental-mint/40 text-[11px] text-dental-text font-medium transition-colors"
               title="Điền tên đăng nhập Bác sĩ"
             >
@@ -147,7 +147,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
             <button
               type="button"
-              onClick={() => fillDemoAccount('bn_demo')}
+              onClick={() => fillSeedAccount('bn.phamgiahan')}
               className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-dental-border bg-dental-bg hover:bg-dental-mint/40 text-[11px] text-dental-text font-medium transition-colors"
               title="Điền tên đăng nhập Bệnh nhân"
             >
@@ -157,7 +157,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
             <button
               type="button"
-              onClick={() => fillDemoAccount('chu_demo')}
+              onClick={() => fillSeedAccount('quanly.nguyenhoangnam')}
               className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-dental-border bg-dental-bg hover:bg-dental-mint/40 text-[11px] text-dental-text font-medium transition-colors"
               title="Điền tên đăng nhập Quản trị"
             >

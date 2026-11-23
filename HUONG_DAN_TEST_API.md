@@ -20,19 +20,25 @@ Tài liệu này dành cho **test thủ công bằng extension Talend API Tester
 
 > Lưu ý: URL trong tài liệu dựa theo mapping của các Controller trong project ZIP mới nhất. Nếu bạn đã sửa mapping sau khi gửi ZIP, hãy ưu tiên URL đang có trong code hiện tại.
 
-## 2. Tài khoản dữ liệu demo
+## 2. Tài khoản dữ liệu khởi tạo
 
 Theo `data.sql` trong project:
 
-| Vai trò        | Tên đăng nhập   | Mật khẩu   | Mã hồ sơ      |
-|----------------|-----------------|------------|---------------|
-| Chủ phòng khám | `chu_demo`      | `password` | `BS_CHU_DEMO` |
-| Bác sĩ         | `bacsi_demo`    | `password` | `BS_DEMO`     |
-| Bác sĩ 2       | `bacsi_demo2`   | `password` | `BS_DEMO2`    |
-| Bác sĩ 3       | `bacsi_demo3`   | `password` | `BS_DEMO3`    |
-| Bệnh nhân      | `benhnhan_demo` | `password` | `BN_DEMO`     |
+| Vai trò                           | Tên đăng nhập             | Mật khẩu      | Mã hồ sơ       |
+|-----------------------------------|---------------------------|---------------|----------------|
+| Chủ phòng khám – Nguyễn Hoàng Nam | `quanly.nguyenhoangnam`   | `NhaKhoa@123` | `BS_CHU_001`   |
+| Bác sĩ – Nguyễn Minh Khang        | `bs.nguyenminhkhang`      | `NhaKhoa@123` | `BS_001`       |
+| Bác sĩ – Trần Thu Hằng            | `bs.tranthuhang`          | `NhaKhoa@123` | `BS_002`       |
+| Bác sĩ – Lê Quốc Bảo              | `bs.lequocbao`            | `NhaKhoa@123` | `BS_003`       |
+| Bác sĩ – Phạm Thị Lan             | `bs.phamthilan`           | `NhaKhoa@123` | `BS_004`       |
+| Bác sĩ – Võ Hoàng Long            | `bs.vohoanglong`          | `NhaKhoa@123` | `BS_005`       |
+| Bệnh nhân – Phạm Gia Hân          | `bn.phamgiahan`           | `NhaKhoa@123` | `BN_001`       |
 
-Nếu đăng nhập bằng một tài khoản báo sai mật khẩu, hãy kiểm tra lại dữ liệu `data.sql` và BCrypt hash đang dùng. Không cần tạo lại tài khoản nếu dữ liệu demo đã tồn tại.
+Mỗi bác sĩ `BS_001`–`BS_005` có ca sáng `08:00–12:00` và ca chiều `13:00–17:00` trong 7 ngày liên tiếp, tính từ ngày backend khởi động đến 6 ngày tiếp theo. Mỗi ca nhận tối đa 10 bệnh nhân.
+
+Nếu đăng nhập báo sai mật khẩu, hãy kiểm tra dữ liệu `data.sql` và bảo đảm đã chạy bước nạp dữ liệu ban đầu. `DataInitializer` bổ sung idempotent bác sĩ/ca mẫu còn thiếu và tự mã hóa mật khẩu chưa mã hóa bằng BCrypt.
+
+Nếu database được tạo từ phiên bản cũ và vẫn còn tài khoản có hậu tố `DEMO`, hãy sao lưu dữ liệu cần giữ, tạo lại `clinic_db`, rồi chạy backend một lần với `spring.sql.init.mode=always` theo README. Việc tạo lại database sẽ xóa dữ liệu cũ.
 
 ## 3. Bước đầu tiên: đăng nhập lấy JWT
 
@@ -45,8 +51,8 @@ Nếu đăng nhập bằng một tài khoản báo sai mật khẩu, hãy kiểm
 
 ```json
 {
-  "tenDangNhap": "benhnhan_demo",
-  "matKhau": "password"
+  "tenDangNhap": "bn.phamgiahan",
+  "matKhau": "NhaKhoa@123"
 }
 ```
 
@@ -58,8 +64,8 @@ Gửi request đăng nhập tương tự nhưng đổi body thành:
 
 ```json
 {
-  "tenDangNhap": "chu_demo",
-  "matKhau": "password"
+  "tenDangNhap": "quanly.nguyenhoangnam",
+  "matKhau": "NhaKhoa@123"
 }
 ```
 
@@ -69,8 +75,8 @@ Sao chép `token` riêng cho chủ phòng khám.
 
 ```json
 {
-  "tenDangNhap": "bacsi_demo",
-  "matKhau": "password"
+  "tenDangNhap": "bs.nguyenminhkhang",
+  "matKhau": "NhaKhoa@123"
 }
 ```
 
@@ -82,8 +88,8 @@ Response đăng nhập dự kiến có các trường tương tự:
 {
   "token": "<JWT_THUC_TE_TRA_VE>",
   "loaiToken": "Bearer",
-  "maTaiKhoan": "TK_BN_DEMO",
-  "tenDangNhap": "benhnhan_demo",
+  "maTaiKhoan": "TK_BN_001",
+  "tenDangNhap": "bn.phamgiahan",
   "vaiTro": "BENH_NHAN"
 }
 ```
@@ -99,7 +105,7 @@ Token là chuỗi thực tế do server sinh ra; ví dụ trên chỉ minh họa
 - **Authorization:** token bệnh nhân
 - **Body:** không cần
 
-Kiểm tra response là hồ sơ của `BN_DEMO` và không trả về mật khẩu hay JWT của tài khoản.
+Kiểm tra response là hồ sơ của `BN_001` và không trả về mật khẩu hay JWT của tài khoản.
 
 ### Bước 2 — Bệnh nhân cập nhật hồ sơ
 
@@ -111,14 +117,14 @@ Kiểm tra response là hồ sơ của `BN_DEMO` và không trả về mật kh�
 
 ```json
 {
-  "hoTen": "Le Minh Duc",
-  "ngaySinh": "2004-05-15",
-  "gioiTinh": "NAM",
-  "soDienThoai": "0900000005",
-  "email": "benhnhan.demo@example.com",
-  "diaChi": "Ha Noi",
-  "tienSuBenh": "Chua ghi nhan",
-  "diUngThuoc": "Chua ghi nhan"
+  "hoTen": "Phạm Gia Hân",
+  "ngaySinh": "2001-08-18",
+  "gioiTinh": "NU",
+  "soDienThoai": "0902000001",
+  "email": "pham.gia.han@example.com",
+  "diaChi": "Quận Bình Thạnh, Thành phố Hồ Chí Minh",
+  "tienSuBenh": "Không ghi nhận bệnh nền",
+  "diUngThuoc": "Không ghi nhận dị ứng thuốc"
 }
 ```
 
@@ -134,16 +140,32 @@ Ngày sinh phải là ngày trong quá khứ; số điện thoại phải có 10
 
 ```json
 {
-  "ngayMongMuon": "2026-10-24",
+  "ngayMongMuon": "THAY_BANG_NGAY_MAI_YYYY-MM-DD",
   "caKham": "CA_SANG",
   "lyDoKham": "Kiem tra rang dau",
   "ghiChu": "Day la yeu cau dat lich de test"
 }
 ```
 
-`data.sql` tạo ca làm việc vào **ngày hôm sau**. Ví dụ trên dùng ngày `2026-10-24` vì bộ dữ liệu được chuẩn bị ngày `2026-10-23`. Nếu chạy vào ngày khác, hãy thay `ngayMongMuon` thành ngày mai theo máy của bạn, hoặc kiểm tra ngày thực tế trong dữ liệu.
+Hệ thống tạo ca làm việc cho **7 ngày liên tiếp**, từ ngày backend khởi động đến 6 ngày tiếp theo. Trước khi gửi request, thay `THAY_BANG_NGAY_MAI_YYYY-MM-DD` bằng một ngày nằm trong khoảng này; nên chọn ngày mai để thuận tiện test.
 
 Sau khi gửi thành công, sao chép trường `maYeuCau` trong response. Gọi bước tiếp theo bằng mã này. Trạng thái ban đầu thường là `CHO_PHAN_CONG`.
+
+Để kiểm thử hủy một yêu cầu còn chờ phân công:
+
+- **Method:** `PATCH`
+- **URL:** `http://localhost:8080/api/v1/yeu-cau-dat-lich/MA_YEU_CAU_THUC_TE/huy`
+- **Authorization:** token bệnh nhân sở hữu yêu cầu
+- **Header:** `Content-Type: application/json`
+- **Body tùy chọn:**
+
+```json
+{
+  "lyDo": "Bệnh nhân thay đổi kế hoạch"
+}
+```
+
+Chỉ yêu cầu ở trạng thái `CHO_PHAN_CONG` mới được hủy. Hãy tạo một yêu cầu khác nếu vẫn muốn tiếp tục luồng phân công bên dưới.
 
 ### Bước 4 — Chủ phòng khám xem tất cả yêu cầu
 
@@ -164,16 +186,16 @@ Tìm yêu cầu vừa tạo và ghi lại `maYeuCau`. Nếu không thấy, kiể
 
 ```json
 {
-  "maChuPhongKham": "BS_CHU_DEMO",
+  "maChuPhongKham": "BS_CHU_001",
   "maYeuCau": "THAY_BANG_MA_YEU_CAU_THUC_TE",
-  "maBacSi": "BS_DEMO2",
-  "maPhong": "P_DEMO2",
+  "maBacSi": "BS_002",
+  "maPhong": "PK_02",
   "gioBatDau": "08:30:00",
   "thoiLuongPhut": 30
 }
 ```
 
-Trước khi gửi, thay `THAY_BANG_MA_YEU_CAU_THUC_TE` bằng mã ở bước 3/4. Các mã demo trong `data.sql` là `BS_CHU_DEMO`, `BS_DEMO2`, `P_DEMO2`. Giờ bắt đầu phải nằm trong ca làm việc của bác sĩ vào đúng ngày yêu cầu; ví dụ `08:30:00` nằm trong ca sáng `08:00–12:00`. Nếu chọn ngày hoặc ca khác, cần có ca làm việc tương ứng.
+Trước khi gửi, thay `THAY_BANG_MA_YEU_CAU_THUC_TE` bằng mã ở bước 3/4. Các mã khởi tạo tương ứng là `BS_CHU_001`, `BS_002`, `PK_02`. Giờ bắt đầu phải nằm trong ca làm việc của bác sĩ vào đúng ngày yêu cầu; ví dụ `08:30:00` nằm trong ca sáng `08:00–12:00`. Nếu chọn ngày hoặc ca khác, cần có ca làm việc tương ứng.
 
 Nếu phân công thành công, ghi lại `maLich` từ response. Nếu response không chứa `maLich`, xem nội dung response để xác định mã lịch được tạo.
 
@@ -229,7 +251,7 @@ Nên tạo một yêu cầu mới nếu muốn test cả xác nhận và từ ch
 
 - **Method:** `GET`
 - **URL:** `http://localhost:8080/api/v1/bac-si/lich-kham`
-- **Authorization:** token của bác sĩ được phân công, ví dụ `bacsi_demo2`
+- **Authorization:** token của bác sĩ được phân công, ví dụ `bs.tranthuhang`
 - **Body:** không cần
 
 Tìm lịch vừa phân công và sao chép `maLich` nếu cần.
@@ -270,6 +292,146 @@ Các giá trị enum trong project gồm:
 
 Hãy cập nhật theo đúng quy trình nghiệp vụ và trạng thái hiện tại. Không phải trạng thái nào cũng hợp lệ ở mọi thời điểm.
 
+### Bước 11 — Bác sĩ xem các lộ trình mẫu và danh sách buổi
+
+- **Method:** `GET`
+- **URL:** `http://localhost:8080/api/v1/lo-trinh-mau`
+- **Authorization:** token bác sĩ
+
+Chọn một `maLoTrinh` trong response để tạo lộ trình riêng. Ba mã mẫu hiện tại là `NIENG_RANG`, `IMPLANT` và `DIEU_TRI_TUY`.
+
+Gọi thêm API sau để biết chính xác số buổi và thứ tự phải xếp lịch:
+
+- **Method:** `GET`
+- **URL:** `http://localhost:8080/api/v1/lo-trinh-mau/DIEU_TRI_TUY/buoi`
+- **Authorization:** token bác sĩ
+
+Ví dụ `DIEU_TRI_TUY` có 4 buổi, vì vậy request tạo lộ trình phải chứa lịch của đủ các buổi 2, 3 và 4. Buổi 1 chính là ca khám đầu tiên đã hoàn thành.
+
+### Bước 12 — Bác sĩ tạo lộ trình cho bệnh nhân được phân công
+
+- **Method:** `POST`
+- **URL:** `http://localhost:8080/api/v1/lo-trinh-dieu-tri`
+- **Authorization:** token đúng bác sĩ được phân công
+- **Header:** `Content-Type: application/json`
+- **Body mẫu:**
+
+```json
+{
+  "maBenhNhan": "BN_001",
+  "maLoTrinhMau": "DIEU_TRI_TUY",
+  "tenLoTrinh": "Lộ trình điều trị của Phạm Gia Hân",
+  "ghiChu": "Theo dõi bởi bác sĩ được phân công",
+  "maLichKhamBanDau": "THAY_BANG_MA_LICH_DA_HOAN_THANH",
+  "lichCacBuoiTiepTheo": [
+    {
+      "soThuTu": 2,
+      "ngayKham": "THAY_BANG_NGAY_TUONG_LAI_1_YYYY-MM-DD",
+      "gioBatDau": "09:00:00",
+      "thoiLuongPhut": 60
+    },
+    {
+      "soThuTu": 3,
+      "ngayKham": "THAY_BANG_NGAY_TUONG_LAI_2_YYYY-MM-DD",
+      "gioBatDau": "09:00:00",
+      "thoiLuongPhut": 60
+    },
+    {
+      "soThuTu": 4,
+      "ngayKham": "THAY_BANG_NGAY_TUONG_LAI_3_YYYY-MM-DD",
+      "gioBatDau": "09:00:00",
+      "thoiLuongPhut": 60
+    }
+  ]
+}
+```
+
+Thay mã lịch bằng `maLich` ở bước 5 và hoàn tất chuỗi trạng thái ở bước 10 cho tới `HOAN_THANH` trước khi tạo lộ trình. Ba ngày tương lai phải tăng dần; nên chọn các ngày khác nhau và bảo đảm không trùng lịch hiện có. Số phần tử trong `lichCacBuoiTiepTheo` phải đúng bằng tổng số buổi mẫu trừ một và `soThuTu` phải liên tục từ 2.
+
+Khi thành công, hệ thống thực hiện trong cùng một giao dịch:
+
+- Gắn ca khám đã hoàn thành vào buổi 1 và chuyển lộ trình sang `DANG_DIEU_TRI`.
+- Tạo lịch `DA_XAC_NHAN` cho mọi buổi tiếp theo, dùng cùng bác sĩ và phòng của ca đầu.
+- Kiểm tra trùng lịch bác sĩ, phòng khám và bệnh nhân.
+- Gửi thông báo cho bệnh nhân. Bệnh nhân không cần xác nhận lại các lịch này, chỉ xem trong **Lộ trình điều trị** và **Lịch khám của tôi**.
+
+Bác sĩ được phép tiếp tục quản lý lộ trình của bệnh nhân mình phụ trách sau khi lịch đầu ở trạng thái `HOAN_THANH`. Chủ phòng khám vẫn có quyền với mọi bệnh nhân.
+
+### Bước 13 — Xem lộ trình và các buổi điều trị
+
+Danh sách lộ trình của bệnh nhân:
+
+- **Method:** `GET`
+- **URL:** `http://localhost:8080/api/v1/lo-trinh-dieu-tri/benh-nhan/BN_001`
+- **Authorization:** token bác sĩ phụ trách hoặc token chủ phòng khám
+
+Danh sách buổi của một lộ trình:
+
+- **Method:** `GET`
+- **URL:** `http://localhost:8080/api/v1/lo-trinh-dieu-tri/MA_LO_TRINH_DIEU_TRI/buoi`
+- **Authorization:** token bác sĩ phụ trách hoặc token chủ phòng khám
+
+Lấy `maLoTrinhDieuTri` và `maBuoiDieuTri` thực tế từ response cho các bước tiếp theo.
+
+Mỗi buổi đã liên kết lịch sẽ có thêm `ngayKham`, `gioBatDau`, `gioKetThuc`, `tenBacSi` và `tenPhong`. Dùng token bệnh nhân gọi API lịch của bệnh nhân hoặc kiểm tra trên giao diện **Lịch khám của tôi** để xác nhận cả ba lịch tương lai đều hiển thị.
+
+### Bước 14 — Bác sĩ thêm buổi điều trị bổ sung
+
+- **Method:** `POST`
+- **URL:** `http://localhost:8080/api/v1/lo-trinh-dieu-tri/MA_LO_TRINH_DIEU_TRI/buoi`
+- **Authorization:** token bác sĩ phụ trách
+- **Header:** `Content-Type: application/json`
+- **Body mẫu:**
+
+```json
+{
+  "soThuTu": 2,
+  "tenBuoi": "Tái khám bổ sung",
+  "noiDung": "Kiểm tra đáp ứng điều trị và điều chỉnh kế hoạch",
+  "khoangCachMin": 3,
+  "khoangCachMax": 7,
+  "ghiChu": "Theo dõi thêm nếu còn đau"
+}
+```
+
+`soThuTu` phải là vị trí hợp lệ. Nếu chèn giữa lộ trình, các buổi bị dịch thứ tự phải đang ở trạng thái `CHUA_LEN_LICH`.
+
+### Bước 15 — Bác sĩ chỉnh sửa một buổi chưa lên lịch
+
+- **Method:** `PUT`
+- **URL:** `http://localhost:8080/api/v1/lo-trinh-dieu-tri/MA_LO_TRINH_DIEU_TRI/buoi/MA_BUOI_DIEU_TRI`
+- **Authorization:** token bác sĩ phụ trách
+- **Header:** `Content-Type: application/json`
+- **Body mẫu:**
+
+```json
+{
+  "tenBuoi": "Tái khám và đánh giá tiến độ",
+  "noiDung": "Khám lại, chụp phim nếu cần và cập nhật chỉ định",
+  "khoangCachMin": 5,
+  "khoangCachMax": 10,
+  "ghiChu": "Chỉ chỉnh sửa khi buổi chưa lên lịch"
+}
+```
+
+API chỉ cho sửa buổi có trạng thái `CHUA_LEN_LICH` và lộ trình đang `CHUA_BAT_DAU` hoặc `DANG_DIEU_TRI`.
+
+### Bước 16 — Bác sĩ bỏ một buổi chưa lên lịch
+
+- **Method:** `PATCH`
+- **URL:** `http://localhost:8080/api/v1/lo-trinh-dieu-tri/MA_LO_TRINH_DIEU_TRI/buoi/MA_BUOI_DIEU_TRI/bo`
+- **Authorization:** token bác sĩ phụ trách
+- **Header:** `Content-Type: application/json`
+- **Body mẫu:**
+
+```json
+{
+  "lyDoBo": "Bệnh nhân đáp ứng tốt nên không cần thực hiện buổi này"
+}
+```
+
+Thao tác này không xóa bản ghi mà chuyển trạng thái buổi thành `DA_BO`. Chủ phòng khám có thể gọi các API tạo, xem, thêm, sửa và bỏ buổi tương tự bằng token chủ phòng khám.
+
 ## 5. Các API quản lý khác
 
 ### Chủ phòng khám — xem hồ sơ
@@ -277,12 +439,12 @@ Hãy cập nhật theo đúng quy trình nghiệp vụ và trạng thái hiện 
 | Method | URL | Mục đích |
 |---|---|---|
 | GET | `/api/v1/quan-ly/bac-si` | Danh sách bác sĩ |
-| GET | `/api/v1/quan-ly/bac-si/BS_DEMO2` | Chi tiết bác sĩ |
+| GET | `/api/v1/quan-ly/bac-si/BS_002` | Chi tiết bác sĩ |
 | GET | `/api/v1/quan-ly/benh-nhan` | Danh sách bệnh nhân |
-| GET | `/api/v1/quan-ly/benh-nhan/BN_DEMO` | Chi tiết bệnh nhân |
+| GET | `/api/v1/quan-ly/benh-nhan/BN_001` | Chi tiết bệnh nhân |
 | GET | `/api/v1/tai-khoan` | Danh sách tài khoản |
 | GET | `/api/v1/tai-khoan?vaiTro=BAC_SI` | Lọc theo vai trò |
-| GET | `/api/v1/tai-khoan/TK_BS_DEMO` | Chi tiết tài khoản |
+| GET | `/api/v1/tai-khoan/TK_BS_001` | Chi tiết tài khoản |
 
 Tất cả các URL trên dùng `http://localhost:8080` làm gốc và cần token chủ phòng khám.
 
@@ -349,7 +511,7 @@ Dùng `true` để kích hoạt lại. Không thử khóa tài khoản chủ ph�
 
 ```json
 {
-  "maChuPhongKham": "BS_CHU_DEMO",
+  "maChuPhongKham": "BS_CHU_001",
   "maYeuCau": "THAY_BANG_MA_YEU_CAU_THUC_TE",
   "lyDo": "Khong con khung gio phu hop"
 }
@@ -367,8 +529,12 @@ Sau khi các matcher trong `CauHinhBaoMat` đã được sửa khớp với URL 
 | Token sai/hết hạn        | Gửi token không hợp lệ                                                          | Thường là `401 Unauthorized`                                 |
 | Sai vai trò              | Dùng token bác sĩ gọi `/api/v1/quan-ly/bac-si`                                  | `403 Forbidden`                                              |
 | Đúng vai trò             | Dùng token chủ phòng khám gọi `/api/v1/quan-ly/bac-si`                          | Thành công nếu dữ liệu và ứng dụng hợp lệ                    |
-| Tài khoản bị khóa        | Khóa một tài khoản demo không dùng để đăng nhập hiện tại, rồi thử đăng nhập lại | Đăng nhập bị từ chối                                         |
+| Tài khoản bị khóa        | Khóa một tài khoản khởi tạo không dùng để đăng nhập hiện tại, rồi thử đăng nhập lại | Đăng nhập bị từ chối                                      |
 | Sai quyền sở hữu dữ liệu | Bác sĩ khác thử xem lịch không được phân công cho mình                          | Bị từ chối nếu kiểm tra quyền sở hữu đã được triển khai đúng |
+| Bác sĩ tạo lộ trình       | Dùng lịch đầu chưa `HOAN_THANH`, thiếu một buổi tương lai hoặc chọn giờ bị trùng | Request bị từ chối và không tạo lộ trình/lịch dở dang          |
+| Bác sĩ phụ trách lộ trình | Dùng token bác sĩ được phân công tạo/xem lộ trình khi lịch đầu đã `HOAN_THANH` | Thành công; lộ trình và toàn bộ lịch tương lai được tạo        |
+| Bác sĩ khác xem lộ trình  | Dùng token bác sĩ không được phân công gọi lộ trình của `BN_001`                | `403 Forbidden`                                               |
+| Chủ sửa lộ trình          | Dùng token chủ phòng khám thêm/sửa/bỏ buổi của bất kỳ bệnh nhân                 | Thành công nếu trạng thái lộ trình và buổi cho phép           |
 
 Nếu request sai vai trò vẫn thành công, kiểm tra lại matcher trong `CauHinhBaoMat` và thứ tự các quy tắc `requestMatchers`. Nếu không có token mà API vẫn trả dữ liệu, cần sửa cấu hình trước khi tiếp tục test nghiệp vụ.
 
@@ -377,9 +543,12 @@ Nếu request sai vai trò vẫn thành công, kiểm tra lại matcher trong `C
 - Đăng nhập mỗi vai trò riêng và giữ riêng từng JWT.
 - Luôn gửi `Authorization: Bearer ...` cho API cần đăng nhập.
 - Khi tạo yêu cầu, lấy `maYeuCau` từ response, không tự đoán mã.
-- Khi phân công, dùng đúng mã hồ sơ chủ phòng khám `BS_CHU_DEMO`, mã bác sĩ, mã phòng và mã yêu cầu tồn tại.
+- Khi phân công, dùng đúng mã hồ sơ chủ phòng khám `BS_CHU_001`, mã bác sĩ, mã phòng và mã yêu cầu tồn tại.
 - Ngày yêu cầu phải khớp ngày ca làm việc; giờ phân công phải nằm trong ca làm việc và không bị trùng lịch.
-- Project hiện có endpoint gửi yêu cầu, xem danh sách và xem chi tiết yêu cầu đặt lịch; trong Controller được kiểm tra ở ZIP này **chưa thấy endpoint hủy yêu cầu đặt lịch được ánh xạ**. Không test URL hủy cho tới khi bạn bổ sung mapping.
+- Năm bác sĩ mẫu có hai ca mỗi ngày trong 7 ngày tính từ ngày backend khởi động; không chọn ngày nằm ngoài khoảng này khi test phân công.
+- Bác sĩ chỉ quản lý lộ trình của bệnh nhân đã được phân công cho chính mình. Chỉ ca khám `HOAN_THANH` mới được chọn làm buổi đầu; một ca khám đầu không được dùng cho hai lộ trình.
+- Khi tạo lộ trình, phải truyền ngày giờ chính xác cho tất cả các buổi còn lại. Các lịch này được xác nhận tự động để bệnh nhân chỉ cần xem và đến khám.
+- Bệnh nhân có thể hủy yêu cầu của chính mình bằng `PATCH /api/v1/yeu-cau-dat-lich/{maYeuCau}/huy` khi yêu cầu vẫn ở trạng thái `CHO_PHAN_CONG`.
 - Nếu dùng H2 `mem`, dữ liệu thường được tạo lại khi khởi động ứng dụng. Nếu dùng database lưu bền, tránh chạy lại script insert trên dữ liệu đã có vì có thể trùng khóa.
 
 ## 8. Checklist test nhanh
@@ -388,10 +557,17 @@ Nếu request sai vai trò vẫn thành công, kiểm tra lại matcher trong `C
 - [ ] Xem hồ sơ bệnh nhân.
 - [ ] Cập nhật hồ sơ bệnh nhân.
 - [ ] Gửi yêu cầu đặt lịch và lưu `maYeuCau`.
+- [ ] Tạo một yêu cầu phụ và kiểm tra hủy khi còn `CHO_PHAN_CONG`.
 - [ ] Chủ phòng khám xem danh sách yêu cầu.
 - [ ] Chủ phòng khám phân công và lưu `maLich`.
 - [ ] Bệnh nhân xem thông báo và xác nhận lịch.
 - [ ] Bác sĩ xem lịch của mình.
 - [ ] Bác sĩ xem thông tin bệnh nhân trong lịch.
 - [ ] Bác sĩ cập nhật trạng thái lịch.
+- [ ] Hoàn thành ca khám đầu, rồi dùng đúng bác sĩ được phân công tạo lộ trình từ phác đồ mẫu.
+- [ ] Nhập đủ ngày giờ chính xác cho mọi buổi tiếp theo; kiểm tra lộ trình chuyển `DANG_DIEU_TRI`.
+- [ ] Bệnh nhân nhận thông báo, thấy ngày giờ trong Lộ trình điều trị và thấy các buổi trong Lịch khám của tôi.
+- [ ] Bác sĩ thêm, chỉnh sửa và bỏ một buổi `CHUA_LEN_LICH`.
+- [ ] Bác sĩ khác không được phân công nhận `403` khi truy cập lộ trình.
+- [ ] Chủ phòng khám vẫn xem và chỉnh sửa được lộ trình.
 - [ ] Test thiếu token (`401`) và sai vai trò (`403`).

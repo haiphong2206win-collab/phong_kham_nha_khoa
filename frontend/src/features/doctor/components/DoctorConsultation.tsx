@@ -165,7 +165,7 @@ export const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
       setPatientDetail(null);
       setLinkedSession(null);
     }
-  }, [activeAppointment, loadPatientDetail, loadLinkedSession]);
+  }, [activeAppointment?.maLich, activeAppointment?.maBenhNhan, loadPatientDetail, loadLinkedSession]);
 
   const handleOpenStatusConfirm = (appointment: LichKhamBacSiResponse, targetStatus: TrangThaiDatLich) => {
     setConfirmModalData({
