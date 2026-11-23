@@ -7,12 +7,17 @@ import com.example.clinic.demo_phongkham_nhakhoa.dto.response.BuoiDieuTriRespons
 
 import com.example.clinic.demo_phongkham_nhakhoa.entity.BuoiDieuTri;
 import com.example.clinic.demo_phongkham_nhakhoa.entity.LoTrinhDieuTri;
+import com.example.clinic.demo_phongkham_nhakhoa.entity.LichKham;
+import com.example.clinic.demo_phongkham_nhakhoa.entity.CaLamViec;
 
+import com.example.clinic.demo_phongkham_nhakhoa.enums.LoaiThongBao;
 import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiBuoiDieuTri;
+import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiDatLich;
 import com.example.clinic.demo_phongkham_nhakhoa.enums.TrangThaiLoTrinh;
 
 import com.example.clinic.demo_phongkham_nhakhoa.repository.BuoiDieuTriRepository;
 import com.example.clinic.demo_phongkham_nhakhoa.repository.LoTrinhDieuTriRepository;
+import com.example.clinic.demo_phongkham_nhakhoa.repository.LichKhamRepository;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,6 +27,9 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @Transactional(readOnly = true)
@@ -30,15 +38,24 @@ public class BuoiDieuTriService {
         private final BuoiDieuTriRepository buoiDieuTriRepository;
         private final LoTrinhDieuTriRepository loTrinhDieuTriRepository;
         private final LoTrinhDieuTriService loTrinhDieuTriService;
+        private final LichKhamRepository lichKhamRepository;
+        private final ThongBaoService thongBaoService;
+
+        private static final ZoneId MUI_GIO_VIET_NAM = ZoneId.of("Asia/Ho_Chi_Minh");
+        private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         public BuoiDieuTriService(
                         BuoiDieuTriRepository buoiDieuTriRepository,
                         LoTrinhDieuTriRepository loTrinhDieuTriRepository,
-                        LoTrinhDieuTriService loTrinhDieuTriService) {
+                        LoTrinhDieuTriService loTrinhDieuTriService,
+                        LichKhamRepository lichKhamRepository,
+                        ThongBaoService thongBaoService) {
 
                 this.buoiDieuTriRepository = buoiDieuTriRepository;
                 this.loTrinhDieuTriRepository = loTrinhDieuTriRepository;
                 this.loTrinhDieuTriService = loTrinhDieuTriService;
+                this.lichKhamRepository = lichKhamRepository;
+                this.thongBaoService = thongBaoService;
         }
 
         // ==================================================
@@ -151,7 +168,7 @@ public class BuoiDieuTriService {
         }
 
         // ==================================================
-        // 2. CAP NHAT THONG TIN MOT BUOI
+        // 2. CAP NHAT THONG TIN VA LICH HEN CUA MOT BUOI SAP TOI
         // ==================================================
 
         @Transactional
@@ -184,13 +201,25 @@ public class BuoiDieuTriService {
                                 request.getKhoangCachMax(),
                                 request.getGhiChu());
 
-                // Chi sua buoi chua co lich.
-                // Khong thay doi buoi da len lich hoac lich su.
-                if (buoi.getTrangThai() != TrangThaiBuoiDieuTri.CHUA_LEN_LICH) {
+                boolean chuaLenLich = buoi.getTrangThai() == TrangThaiBuoiDieuTri.CHUA_LEN_LICH;
+                boolean daLenLich = buoi.getTrangThai() == TrangThaiBuoiDieuTri.DA_LEN_LICH;
+
+                if (!chuaLenLich && !daLenLich) {
 
                         throw new ResponseStatusException(
                                         HttpStatus.CONFLICT,
-                                        "Chi duoc sua buoi chua len lich");
+                                        "Chi duoc sua buoi chua len lich hoac buoi da len lich trong tuong lai");
+                }
+
+                LichKham lichKham = buoi.getLichKham();
+                if (daLenLich) {
+                        kiemTraVaCapNhatLichTuongLai(lichKham, request);
+                } else if (request.getNgayKham() != null
+                                || request.getGioBatDau() != null
+                                || request.getThoiLuongPhut() != null) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "Buoi chua len lich khong the cap nhat ngay gio tai API nay");
                 }
 
                 buoi.capNhatThongTin(
@@ -202,7 +231,127 @@ public class BuoiDieuTriService {
 
                 buoi = buoiDieuTriRepository.saveAndFlush(buoi);
 
+                taoThongBaoCapNhat(loTrinh, buoi, lichKham);
+
                 return chuyenSangResponse(buoi);
+        }
+
+        private void kiemTraVaCapNhatLichTuongLai(
+                        LichKham lichKham,
+                        CapNhatBuoiDieuTriRequest request) {
+
+                if (lichKham == null) {
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "Buoi dieu tri khong co lich kham");
+                }
+
+                LocalDateTime lichHienTai = LocalDateTime.of(
+                                lichKham.getNgayKham(), lichKham.getGioBatDau());
+                LocalDateTime hienTai = LocalDateTime.now(MUI_GIO_VIET_NAM);
+                if (!lichHienTai.isAfter(hienTai)) {
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "Chi duoc sua buoi dieu tri sap toi");
+                }
+
+                if (lichKham.getTrangThai() != TrangThaiDatLich.DA_XAC_NHAN
+                                && lichKham.getTrangThai() != TrangThaiDatLich.CHO_BENH_NHAN_XAC_NHAN
+                                && lichKham.getTrangThai() != TrangThaiDatLich.YEU_CAU_THAY_DOI) {
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "Trang thai lich kham khong cho phep chinh sua");
+                }
+
+                boolean coTruongLich = request.getNgayKham() != null
+                                || request.getGioBatDau() != null
+                                || request.getThoiLuongPhut() != null;
+                if (!coTruongLich) {
+                        return;
+                }
+                if (request.getNgayKham() == null
+                                || request.getGioBatDau() == null
+                                || request.getThoiLuongPhut() == null) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "Phai gui day du ngay kham, gio bat dau va thoi luong");
+                }
+                if (request.getThoiLuongPhut() > 480) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thoi luong kham khong duoc qua 480 phut");
+                }
+
+                LocalDateTime batDauMoi = LocalDateTime.of(request.getNgayKham(), request.getGioBatDau());
+                LocalDateTime ketThucMoi = batDauMoi.plusMinutes(request.getThoiLuongPhut());
+                if (!batDauMoi.isAfter(hienTai)) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lich kham moi phai nam trong tuong lai");
+                }
+                if (!batDauMoi.toLocalDate().equals(ketThucMoi.toLocalDate())) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lich kham phai bat dau va ket thuc trong cung mot ngay");
+                }
+
+                boolean trongCaLamViec = lichKham.getBacSi().getDanhSachCaLam().stream()
+                                .filter(CaLamViec::isDangHoatDong)
+                                .filter(ca -> ca.getNgayLamViec().equals(batDauMoi.toLocalDate()))
+                                .anyMatch(ca -> ca.chuaThoiGian(batDauMoi.toLocalTime(), ketThucMoi.toLocalTime()));
+                if (!trongCaLamViec) {
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "Thoi gian moi nam ngoai ca lam viec cua bac si");
+                }
+
+                kiemTraKhongTrungLich(lichKham, batDauMoi, ketThucMoi);
+
+                lichKham.setNgayKham(batDauMoi.toLocalDate());
+                lichKham.setGioBatDau(batDauMoi.toLocalTime());
+                lichKham.setGioKetThuc(ketThucMoi.toLocalTime());
+                lichKhamRepository.saveAndFlush(lichKham);
+        }
+
+        private void kiemTraKhongTrungLich(
+                        LichKham lichHienTai,
+                        LocalDateTime batDauMoi,
+                        LocalDateTime ketThucMoi) {
+
+                if (coLichGiaoNhau(lichKhamRepository.findByBacSiAndNgayKham(
+                                lichHienTai.getBacSi(), batDauMoi.toLocalDate()), lichHienTai, batDauMoi, ketThucMoi)) {
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "Thoi gian moi bi trung lich cua bac si");
+                }
+                if (coLichGiaoNhau(lichKhamRepository.findByPhongKhamAndNgayKham(
+                                lichHienTai.getPhongKham(), batDauMoi.toLocalDate()), lichHienTai, batDauMoi, ketThucMoi)) {
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "Thoi gian moi bi trung lich phong kham");
+                }
+                if (coLichGiaoNhau(lichKhamRepository.findByBenhNhan_MaBenhNhanAndNgayKham(
+                                lichHienTai.getBenhNhan().getMaBenhNhan(), batDauMoi.toLocalDate()),
+                                lichHienTai, batDauMoi, ketThucMoi)) {
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "Thoi gian moi bi trung lich cua benh nhan");
+                }
+        }
+
+        private boolean coLichGiaoNhau(
+                        List<LichKham> danhSach,
+                        LichKham lichHienTai,
+                        LocalDateTime batDauMoi,
+                        LocalDateTime ketThucMoi) {
+                return danhSach.stream()
+                                .filter(lich -> !lich.getMaLich().equals(lichHienTai.getMaLich()))
+                                .filter(lich -> lich.getTrangThai() != TrangThaiDatLich.DA_HUY)
+                                .anyMatch(lich -> batDauMoi.isBefore(LocalDateTime.of(
+                                                lich.getNgayKham(), lich.getGioKetThuc()))
+                                                && ketThucMoi.isAfter(LocalDateTime.of(
+                                                                lich.getNgayKham(), lich.getGioBatDau())));
+        }
+
+        private void taoThongBaoCapNhat(
+                        LoTrinhDieuTri loTrinh,
+                        BuoiDieuTri buoi,
+                        LichKham lichKham) {
+
+                String noiDung = "Buổi " + buoi.getSoThuTu() + " - " + buoi.getTenBuoi()
+                                + " trong lộ trình \"" + loTrinh.getTenLoTrinh() + "\" đã được cập nhật.";
+                if (lichKham != null) {
+                        noiDung += " Lịch mới: " + lichKham.getNgayKham().format(DINH_DANG_NGAY)
+                                        + " lúc " + lichKham.getGioBatDau() + "-" + lichKham.getGioKetThuc() + ".";
+                }
+                noiDung += " Vui lòng kiểm tra lại chi tiết lịch điều trị.";
+
+                thongBaoService.taoThongBao(
+                                loTrinh.getBenhNhan().getTaiKhoan(),
+                                lichKham,
+                                LoaiThongBao.LICH_DA_CAP_NHAT,
+                                "Buổi điều trị đã được cập nhật",
+                                noiDung);
         }
 
         // ==================================================

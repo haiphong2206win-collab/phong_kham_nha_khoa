@@ -9,7 +9,7 @@
 
 Phòng khám Nha Khoa Nụ Cười Xanh số hóa toàn bộ quy trình chăm sóc răng miệng khép kín:
 - **Bệnh nhân (Patient):** Gửi yêu cầu đặt lịch, nhận phản hồi phân công, xác nhận/từ chối lịch khám, theo dõi lộ trình điều trị nhiều buổi, cập nhật hồ sơ sức khỏe và tiền sử bệnh.
-- **Bác sĩ (Doctor):** Theo dõi lịch khám trong ngày, cập nhật tiến trình tiếp đón (Đã đến → Đang khám → Hoàn thành / Vắng mặt), sau buổi khám đầu tiên sẽ tạo lộ trình với ngày giờ chính xác cho toàn bộ các buổi tiếp theo và gửi thông báo cho bệnh nhân. Bác sĩ phụ trách tiếp tục theo dõi lộ trình sau khi ca đầu đã hoàn thành.
+- **Bác sĩ (Doctor):** Theo dõi lịch khám trong ngày, cập nhật tiến trình tiếp đón (Đã đến → Đang khám → Hoàn thành / Vắng mặt), tạo lộ trình với ngày giờ chính xác cho các buổi tiếp theo, và chỉnh sửa nội dung/ngày giờ của buổi sắp tới khi kế hoạch thay đổi. Mọi lần chỉnh sửa buổi đều gửi thông báo cho bệnh nhân.
 - **Chủ phòng khám (Owner):** Giám sát toàn bộ hoạt động phòng khám, duyệt và phân công bác sĩ/phòng/giờ khám cho yêu cầu của bệnh nhân, quản lý nhân sự bác sĩ, quản lý hồ sơ bệnh nhân và giám sát lộ trình điều trị.
 
 ---
@@ -218,7 +218,7 @@ Sau khi khởi tạo dữ liệu mẫu, hệ thống cung cấp sẵn các tài 
 
 ---
 
-## 12. CHECKLIST KIỂM THỬ THỦ CÔNG (4 LUỒNG NGHIỆP VỤ KHÉP KÍN)
+## 12. CHECKLIST KIỂM THỬ THỦ CÔNG (5 LUỒNG NGHIỆP VỤ KHÉP KÍN)
 
 ### Luồng 1: Bệnh nhân đặt lịch → Chủ phòng khám phân công
 1. Đăng nhập Bệnh nhân (`bn.phamgiahan`).
@@ -258,6 +258,15 @@ Sau khi khởi tạo dữ liệu mẫu, hệ thống cung cấp sẵn các tài 
 4. Xem ngày, giờ, bác sĩ và phòng khám chính xác của từng buổi trong danh sách chi tiết.
 5. Vào **"Cuộc hẹn & Lịch khám"** để thấy các buổi tiếp theo trong **"Lịch khám của tôi"**. Các lịch do bác sĩ tạo từ lộ trình đã được xác nhận sẵn; bệnh nhân chỉ cần theo dõi và đến khám đúng hẹn.
 6. Kiểm tra thông báo **"Bác sĩ đã lập lộ trình điều trị"** vừa được hệ thống gửi tự động.
+
+### Luồng 5: Bác sĩ đổi lịch một buổi điều trị sắp tới
+
+1. Đăng nhập đúng bác sĩ đang phụ trách bệnh nhân, vào **"Lộ trình điều trị"** và mở một lộ trình đã tạo.
+2. Tại buổi có trạng thái **"Đã lên lịch"** và thời gian bắt đầu còn ở tương lai, bấm **"Chỉnh sửa"**.
+3. Thay đổi nội dung, ngày khám, giờ bắt đầu hoặc thời lượng rồi bấm **"Lưu thay đổi"**.
+4. Kiểm tra buổi và lịch khám của bệnh nhân cùng hiển thị thời gian mới. Hệ thống phải từ chối thời điểm trong quá khứ, ngoài ca làm việc hoặc trùng lịch bác sĩ/phòng/bệnh nhân.
+5. Đăng nhập bệnh nhân, kiểm tra thông báo **"Buổi điều trị đã được cập nhật"** và nội dung lịch mới.
+6. Xác nhận buổi đã bắt đầu, đang thực hiện, hoàn thành, đã bỏ hoặc lịch đã hủy không hiển thị nút chỉnh sửa và API trả `409 Conflict` nếu cố gọi trực tiếp.
 
 ---
 

@@ -24,6 +24,9 @@ export const OwnerEditSessionModal: React.FC<OwnerEditSessionModalProps> = ({
   const [khoangCachMin, setKhoangCachMin] = useState<string>('');
   const [khoangCachMax, setKhoangCachMax] = useState<string>('');
   const [ghiChu, setGhiChu] = useState<string>('');
+  const [ngayKham, setNgayKham] = useState<string>('');
+  const [gioBatDau, setGioBatDau] = useState<string>('');
+  const [thoiLuongPhut, setThoiLuongPhut] = useState<string>('30');
 
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -35,6 +38,15 @@ export const OwnerEditSessionModal: React.FC<OwnerEditSessionModalProps> = ({
       setKhoangCachMin(session.khoangCachMin !== undefined && session.khoangCachMin !== null ? String(session.khoangCachMin) : '');
       setKhoangCachMax(session.khoangCachMax !== undefined && session.khoangCachMax !== null ? String(session.khoangCachMax) : '');
       setGhiChu(session.ghiChu || '');
+      setNgayKham(session.ngayKham || '');
+      setGioBatDau(session.gioBatDau?.slice(0, 5) || '');
+      if (session.gioBatDau && session.gioKetThuc) {
+        const [startHour, startMinute] = session.gioBatDau.split(':').map(Number);
+        const [endHour, endMinute] = session.gioKetThuc.split(':').map(Number);
+        setThoiLuongPhut(String((endHour * 60 + endMinute) - (startHour * 60 + startMinute)));
+      } else {
+        setThoiLuongPhut('30');
+      }
       setErrorMessage(null);
     }
   }, [isOpen, session]);
@@ -56,6 +68,12 @@ export const OwnerEditSessionModal: React.FC<OwnerEditSessionModalProps> = ({
       return;
     }
 
+    if (session.trangThai === 'DA_LEN_LICH'
+      && (!ngayKham || !gioBatDau || Number(thoiLuongPhut) < 15)) {
+      setErrorMessage('Vui lòng nhập đầy đủ ngày, giờ và thời lượng tối thiểu 15 phút.');
+      return;
+    }
+
     setLoading(true);
     setErrorMessage(null);
 
@@ -66,6 +84,11 @@ export const OwnerEditSessionModal: React.FC<OwnerEditSessionModalProps> = ({
         khoangCachMin: khoangCachMin ? Number(khoangCachMin) : null,
         khoangCachMax: khoangCachMax ? Number(khoangCachMax) : null,
         ghiChu: ghiChu.trim() || undefined,
+        ...(session.trangThai === 'DA_LEN_LICH' ? {
+          ngayKham,
+          gioBatDau,
+          thoiLuongPhut: Number(thoiLuongPhut),
+        } : {}),
       };
 
       const result = await ownerService.updateTreatmentSession(
@@ -115,7 +138,11 @@ export const OwnerEditSessionModal: React.FC<OwnerEditSessionModalProps> = ({
               <h2 className="text-base font-bold text-gray-900">
                 Chỉnh sửa Buổi {session.soThuTu}
               </h2>
-              <p className="text-xs text-gray-500">Cập nhật nội dung và yêu cầu thực hiện</p>
+              <p className="text-xs text-gray-500">
+                {session.trangThai === 'DA_LEN_LICH'
+                  ? 'Cập nhật nội dung và lịch hẹn sắp tới'
+                  : 'Cập nhật nội dung và yêu cầu thực hiện'}
+              </p>
             </div>
           </div>
           <button
@@ -148,6 +175,53 @@ export const OwnerEditSessionModal: React.FC<OwnerEditSessionModalProps> = ({
               className="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89]"
             />
           </div>
+
+          {session.trangThai === 'DA_LEN_LICH' && (
+            <div className="p-3.5 rounded-xl border border-teal-200 bg-teal-50/60 space-y-3">
+              <div>
+                <p className="text-xs font-bold text-teal-900">Lịch hẹn sắp tới</p>
+                <p className="text-[11px] text-teal-700 mt-0.5">
+                  Bệnh nhân sẽ nhận thông báo sau khi bạn lưu thay đổi.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Ngày khám</label>
+                  <input
+                    type="date"
+                    value={ngayKham}
+                    min={new Date().toLocaleDateString('en-CA')}
+                    onChange={(e) => setNgayKham(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Giờ bắt đầu</label>
+                  <input
+                    type="time"
+                    value={gioBatDau}
+                    onChange={(e) => setGioBatDau(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Thời lượng (phút)</label>
+                  <input
+                    type="number"
+                    min={15}
+                    max={480}
+                    step={5}
+                    value={thoiLuongPhut}
+                    onChange={(e) => setThoiLuongPhut(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#169C89]/20 focus:border-[#169C89]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1.5">

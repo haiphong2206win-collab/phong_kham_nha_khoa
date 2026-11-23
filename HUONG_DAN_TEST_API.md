@@ -396,7 +396,7 @@ Mỗi buổi đã liên kết lịch sẽ có thêm `ngayKham`, `gioBatDau`, `gi
 
 `soThuTu` phải là vị trí hợp lệ. Nếu chèn giữa lộ trình, các buổi bị dịch thứ tự phải đang ở trạng thái `CHUA_LEN_LICH`.
 
-### Bước 15 — Bác sĩ chỉnh sửa một buổi chưa lên lịch
+### Bước 15 — Bác sĩ chỉnh sửa buổi chưa lên lịch hoặc buổi sắp tới
 
 - **Method:** `PUT`
 - **URL:** `http://localhost:8080/api/v1/lo-trinh-dieu-tri/MA_LO_TRINH_DIEU_TRI/buoi/MA_BUOI_DIEU_TRI`
@@ -410,11 +410,32 @@ Mỗi buổi đã liên kết lịch sẽ có thêm `ngayKham`, `gioBatDau`, `gi
   "noiDung": "Khám lại, chụp phim nếu cần và cập nhật chỉ định",
   "khoangCachMin": 5,
   "khoangCachMax": 10,
-  "ghiChu": "Chỉ chỉnh sửa khi buổi chưa lên lịch"
+  "ghiChu": "Cập nhật chỉ định điều trị"
 }
 ```
 
-API chỉ cho sửa buổi có trạng thái `CHUA_LEN_LICH` và lộ trình đang `CHUA_BAT_DAU` hoặc `DANG_DIEU_TRI`.
+Với buổi `DA_LEN_LICH` còn ở tương lai, gửi thêm đầy đủ ba trường lịch hẹn:
+
+```json
+{
+  "tenBuoi": "Tái khám và đánh giá tiến độ",
+  "noiDung": "Khám lại, chụp phim nếu cần và cập nhật chỉ định",
+  "khoangCachMin": 5,
+  "khoangCachMax": 10,
+  "ghiChu": "Bệnh nhân đã thống nhất đổi lịch",
+  "ngayKham": "THAY_BANG_NGAY_TUONG_LAI_YYYY-MM-DD",
+  "gioBatDau": "14:00:00",
+  "thoiLuongPhut": 45
+}
+```
+
+Điều kiện và kết quả cần kiểm tra:
+
+- Lộ trình phải ở `CHUA_BAT_DAU` hoặc `DANG_DIEU_TRI`; buổi phải là `CHUA_LEN_LICH`, hoặc `DA_LEN_LICH` có thời điểm bắt đầu còn ở tương lai.
+- Khi đổi lịch của buổi `DA_LEN_LICH`, `ngayKham`, `gioBatDau`, `thoiLuongPhut` phải được gửi cùng nhau; thời lượng từ 15 đến 480 phút.
+- Lịch mới phải ở tương lai, nằm trọn trong một ca làm việc đang hoạt động và không trùng lịch của bác sĩ, phòng khám hoặc bệnh nhân.
+- Thành công trả `200 OK`, cập nhật cả buổi điều trị lẫn bản ghi lịch khám và tạo thông báo loại `LICH_DA_CAP_NHAT` cho bệnh nhân.
+- Buổi trong quá khứ hoặc ở trạng thái `DANG_THUC_HIEN`, `HOAN_THANH`, `DA_BO`, `TAM_HOAN`, `LICH_DA_HUY` phải bị từ chối bằng `409 Conflict`.
 
 ### Bước 16 — Bác sĩ bỏ một buổi chưa lên lịch
 
@@ -535,6 +556,8 @@ Sau khi các matcher trong `CauHinhBaoMat` đã được sửa khớp với URL 
 | Bác sĩ phụ trách lộ trình | Dùng token bác sĩ được phân công tạo/xem lộ trình khi lịch đầu đã `HOAN_THANH` | Thành công; lộ trình và toàn bộ lịch tương lai được tạo        |
 | Bác sĩ khác xem lộ trình  | Dùng token bác sĩ không được phân công gọi lộ trình của `BN_001`                | `403 Forbidden`                                               |
 | Chủ sửa lộ trình          | Dùng token chủ phòng khám thêm/sửa/bỏ buổi của bất kỳ bệnh nhân                 | Thành công nếu trạng thái lộ trình và buổi cho phép           |
+| Bác sĩ đổi buổi sắp tới   | Đổi sang giờ hợp lệ, không trùng lịch và còn trong ca làm việc                  | `200 OK`; lịch đổi và bệnh nhân nhận thông báo                |
+| Bác sĩ đổi lịch không hợp lệ | Dùng giờ quá khứ, ngoài ca hoặc trùng bác sĩ/phòng/bệnh nhân                  | `400/409`; không ghi dở dang buổi, lịch hay thông báo         |
 
 Nếu request sai vai trò vẫn thành công, kiểm tra lại matcher trong `CauHinhBaoMat` và thứ tự các quy tắc `requestMatchers`. Nếu không có token mà API vẫn trả dữ liệu, cần sửa cấu hình trước khi tiếp tục test nghiệp vụ.
 
@@ -548,6 +571,7 @@ Nếu request sai vai trò vẫn thành công, kiểm tra lại matcher trong `C
 - Năm bác sĩ mẫu có hai ca mỗi ngày trong 7 ngày tính từ ngày backend khởi động; không chọn ngày nằm ngoài khoảng này khi test phân công.
 - Bác sĩ chỉ quản lý lộ trình của bệnh nhân đã được phân công cho chính mình. Chỉ ca khám `HOAN_THANH` mới được chọn làm buổi đầu; một ca khám đầu không được dùng cho hai lộ trình.
 - Khi tạo lộ trình, phải truyền ngày giờ chính xác cho tất cả các buổi còn lại. Các lịch này được xác nhận tự động để bệnh nhân chỉ cần xem và đến khám.
+- Khi sửa buổi đã lên lịch, ba trường `ngayKham`, `gioBatDau`, `thoiLuongPhut` phải đi cùng nhau. Việc cập nhật buổi, lịch và thông báo nằm trong cùng một transaction.
 - Bệnh nhân có thể hủy yêu cầu của chính mình bằng `PATCH /api/v1/yeu-cau-dat-lich/{maYeuCau}/huy` khi yêu cầu vẫn ở trạng thái `CHO_PHAN_CONG`.
 - Nếu dùng H2 `mem`, dữ liệu thường được tạo lại khi khởi động ứng dụng. Nếu dùng database lưu bền, tránh chạy lại script insert trên dữ liệu đã có vì có thể trùng khóa.
 
@@ -566,6 +590,9 @@ Nếu request sai vai trò vẫn thành công, kiểm tra lại matcher trong `C
 - [ ] Bác sĩ cập nhật trạng thái lịch.
 - [ ] Hoàn thành ca khám đầu, rồi dùng đúng bác sĩ được phân công tạo lộ trình từ phác đồ mẫu.
 - [ ] Nhập đủ ngày giờ chính xác cho mọi buổi tiếp theo; kiểm tra lộ trình chuyển `DANG_DIEU_TRI`.
+- [ ] Sửa nội dung và ngày giờ của một buổi `DA_LEN_LICH` trong tương lai; kiểm tra lịch bệnh nhân đổi theo.
+- [ ] Kiểm tra bệnh nhân nhận thông báo `LICH_DA_CAP_NHAT` sau khi sửa thành công.
+- [ ] Thử giờ quá khứ, ngoài ca và trùng lịch; xác nhận API từ chối và không tạo thông báo.
 - [ ] Bệnh nhân nhận thông báo, thấy ngày giờ trong Lộ trình điều trị và thấy các buổi trong Lịch khám của tôi.
 - [ ] Bác sĩ thêm, chỉnh sửa và bỏ một buổi `CHUA_LEN_LICH`.
 - [ ] Bác sĩ khác không được phân công nhận `403` khi truy cập lộ trình.

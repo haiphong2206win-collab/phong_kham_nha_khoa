@@ -313,6 +313,9 @@ export interface CapNhatBuoiDieuTriRequest {
   khoangCachMin?: number | null;
   khoangCachMax?: number | null;
   ghiChu?: string;
+  ngayKham?: string;
+  gioBatDau?: string;
+  thoiLuongPhut?: number;
 }
 
 /**

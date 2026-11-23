@@ -203,6 +203,9 @@ export interface CapNhatBuoiDieuTriRequest {
   khoangCachMin?: number | null;
   khoangCachMax?: number | null;
   ghiChu?: string | null;
+  ngayKham?: string;
+  gioBatDau?: string;
+  thoiLuongPhut?: number;
 }
 
 export const TRANG_THAI_LO_TRINH_MAP: Record<TrangThaiLoTrinh, { label: string; badgeClass: string }> = {

@@ -321,7 +321,7 @@ export const ownerService = {
   },
 
   /**
-   * Cập nhật nội dung buổi điều trị (khi chưa lên lịch)
+   * Cập nhật nội dung buổi điều trị; có thể đổi ngày giờ nếu buổi đã lên lịch và còn ở tương lai
    * Endpoint: PUT /api/v1/lo-trinh-dieu-tri/{maLoTrinh}/buoi/{maBuoi}
    */
   async updateTreatmentSession(
